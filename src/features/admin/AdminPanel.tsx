@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Plus, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, Plus, Save } from "lucide-react";
 import { seedRestaurants } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale, Restaurant } from "@/shared/lib/types";
@@ -10,6 +10,9 @@ import { uid } from "@/shared/lib/format";
 
 export function AdminPanel({ locale }: { locale: Locale }) {
   const t = dictionaries[locale];
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [restaurants, setRestaurants] = useState<Restaurant[]>(() => {
     if (typeof window === "undefined") return seedRestaurants;
     const raw = window.localStorage.getItem("doppapp-restaurants");
@@ -17,6 +20,28 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   });
   const [selectedRestaurant, setSelectedRestaurant] = useState(seedRestaurants[0].id);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
+    setAuthReady(true);
+  }, []);
+
+  function login(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    if (data.get("username") === "admin" && data.get("password") === "1234") {
+      window.localStorage.setItem("adminAuth", "true");
+      setIsAuthenticated(true);
+      setLoginError("");
+      return;
+    }
+    setLoginError(t.invalidLogin);
+  }
+
+  function logout() {
+    window.localStorage.removeItem("adminAuth");
+    setIsAuthenticated(false);
+  }
 
   function save(restaurantsToSave = restaurants) {
     window.localStorage.setItem("doppapp-restaurants", JSON.stringify(restaurantsToSave));
@@ -71,6 +96,30 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     event.currentTarget.reset();
   }
 
+  if (!authReady) {
+    return <main className="min-h-screen bg-zinc-50 p-4" />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-zinc-50 p-4 text-zinc-950">
+        <form onSubmit={login} className="w-full max-w-sm rounded-lg bg-white p-5 shadow-sm">
+          <p className="text-sm font-bold text-orange-600">{t.admin}</p>
+          <h1 className="mt-1 text-3xl font-black">{t.adminLogin}</h1>
+          <div className="mt-5 grid gap-3">
+            <Input name="username" label={t.username} required />
+            <Input name="password" label={t.password} type="password" required />
+            {loginError && <p className="rounded-lg bg-red-50 p-3 text-sm font-bold text-red-700">{loginError}</p>}
+            <button className="rounded-lg bg-orange-600 py-3 font-black text-white">{t.login}</button>
+            <Link className="text-center text-sm font-bold text-zinc-500" href={`/${locale}`}>
+              {t.backToApp}
+            </Link>
+          </div>
+        </form>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-zinc-50 p-4 text-zinc-950">
       <section className="mx-auto max-w-5xl py-6">
@@ -80,9 +129,14 @@ export function AdminPanel({ locale }: { locale: Locale }) {
             <h1 className="text-3xl font-black">{t.menuAdmin}</h1>
             <p className="mt-1 max-w-2xl text-zinc-600">{t.adminHint}</p>
           </div>
-          <Link className="rounded-lg bg-zinc-950 px-4 py-3 font-bold text-white" href={`/${locale}`}>
-            {t.backToApp}
-          </Link>
+          <div className="flex gap-2">
+            <Link className="rounded-lg bg-zinc-950 px-4 py-3 font-bold text-white" href={`/${locale}`}>
+              {t.backToApp}
+            </Link>
+            <button className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-3 font-bold" onClick={logout}>
+              <LogOut size={18} /> {t.logout}
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_1fr]">

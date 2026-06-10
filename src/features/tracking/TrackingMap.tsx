@@ -9,8 +9,15 @@ import { useEffect, useMemo } from "react";
 type TrackingMapProps = {
   restaurant: [number, number];
   address: [number, number];
-  courier: [number, number];
+  courier?: [number, number];
 };
+
+const restaurantIcon = L.divIcon({
+  className: "restaurant-marker",
+  html: "<span>🍽</span>",
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+});
 
 const courierIcon = L.divIcon({
   className: "courier-marker",
@@ -41,7 +48,7 @@ export default function TrackingMap({ restaurant, address, courier }: TrackingMa
 
   return (
     <MapContainer
-      center={courier}
+      center={courier ?? restaurant}
       zoom={13}
       className="h-[360px] w-full overflow-hidden rounded-lg border border-black/10"
       scrollWheelZoom={false}
@@ -52,9 +59,9 @@ export default function TrackingMap({ restaurant, address, courier }: TrackingMa
       />
       <FitBounds points={points} />
       <Polyline positions={points} pathOptions={{ color: "#ff5a2a", weight: 5, opacity: 0.7 }} />
-      <Marker position={restaurant} />
+      <Marker position={restaurant} icon={restaurantIcon} />
       <Marker position={address} icon={destinationIcon} />
-      <Marker position={courier} icon={courierIcon} />
+      {courier && <Marker position={courier} icon={courierIcon} />}
     </MapContainer>
   );
 }

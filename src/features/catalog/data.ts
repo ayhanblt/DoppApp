@@ -1,4 +1,5 @@
 import type { Restaurant } from "@/shared/lib/types";
+import { coordinateDistanceKm, offsetCoordinate, snapCoordinateToRoad } from "@/features/tracking/geo";
 
 const optionGroups = [
   {
@@ -31,7 +32,7 @@ const optionGroups = [
   }
 ];
 
-const img = (name: string) => `https://www.xn--lz2bv9nd1bm2a9lo9a.com/menu/${name}`;
+const img = (name: string) => `/images/menu/${name}`;
 
 export const seedRestaurants: Restaurant[] = [
   {
@@ -241,8 +242,8 @@ export const seedRestaurants: Restaurant[] = [
     deliveryFee: 90,
     coordinate: [41.0391, 29.0441],
     menu: [
-      { id: "sushi-mix", name: { tr: "10'lu Karışık Sushi", en: "Mixed Sushi 10 pcs" }, description: { tr: "Somon, ton balığı ve levrek", en: "Salmon, tuna, and sea bass" }, price: 570, calories: 650, image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=700&q=80", optionGroups },
-      { id: "salmon-sushi", name: { tr: "6'lı Somon Sushi", en: "Salmon Sushi 6 pcs" }, description: { tr: "Kalın kesim taze somon", en: "Thick-cut fresh salmon" }, price: 390, calories: 380, image: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=700&q=80", optionGroups }
+      { id: "sushi-mix", name: { tr: "10'lu Karışık Sushi", en: "Mixed Sushi 10 pcs" }, description: { tr: "Somon, ton balığı ve levrek", en: "Salmon, tuna, and sea bass" }, price: 570, calories: 650, image: "/images/menu/sushi-mix.jpg", optionGroups },
+      { id: "salmon-sushi", name: { tr: "6'lı Somon Sushi", en: "Salmon Sushi 6 pcs" }, description: { tr: "Kalın kesim taze somon", en: "Thick-cut fresh salmon" }, price: 390, calories: 380, image: "/images/menu/salmon-sushi.jpg", optionGroups }
     ]
   },
   {
@@ -272,8 +273,8 @@ export const seedRestaurants: Restaurant[] = [
     deliveryFee: 80,
     coordinate: [41.0705, 29.0229],
     menu: [
-      { id: "margherita", name: { tr: "Margherita", en: "Margherita" }, description: { tr: "Fesleğen, mozzarella, domates", en: "Basil, mozzarella, tomato" }, price: 360, calories: 840, image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=700&q=80", optionGroups },
-      { id: "pepperoni", name: { tr: "Pepperoni Pizza", en: "Pepperoni Pizza" }, description: { tr: "İnce hamur, bol pepperoni", en: "Thin crust, lots of pepperoni" }, price: 430, calories: 980, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=700&q=80", optionGroups }
+      { id: "margherita", name: { tr: "Margherita", en: "Margherita" }, description: { tr: "Fesleğen, mozzarella, domates", en: "Basil, mozzarella, tomato" }, price: 360, calories: 840, image: "/images/menu/margherita.jpg", optionGroups },
+      { id: "pepperoni", name: { tr: "Pepperoni Pizza", en: "Pepperoni Pizza" }, description: { tr: "İnce hamur, bol pepperoni", en: "Thin crust, lots of pepperoni" }, price: 430, calories: 980, image: "/images/menu/pepperoni.jpg", optionGroups }
     ]
   },
   {
@@ -287,7 +288,7 @@ export const seedRestaurants: Restaurant[] = [
     deliveryFee: 50,
     coordinate: [41.0615, 28.9978],
     menu: [
-      { id: "takoyaki", name: { tr: "8'li Takoyaki", en: "Takoyaki 8 pcs" }, description: { tr: "Bol soslu ahtapot topları", en: "Saucy octopus balls" }, price: 250, calories: 490, image: "https://images.unsplash.com/photo-1630914443080-19d067fe66dc?auto=format&fit=crop&w=700&q=80", optionGroups },
+      { id: "takoyaki", name: { tr: "8'li Takoyaki", en: "Takoyaki 8 pcs" }, description: { tr: "Bol soslu ahtapot topları", en: "Saucy octopus balls" }, price: 250, calories: 490, image: "/images/menu/takoyaki.jpg", optionGroups },
       { id: "yakisoba", name: { tr: "Yakisoba", en: "Yakisoba" }, description: { tr: "Sebzeli kızarmış noodle", en: "Vegetable fried noodles" }, price: 285, calories: 610, image: img("cn1.jpg"), optionGroups }
     ]
   },
@@ -302,7 +303,7 @@ export const seedRestaurants: Restaurant[] = [
     deliveryFee: 55,
     coordinate: [41.0333, 29.0504],
     menu: [
-      { id: "mango-bingsu", name: { tr: "Mango Bingsu", en: "Mango Bingsu" }, description: { tr: "İnce buz, mango ve süt kreması", en: "Shaved ice, mango, milk cream" }, price: 320, calories: 540, image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=700&q=80", optionGroups },
+      { id: "mango-bingsu", name: { tr: "Mango Bingsu", en: "Mango Bingsu" }, description: { tr: "İnce buz, mango ve süt kreması", en: "Shaved ice, mango, milk cream" }, price: 320, calories: 540, image: "/images/menu/mango-bingsu.jpg", optionGroups },
       { id: "redbean", name: { tr: "Kırmızı Fasulye Bingsu", en: "Red Bean Bingsu" }, description: { tr: "Klasik soğuk Kore tatlısı", en: "Classic cold Korean dessert" }, price: 290, calories: 510, image: img("ic1.jpg"), optionGroups }
     ]
   }
@@ -317,4 +318,41 @@ export function getStoredRestaurants() {
   } catch {
     return seedRestaurants;
   }
+}
+
+function restaurantSeed(id: string) {
+  return id.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
+}
+
+export function getRestaurantsAroundAddress(center: [number, number]) {
+  return getStoredRestaurants().map((restaurant, index) => {
+    const seed = restaurantSeed(restaurant.id);
+    const distanceKm = 0.5 + ((seed * 37 + index * 53) % 450) / 100;
+    const bearing = (seed * 29 + index * 47) % 360;
+
+    return {
+      ...restaurant,
+      coordinate: offsetCoordinate(center, distanceKm, bearing)
+    };
+  });
+}
+
+export async function getRestaurantsOnRoadsAroundAddress(center: [number, number]) {
+  const candidates = getRestaurantsAroundAddress(center);
+  const snapped = await Promise.all(
+    candidates.map(async (restaurant) => {
+      const roadCoordinate = await snapCoordinateToRoad(restaurant.coordinate).catch(() => null);
+      if (!roadCoordinate) return restaurant;
+
+      const distanceKm = coordinateDistanceKm(center, roadCoordinate);
+      if (distanceKm < 0.5 || distanceKm > 5) return restaurant;
+
+      return {
+        ...restaurant,
+        coordinate: roadCoordinate
+      };
+    })
+  );
+
+  return snapped;
 }

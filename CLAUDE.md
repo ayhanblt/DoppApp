@@ -4,8 +4,6 @@
 
 ## Project Goal
 
-DoppApp is a Next.js clone/rebuild of `https://www.xn--lz2bv9nd1bm2a9lo9a.com/`.
-
 The original site is a fake food delivery experience: users browse fictional restaurants, add meals to a cart, create a demo order, see the order confirmed, handed to a courier, and then track a courier on a map. There is no registration, payment, or real delivery.
 
 This project keeps that core idea but uses Turkish and English i18n, a clean component/feature structure, responsive UI, and a starter admin panel so restaurants/items can be added later.
@@ -78,7 +76,20 @@ src/shared
 ## Main User Flow
 
 1. User opens `/tr` or `/en`.
-2. Header shows theme buttons, address label, language switch, admin shortcut, cart, and app info.
+2. On first open, the customer route checks `localStorage.deliveryAddress`. If missing, a blocking address modal opens and cannot be dismissed until an address is saved.
+3. The address modal saves this model:
+
+```ts
+{
+  id: string;
+  title: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+```
+
+4. Header shows a two-row desktop layout with brand/tagline, selected delivery address, change-address action, restaurant/cart shortcuts, theme buttons, language/admin/info actions, and search.
 3. User searches restaurants or menu items.
 4. User selects delivery speed:
    - `rabbit`: faster tracking duration
@@ -93,9 +104,8 @@ src/shared
 8. Checkout modal collects:
    - Name
    - Phone
-   - Address
    - Optional note
-9. Address can be geocoded with Nominatim.
+9. Checkout reads the delivery address only from `localStorage.deliveryAddress`; address changes happen through the shared address modal.
 10. Demo order is created.
 11. Tracking screen shows:
    - Order status steps
@@ -171,6 +181,10 @@ Admin route:
 
 Current implementation:
 
+- Shows a login screen first unless `localStorage.adminAuth === "true"`.
+- Temporary credentials are `admin` / `1234`.
+- Successful login saves `localStorage.adminAuth = "true"`.
+- Logout removes `adminAuth` and returns to the login screen.
 - Adds restaurants.
 - Adds items to an existing restaurant.
 - Saves to `localStorage` under:
@@ -211,11 +225,12 @@ https://nominatim.openstreetmap.org/search
 
 Courier movement:
 
-- Order stores restaurant coordinate and destination coordinate.
-- Status and progress are derived from timestamps.
+- Restaurants are generated around the selected customer address at 500 m to 5 km, using the stored/admin restaurant data with coordinates recalculated per address. They should not remain Istanbul-centered after a user picks another city or district.
+- Order stores restaurant coordinate, customer destination coordinate, and a courier start coordinate generated near the chosen restaurant.
+- Status and progress are derived from timestamps, and delivery duration scales with restaurant-address distance.
 - `rabbit` has a shorter delivery duration.
 - `turtle` has a longer delivery duration.
-- Courier coordinate is calculated with linear interpolation in `interpolateRoute`.
+- Courier coordinate is calculated with linear interpolation from the courier start coordinate to the destination in `interpolateRoute`.
 
 Important limitation:
 

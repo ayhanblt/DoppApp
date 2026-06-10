@@ -26,7 +26,9 @@ select {
 }
 
 .courier-marker,
-.destination-marker {
+.destination-marker,
+.restaurant-marker {
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -39,5 +41,10 @@ select {
 
 .destination-marker {
   background: #111827;
+  font-size: 16px;
+}
+
+.restaurant-marker {
+  background: #10b981;
   font-size: 16px;
 }

@@ -5,15 +5,16 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Check, HelpCircle, Languages, Minus, Plus, Search, ShoppingCart, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Check, HelpCircle, Languages, MapPin, Minus, Plus, Search, ShoppingCart, SlidersHorizontal, Trash2 } from "lucide-react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { CartItem, CartSelection, DeliverySpeed, Locale, MenuItem, Order, Restaurant, ThemeName } from "@/shared/lib/types";
+import type { Address, CartItem, CartSelection, DeliverySpeed, Locale, MenuItem, Order, Restaurant, ThemeName } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findMenuItem, getItemUnitPrice } from "@/features/order/cart";
-import { geocodeAddress, interpolateRoute } from "@/features/tracking/geo";
-import { getStoredRestaurants } from "@/features/catalog/data";
+import { coordinateDistanceKm, createCourierStartCoordinate, geocodeAddress, interpolateRoute } from "@/features/tracking/geo";
+import { getRestaurantsAroundAddress, getRestaurantsOnRoadsAroundAddress, getStoredRestaurants } from "@/features/catalog/data";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
+const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
 
 const themes: Record<ThemeName, string> = {
   grape: "#8b5cf6",
@@ -26,7 +27,9 @@ type ActiveItem = { restaurant: Restaurant; item: MenuItem };
 
 export function FoodDeliveryApp({ locale }: { locale: Locale }) {
   const t = dictionaries[locale];
-  const [restaurants] = useState<Restaurant[]>(getStoredRestaurants);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>(getStoredRestaurants);
+  const [deliveryAddress, setDeliveryAddress] = useState<Address | null>(null);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("sunset");
   const [query, setQuery] = useState("");
   const [speed, setSpeed] = useState<DeliverySpeed>("rabbit");
@@ -37,9 +40,33 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
-  const [addressText, setAddressText] = useState("Taksim Meydanı, Beyoğlu, İstanbul");
-  const [addressCoordinate, setAddressCoordinate] = useState<[number, number]>([41.037, 28.985]);
-  const [geoMessage, setGeoMessage] = useState("");
+  useEffect(() => {
+    let mounted = true;
+    const rawAddress = window.localStorage.getItem("deliveryAddress");
+    if (!rawAddress) {
+      setAddressModalOpen(true);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    try {
+      const storedAddress = JSON.parse(rawAddress) as Address;
+      setDeliveryAddress(storedAddress);
+      const center: [number, number] = [storedAddress.latitude, storedAddress.longitude];
+      setRestaurants(getRestaurantsAroundAddress(center));
+      getRestaurantsOnRoadsAroundAddress(center).then((roadRestaurants) => {
+        if (mounted) setRestaurants(roadRestaurants);
+      });
+    } catch {
+      window.localStorage.removeItem("deliveryAddress");
+      setAddressModalOpen(true);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const normalized = query.toLocaleLowerCase(locale);
@@ -96,30 +123,36 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
     setActiveItem(null);
   }
 
-  async function resolveAddress() {
-    setGeoMessage("");
-    const result = await geocodeAddress(addressText);
-    if (!result) {
-      setGeoMessage(t.addressMissing);
-      return;
-    }
-    setAddressCoordinate(result);
-    setGeoMessage(t.addressFound);
+  function saveDeliveryAddress(address: Address) {
+    const center: [number, number] = [address.latitude, address.longitude];
+    window.localStorage.setItem("deliveryAddress", JSON.stringify(address));
+    setDeliveryAddress(address);
+    setRestaurants(getRestaurantsAroundAddress(center));
+    getRestaurantsOnRoadsAroundAddress(center).then(setRestaurants);
+    setAddressModalOpen(false);
   }
 
   function createOrder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!deliveryAddress) {
+      setAddressModalOpen(true);
+      return;
+    }
     const data = new FormData(event.currentTarget);
     const now = Date.now();
-    const duration = speed === "rabbit" ? 110000 : 230000;
+    const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
+    const restaurantDistanceKm = coordinateDistanceKm(firstRestaurant.coordinate, addressCoordinate);
+    const duration = Math.round((speed === "rabbit" ? 65000 : 130000) + restaurantDistanceKm * (speed === "rabbit" ? 18000 : 32000));
+    const courierStartCoordinate = createCourierStartCoordinate(firstRestaurant.coordinate, firstRestaurant.id.length + cart.length);
     setOrder({
       id: uid("order"),
       customerName: String(data.get("name") || "Demo"),
       phone: String(data.get("phone") || ""),
-      addressText,
+      addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
       note: String(data.get("note") || ""),
       addressCoordinate,
       restaurantCoordinate: firstRestaurant.coordinate,
+      courierStartCoordinate,
       speed,
       status: "confirmed",
       placedAt: now,
@@ -151,61 +184,83 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-[#fff7ef] text-zinc-950" style={{ "--accent": themeColor } as React.CSSProperties}>
       <header className="sticky top-0 z-30 bg-[var(--accent)] px-4 pb-4 pt-3 text-white shadow-lg shadow-black/10">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
-          <div className="flex gap-2">
-            {(Object.keys(themes) as ThemeName[]).map((name) => (
-              <button key={name} aria-label={name} className="h-9 w-9 rounded-full border border-white/30 shadow-sm" style={{ background: themes[name] }} onClick={() => setTheme(name)} />
-            ))}
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
+            <div>
+              <Link href={`/${locale}`} className="text-2xl font-black leading-none">{t.appName}</Link>
+              <p className="mt-1 text-xs font-semibold opacity-85 sm:text-sm">{t.tagline}</p>
+            </div>
+            <button
+              className="flex items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
+              onClick={() => setAddressModalOpen(true)}
+            >
+              <MapPin size={18} className="shrink-0" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
+                <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
+              </span>
+              <span className="shrink-0 text-xs font-black underline">{t.changeAddress}</span>
+            </button>
+            <div className="flex items-center justify-start gap-2 lg:justify-end">
+              <a className="rounded-lg bg-white/14 px-3 py-2 text-sm font-black" href="#restaurants">{t.restaurants}</a>
+              <button className="relative flex h-10 items-center gap-2 rounded-lg bg-white/18 px-3 font-black" onClick={() => setCheckoutOpen(true)} aria-label={t.cart}>
+                <ShoppingCart size={18} />
+                <span className="text-sm">{t.cart}</span>
+                {cart.length > 0 && <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-xs text-[var(--accent)]">{cart.length}</span>}
+              </button>
+            </div>
           </div>
-          <div className="text-center text-sm font-semibold">
-            <span className="block text-xs opacity-80">{t.deliveryAddress}</span>
-            {t.home} ▼
-          </div>
-          <div className="flex gap-2">
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
+            <div className="flex gap-2">
+              {(Object.keys(themes) as ThemeName[]).map((name) => (
+                <button key={name} aria-label={name} className="h-9 w-9 rounded-full border border-white/30 shadow-sm" style={{ background: themes[name] }} onClick={() => setTheme(name)} />
+              ))}
+            </div>
+            <label className="flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-zinc-900">
+              <Search size={18} className="text-zinc-500" />
+              <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.searchPlaceholder} />
+            </label>
+            <div className="flex justify-start gap-2 lg:justify-end">
             <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale === "tr" ? "en" : "tr"}`} aria-label="language">
               <Languages size={18} />
             </Link>
             <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale}/admin`} aria-label={t.admin}>
               <SlidersHorizontal size={18} />
             </Link>
-            <button className="relative grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setCheckoutOpen(true)} aria-label={t.cart}>
-              <ShoppingCart size={18} />
-              {cart.length > 0 && <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-xs text-[var(--accent)]">{cart.length}</span>}
-            </button>
             <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
               <HelpCircle size={18} />
             </button>
+            </div>
           </div>
         </div>
-        <label className="mx-auto mt-4 flex max-w-3xl items-center gap-2 rounded-2xl bg-white px-4 py-3 text-zinc-900">
-          <Search size={18} className="text-zinc-500" />
-          <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.searchPlaceholder} />
-        </label>
       </header>
 
-      <section className="mx-auto max-w-3xl px-4 py-4">
-        <div className="rounded-lg border border-orange-200 bg-white/80 px-4 py-3 text-sm font-medium text-orange-800">🚧 {t.demoNotice}</div>
-        <h1 className="mt-5 text-3xl font-black">{t.appName}</h1>
-        <p className="mt-1 text-zinc-600">{t.tagline}</p>
-
-        <div className="mt-5">
-          <p className="mb-2 text-sm font-bold">{t.deliveryType}</p>
-          <div className="grid grid-cols-2 gap-3">
+      <section className="border-b border-orange-200 bg-white/70 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="mb-2 text-sm font-bold">{t.deliveryType}</p>
+            <div className="grid grid-cols-2 gap-2">
             {(["rabbit", "turtle"] as DeliverySpeed[]).map((mode) => (
               <button
                 key={mode}
-                className={`rounded-lg border p-4 text-left ${speed === mode ? "border-[var(--accent)] bg-white shadow-md" : "border-black/10 bg-white/70"}`}
+                className={`rounded-lg border px-3 py-2 text-left ${speed === mode ? "border-[var(--accent)] bg-white shadow-md" : "border-black/10 bg-white/70"}`}
                 onClick={() => setSpeed(mode)}
               >
-                <span className="text-2xl">{mode === "rabbit" ? "🐇" : "🐢"}</span>
-                <span className="mt-2 block font-black">{t[mode]}</span>
-                <span className="text-sm text-zinc-500">{t[`${mode}Hint`]}</span>
+                <span className="flex items-center gap-2 font-black">
+                  <span className="text-xl" aria-hidden="true">{mode === "rabbit" ? "🐇" : "🐢"}</span>
+                  {t[mode]}
+                </span>
+                <span className="text-xs text-zinc-500">{t[`${mode}Hint`]}</span>
               </button>
             ))}
+            </div>
           </div>
+          <p className="text-sm font-medium text-zinc-500">🚧 {t.demoNotice}</p>
         </div>
+      </section>
 
-        <div className="mt-7 flex items-end justify-between">
+      <section className="mx-auto max-w-7xl px-4 py-4">
+        <div id="restaurants" className="mt-3 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-black">{filtered.length} {t.restaurants} 🍴</h2>
             <p className="text-sm text-zinc-500">{t.chooseItems}</p>
@@ -213,7 +268,7 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
           <button className="rounded-lg bg-white px-3 py-2 text-sm font-bold text-zinc-600 shadow-sm" onClick={resetAll}>{t.reset}</button>
         </div>
 
-        <div className="mt-4 space-y-4 pb-28">
+        <div className="mt-4 grid gap-4 pb-28 md:grid-cols-2 2xl:grid-cols-3">
           {filtered.map((restaurant) => (
             <article key={restaurant.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
               <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
@@ -232,15 +287,15 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
               </div>
               <div className="space-y-3 p-4">
                 {restaurant.menu.map((item) => (
-                  <div key={item.id} className="grid grid-cols-[88px_1fr_auto] gap-3 rounded-lg border border-black/10 p-3">
-                    <img className="h-24 w-24 rounded-md object-cover" src={item.image} alt={item.name[locale]} />
-                    <div>
+                  <div key={item.id} className="grid grid-cols-[80px_1fr] gap-3 rounded-lg border border-black/10 p-3">
+                    <img className="h-20 w-20 rounded-md object-cover" src={item.image} alt={item.name[locale]} />
+                    <div className="min-w-0">
                       <h4 className="font-black">{item.name[locale]}</h4>
                       <p className="text-sm text-zinc-500">{item.description[locale]}</p>
                       <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories, locale)} kcal</p>
                       {item.optionGroups && <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p>}
                     </div>
-                    <div className="flex flex-col items-end justify-between">
+                    <div className="col-span-2 flex items-center justify-between gap-3">
                       <strong>{formatMoney(item.price, locale)}</strong>
                       <button className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-black text-white" onClick={() => openItem(restaurant, item)}>{t.add}</button>
                     </div>
@@ -253,7 +308,7 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
       </section>
 
       <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold text-[var(--accent)]">{t.total}</p>
             <p className="text-2xl font-black">{formatMoney(totals.total, locale)}</p>
@@ -336,12 +391,11 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
               </div>
               <input className="w-full rounded-lg border border-black/10 p-3" name="name" placeholder={t.customerName} required />
               <input className="w-full rounded-lg border border-black/10 p-3" name="phone" placeholder={t.phone} />
-              <textarea className="min-h-24 w-full rounded-lg border border-black/10 p-3" value={addressText} onChange={(event) => setAddressText(event.target.value)} placeholder={t.address} required />
-              <div className="flex gap-2">
-                <button className="flex-1 rounded-lg border border-black/10 px-3 py-2 font-bold" type="button" onClick={resolveAddress}>{t.geocode}</button>
-                <button className="flex-1 rounded-lg border border-black/10 px-3 py-2 font-bold" type="button" onClick={() => { setAddressText("Taksim Meydanı, Beyoğlu, İstanbul"); setAddressCoordinate([41.037, 28.985]); }}>{t.useFallback}</button>
+              <div className="rounded-lg border border-black/10 p-3 text-sm">
+                <p className="font-black">{t.deliveryAddress}</p>
+                <p className="mt-1 text-zinc-600">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</p>
+                <button className="mt-2 text-sm font-black text-[var(--accent)]" type="button" onClick={() => setAddressModalOpen(true)}>{t.changeAddress}</button>
               </div>
-              {geoMessage && <p className="text-sm font-bold text-[var(--accent)]">{geoMessage}</p>}
               <input className="w-full rounded-lg border border-black/10 p-3" name="note" placeholder={t.note} />
               <button disabled={!cart.length} className="w-full rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45">{t.demoOrder}</button>
             </div>
@@ -366,7 +420,94 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
           </div>
         </div>
       )}
+
+      {addressModalOpen && (
+        <AddressModal
+          initialAddress={deliveryAddress}
+          locale={locale}
+          onCancel={deliveryAddress ? () => setAddressModalOpen(false) : undefined}
+          onSave={saveDeliveryAddress}
+        />
+      )}
     </main>
+  );
+}
+
+function AddressModal({
+  initialAddress,
+  locale,
+  onCancel,
+  onSave
+}: {
+  initialAddress: Address | null;
+  locale: Locale;
+  onCancel?: () => void;
+  onSave: (address: Address) => void;
+}) {
+  const t = dictionaries[locale];
+  const [title, setTitle] = useState(initialAddress?.title ?? t.home);
+  const [address, setAddress] = useState(initialAddress?.address ?? "");
+  const [coordinate, setCoordinate] = useState<[number, number]>(
+    initialAddress ? [initialAddress.latitude, initialAddress.longitude] : [39.9208, 32.8541]
+  );
+  const [mapOpen, setMapOpen] = useState(Boolean(initialAddress));
+  const [message, setMessage] = useState("");
+
+  async function findOnMap() {
+    setMessage("");
+    if (address.trim()) {
+      const result = await geocodeAddress(address);
+      if (result) {
+        setCoordinate(result);
+        setMessage(t.addressFound);
+      } else {
+        setMessage(t.addressMissing);
+      }
+    }
+    setMapOpen(true);
+  }
+
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onSave({
+      id: initialAddress?.id ?? uid("address"),
+      title: title.trim(),
+      address: address.trim(),
+      latitude: coordinate[0],
+      longitude: coordinate[1]
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/45 p-4">
+      <form onSubmit={submit} className="mx-auto max-h-[94vh] max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-[var(--accent)]">{t.deliveryAddress}</p>
+            <h3 className="text-2xl font-black">{t.addressModalTitle}</h3>
+            <p className="mt-1 text-sm text-zinc-500">{t.addressModalHint}</p>
+          </div>
+          {onCancel && <button type="button" onClick={onCancel} className="h-9 w-9 rounded-full bg-zinc-100">×</button>}
+        </div>
+        <div className="mt-5 grid gap-3">
+          <input className="w-full rounded-lg border border-black/10 p-3" value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t.addressTitle} required />
+          <textarea className="min-h-24 w-full rounded-lg border border-black/10 p-3" value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t.addressDescription} required />
+          <button className="rounded-lg border border-black/10 px-4 py-3 font-black" type="button" onClick={findOnMap}>{t.pickFromMap}</button>
+          {message && <p className="text-sm font-bold text-[var(--accent)]">{message}</p>}
+          {mapOpen && (
+            <div className="space-y-2">
+              <AddressPickerMap value={coordinate} onChange={setCoordinate} />
+              <p className="text-xs font-medium text-zinc-500">
+                {coordinate[0].toFixed(5)}, {coordinate[1].toFixed(5)}
+              </p>
+            </div>
+          )}
+          <button disabled={!mapOpen} className="rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45">
+            {t.saveAddress}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
@@ -381,11 +522,13 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
 
   const status = now < order.placedAt + 18000 ? "confirmed" : now < order.handoffAt ? "preparing" : now < order.handoffAt + 10000 ? "handoff" : now < order.deliveredAt ? "delivering" : "delivered";
   const progress = status === "delivering" || status === "delivered" ? (now - order.handoffAt) / (order.deliveredAt - order.handoffAt) : 0;
-  const courier = interpolateRoute(order.restaurantCoordinate, order.addressCoordinate, status === "delivered" ? 1 : progress);
+  const courier = status === "delivering" || status === "delivered"
+    ? interpolateRoute(order.courierStartCoordinate, order.addressCoordinate, status === "delivered" ? 1 : progress)
+    : undefined;
 
   return (
     <main className="min-h-screen bg-[#fff7ef] p-4 text-zinc-950">
-      <section className="mx-auto max-w-3xl py-6">
+      <section className="mx-auto max-w-7xl py-6">
         <button onClick={onBack} className="mb-4 rounded-lg bg-white px-4 py-2 font-bold shadow-sm">{t.backToApp}</button>
         <div className="rounded-lg bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">

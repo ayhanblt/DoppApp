@@ -53,9 +53,11 @@ export type CartItem = {
 };
 
 export type Address = {
-  label: string;
-  detail: string;
-  coordinate: [number, number];
+  id: string;
+  title: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 };
 
 export type OrderStatus =
@@ -73,6 +75,7 @@ export type Order = {
   note: string;
   addressCoordinate: [number, number];
   restaurantCoordinate: [number, number];
+  courierStartCoordinate: [number, number];
   speed: DeliverySpeed;
   status: OrderStatus;
   placedAt: number;
