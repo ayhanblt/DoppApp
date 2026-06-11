@@ -10,37 +10,17 @@ import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, CartItem, CartSelection, DeliverySpeed, Locale, MenuItem, Order, Restaurant, ThemeName } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findMenuItem, getItemUnitPrice } from "@/features/order/cart";
-import { coordinateDistanceKm, geocodeAddress, getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
+import { coordinateDistanceKm, createCourierStartCoordinate, geocodeAddress, interpolateRoute } from "@/features/tracking/geo";
 import { getRestaurantsAroundAddress, getRestaurantsOnRoadsAroundAddress, getStoredRestaurants } from "@/features/catalog/data";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
 const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
-const CelebrationPopup = dynamic(() => import("@/features/tracking/CelebrationPopup"), { ssr: false });
 
 const themes: Record<ThemeName, string> = {
   grape: "#8b5cf6",
   sunset: "#ff5a2a",
   ocean: "#2563eb",
   mint: "#10b981"
-};
-
-// Teslim sürecinin tüm timeline'ı - tek yerden yönetilir
-const DELIVERY_CONFIG = {
-  // Step süreler (milisaniye)
-  confirmedDuration: 2000,     // Sipariş onaylandı
-  preparingDuration: 8000,     // Restoran hazırlıyor
-  handoffDuration: 5000,       // Kuryeye verildi
-  deliveringDuration: 3000,    // Son 3 saniye delivering (hareket bitmeden)
-  
-  // Kurye hareket süreler (speed'e bağlı)
-  rabbit: {
-    baseMs: 10000,             // Base 10 saniye
-    kmMultiplierMs: 4000       // Her km için 4 saniye
-  },
-  turtle: {
-    baseMs: 18000,             // Base 18 saniye
-    kmMultiplierMs: 6000       // Her km için 6 saniye
-  }
 };
 
 type ActiveItem = { restaurant: Restaurant; item: MenuItem };
@@ -162,13 +142,13 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
     const now = Date.now();
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
     const restaurantDistanceKm = coordinateDistanceKm(firstRestaurant.coordinate, addressCoordinate);
-    
-    // Teslim süresi konfigürasyondan hesaplanır
-    const speedConfig = DELIVERY_CONFIG[speed];
-    const courierMovementDuration = Math.round(speedConfig.baseMs + restaurantDistanceKm * speedConfig.kmMultiplierMs);
-    
-    const handoffAt = now + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration;
-    const deliveredAt = handoffAt + DELIVERY_CONFIG.handoffDuration + courierMovementDuration;
+    const courierMovementDuration = Math.round((speed === "rabbit" ? 5000 : 10000) + restaurantDistanceKm * (speed === "rabbit" ? 2000 : 4000));
+    const courierStartCoordinate = createCourierStartCoordinate(firstRestaurant.coordinate, firstRestaurant.id.length + cart.length);
+    const confirmedDuration = 2000;
+    const preparingDuration = 8000;
+    const handoffDuration = 200;
+    const handoffAt = now + confirmedDuration + preparingDuration;
+    const deliveredAt = handoffAt + handoffDuration + courierMovementDuration;
     setOrder({
       id: uid("order"),
       customerName: String(data.get("name") || "Demo"),
@@ -177,7 +157,7 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
       note: String(data.get("note") || ""),
       addressCoordinate,
       restaurantCoordinate: firstRestaurant.coordinate,
-      courierStartCoordinate: firstRestaurant.coordinate,
+      courierStartCoordinate,
       speed,
       status: "confirmed",
       placedAt: now,
@@ -539,65 +519,17 @@ function AddressModal({
 function TrackingExperience({ locale, order, totals, restaurants, onBack }: { locale: Locale; order: Order; totals: ReturnType<typeof getCartTotals>; restaurants: Restaurant[]; onBack: () => void }) {
   const t = dictionaries[locale];
   const [now, setNow] = useState(Date.now());
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationShown, setCelebrationShown] = useState(false);
-
-  // Haritada gösterilecek rota: restoran → adres (kurye de bu rota üzerinden gider)
-  const [displayRoute, setDisplayRoute] = useState<[number, number][] | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-
-    // Restoran → adres (harita polyline ve kurye animasyonu için)
-    getRoute(order.restaurantCoordinate, order.addressCoordinate).then((route) => {
-      if (!cancelled) setDisplayRoute(route);
-    });
-
-    return () => { cancelled = true; };
-  }, [order.restaurantCoordinate, order.addressCoordinate]);
-
-  useEffect(() => {
-    // Rota hazır olunca 250ms'de bir güncelle — akıcı hareket için
-    const timer = window.setInterval(() => setNow(Date.now()), 250);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
-  const status = now < order.placedAt + DELIVERY_CONFIG.confirmedDuration
-    ? "confirmed"
-    : now < order.placedAt + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration
-    ? "preparing"
-    : now < order.placedAt + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration + DELIVERY_CONFIG.handoffDuration
-    ? "handoff"
-    : now < order.deliveredAt - DELIVERY_CONFIG.deliveringDuration
-    ? "delivering"
-    : now < order.deliveredAt
-    ? "delivering"  // Son 3 saniye de delivering
-    : "delivered";
-
-  // Delivered statusuna geçildikten 2 saniye sonra celebration popup'ı göster (tek seferlik)
-  useEffect(() => {
-    if (status === "delivered" && !celebrationShown) {
-      const timer = setTimeout(() => {
-        setShowCelebration(true);
-        setCelebrationShown(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [status, celebrationShown]);
-
-  // Kurye harekete handoff'ta başlıyor, deliveryAt'a kadar devam ediyor
-  const courierStartTime = order.handoffAt;
-  const rawProgress = (now - courierStartTime) / (order.deliveredAt - courierStartTime);
-  const progress = Math.min(1, Math.max(0, rawProgress));
-
-  const isCourierMoving = status === "handoff" || status === "delivering" || status === "delivered";
-
-  const courier = isCourierMoving
-    ? displayRoute && displayRoute.length > 1
-      // Rota hazırsa yol boyunca ilerle
-      ? interpolateAlongRoute(displayRoute, status === "delivered" ? 1 : progress)
-      // Rota henüz yüklenmemişse restoran noktasında beklet
-      : order.restaurantCoordinate
+  const status = now < order.placedAt + 2000 ? "confirmed" : now < order.handoffAt ? "preparing" : now < order.handoffAt + 1000 ? "handoff" : now < order.deliveredAt - 3000 ? "delivering" : now < order.deliveredAt ? "delivering" : "delivered";
+  const handoffStartTime = order.handoffAt + 2000;
+  const progress = status === "handoff" || status === "delivering" || status === "delivered" ? (now - handoffStartTime) / (order.deliveredAt - handoffStartTime) : 0;
+  const courier = status === "handoff" || status === "delivering" || status === "delivered"
+    ? interpolateRoute(order.courierStartCoordinate, order.addressCoordinate, status === "delivered" ? 1 : progress)
     : undefined;
 
   return (
@@ -617,12 +549,7 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
             </div>
           </div>
           <div className="mt-5">
-            <TrackingMap
-                restaurant={order.restaurantCoordinate}
-                address={order.addressCoordinate}
-                courier={courier}
-                routePoints={displayRoute ?? undefined}
-              />
+            <TrackingMap restaurant={order.restaurantCoordinate} address={order.addressCoordinate} courier={courier} />
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-5">
             {(["confirmed", "preparing", "handoff", "delivering", "delivered"] as const).map((step) => (
@@ -631,7 +558,7 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
               </div>
             ))}
           </div>
-           <p className="mt-4 text-sm text-zinc-500">{t.noRealDelivery} {t.mapCredit}</p>
+          <p className="mt-4 text-sm text-zinc-500">{t.noRealDelivery} {t.mapCredit}</p>
           <div className="mt-4 rounded-lg bg-zinc-50 p-3 text-sm">
             {order.items.map((cartItem) => {
               const item = findMenuItem(restaurants, cartItem);
@@ -640,14 +567,6 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
           </div>
         </div>
       </section>
-
-      {showCelebration && (
-        <CelebrationPopup
-          locale={locale}
-          calories={totals.calories}
-          onClose={() => setShowCelebration(false)}
-        />
-      )}
     </main>
   );
 }

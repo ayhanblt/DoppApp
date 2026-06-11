@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogOut, Plus, Save } from "lucide-react";
+import { LogOut, Pencil, Plus, Save } from "lucide-react";
+import { AdminInput } from "@/features/admin/AdminInput";
+import { EditMenuItemsModal } from "@/features/admin/EditMenuItemsModal";
+import { EditRestaurantModal } from "@/features/admin/EditRestaurantModal";
+import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
+import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
 import { seedRestaurants } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { Locale, Restaurant } from "@/shared/lib/types";
+import type { Locale, MenuOptionGroup, Restaurant } from "@/shared/lib/types";
 import { uid } from "@/shared/lib/format";
 
 export function AdminPanel({ locale }: { locale: Locale }) {
@@ -20,6 +25,10 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   });
   const [selectedRestaurant, setSelectedRestaurant] = useState(seedRestaurants[0].id);
   const [message, setMessage] = useState("");
+  const [itemImage, setItemImage] = useState("");
+  const [itemOptionGroups, setItemOptionGroups] = useState<MenuOptionGroup[] | undefined>();
+  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
+  const [editingItemsRestaurant, setEditingItemsRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
     setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
@@ -41,6 +50,22 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   function logout() {
     window.localStorage.removeItem("adminAuth");
     setIsAuthenticated(false);
+  }
+
+  function updateRestaurant(updated: Restaurant, closeItemsModal = false) {
+    const nextRestaurants = restaurants.map((restaurant) =>
+      restaurant.id === updated.id ? updated : restaurant
+    );
+    setRestaurants(nextRestaurants);
+    save(nextRestaurants);
+    setEditingRestaurant(null);
+    if (closeItemsModal) {
+      setEditingItemsRestaurant(null);
+    } else {
+      setEditingItemsRestaurant((current) =>
+        current?.id === updated.id ? updated : current
+      );
+    }
   }
 
   function save(restaurantsToSave = restaurants) {
@@ -86,13 +111,16 @@ export function AdminPanel({ locale }: { locale: Locale }) {
             description: { tr: String(data.get("descriptionTr")), en: String(data.get("descriptionEn")) },
             price: Number(data.get("price") || 0),
             calories: Number(data.get("calories") || 0),
-            image: String(data.get("image") || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80")
+            image: itemImage || FALLBACK_IMAGE,
+            ...(itemOptionGroups?.length ? { optionGroups: itemOptionGroups } : {})
           }
         ]
       };
     });
     setRestaurants(nextRestaurants);
     save(nextRestaurants);
+    setItemImage("");
+    setItemOptionGroups(undefined);
     event.currentTarget.reset();
   }
 
@@ -107,8 +135,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           <p className="text-sm font-bold text-orange-600">{t.admin}</p>
           <h1 className="mt-1 text-3xl font-black">{t.adminLogin}</h1>
           <div className="mt-5 grid gap-3">
-            <Input name="username" label={t.username} required />
-            <Input name="password" label={t.password} type="password" required />
+            <AdminInput name="username" label={t.username} required />
+            <AdminInput name="password" label={t.password} type="password" required />
             {loginError && <p className="rounded-lg bg-red-50 p-3 text-sm font-bold text-red-700">{loginError}</p>}
             <button className="rounded-lg bg-orange-600 py-3 font-black text-white">{t.login}</button>
             <Link className="text-center text-sm font-bold text-zinc-500" href={`/${locale}`}>
@@ -143,19 +171,19 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           <form onSubmit={addRestaurant} className="rounded-lg bg-white p-5 shadow-sm">
             <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addRestaurant}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input name="nameTr" label="TR ad" required />
-              <Input name="nameEn" label="EN name" required />
-              <Input name="categoryTr" label="TR kategori" required />
-              <Input name="categoryEn" label="EN category" required />
-              <Input name="emoji" label="Emoji" />
-              <Input name="badgeTr" label="TR rozet" />
-              <Input name="badgeEn" label="EN badge" />
-              <Input name="rating" label="Puan" type="number" step="0.1" />
-              <Input name="reviews" label="Yorum sayısı" type="number" />
-              <Input name="eta" label="ETA dk" />
-              <Input name="deliveryFee" label="Teslimat ücreti" type="number" />
-              <Input name="lat" label="Latitude" type="number" step="0.0001" />
-              <Input name="lng" label="Longitude" type="number" step="0.0001" />
+              <AdminInput name="nameTr" label="TR ad" required />
+              <AdminInput name="nameEn" label="EN name" required />
+              <AdminInput name="categoryTr" label="TR kategori" required />
+              <AdminInput name="categoryEn" label="EN category" required />
+              <AdminInput name="emoji" label="Emoji" />
+              <AdminInput name="badgeTr" label="TR rozet" />
+              <AdminInput name="badgeEn" label="EN badge" />
+              <AdminInput name="rating" label="Puan" type="number" step="0.1" />
+              <AdminInput name="reviews" label="Yorum sayısı" type="number" />
+              <AdminInput name="eta" label="ETA dk" />
+              <AdminInput name="deliveryFee" label="Teslimat ücreti" type="number" />
+              <AdminInput name="lat" label="Latitude" type="number" step="0.0001" />
+              <AdminInput name="lng" label="Longitude" type="number" step="0.0001" />
             </div>
             <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 py-3 font-black text-white">
               <Save size={18} /> {t.saveDraft}
@@ -173,14 +201,15 @@ export function AdminPanel({ locale }: { locale: Locale }) {
               </select>
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input name="nameTr" label="TR ürün" required />
-              <Input name="nameEn" label="EN item" required />
-              <Input name="descriptionTr" label="TR açıklama" required />
-              <Input name="descriptionEn" label="EN description" required />
-              <Input name="price" label="Fiyat" type="number" required />
-              <Input name="calories" label="Kalori" type="number" required />
-              <Input name="image" label="Görsel URL" />
+              <AdminInput name="nameTr" label="TR ürün" required />
+              <AdminInput name="nameEn" label="EN item" required />
+              <AdminInput name="descriptionTr" label="TR açıklama" required />
+              <AdminInput name="descriptionEn" label="EN description" required />
+              <AdminInput name="price" label="Fiyat" type="number" required />
+              <AdminInput name="calories" label="Kalori" type="number" required />
+              <ImageUploadField locale={locale} value={itemImage} onChange={setItemImage} />
             </div>
+            <OptionGroupsEditor locale={locale} value={itemOptionGroups} onChange={setItemOptionGroups} />
             <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 py-3 font-black text-white">
               <Save size={18} /> {t.saveDraft}
             </button>
@@ -194,23 +223,52 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {restaurants.map((restaurant) => (
               <div key={restaurant.id} className="rounded-lg border border-black/10 p-4">
-                <p className="text-2xl">{restaurant.emoji}</p>
-                <h3 className="font-black">{restaurant.name[locale]}</h3>
-                <p className="text-sm text-zinc-500">{restaurant.category[locale]} · {restaurant.menu.length} ürün</p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-2xl">{restaurant.emoji}</p>
+                    <h3 className="font-black">{restaurant.name[locale]}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold"
+                    onClick={() => setEditingRestaurant(restaurant)}
+                  >
+                    <Pencil size={14} /> {t.edit}
+                  </button>
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+                  <span>{restaurant.category[locale]} · {restaurant.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"
+                    onClick={() => setEditingItemsRestaurant(restaurant)}
+                  >
+                    <Pencil size={12} /> {t.edit}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
+
+        {editingRestaurant && (
+          <EditRestaurantModal
+            locale={locale}
+            restaurant={editingRestaurant}
+            onClose={() => setEditingRestaurant(null)}
+            onSave={updateRestaurant}
+          />
+        )}
+
+        {editingItemsRestaurant && (
+          <EditMenuItemsModal
+            locale={locale}
+            restaurant={editingItemsRestaurant}
+            onClose={() => setEditingItemsRestaurant(null)}
+            onSave={(updated) => updateRestaurant(updated, true)}
+          />
+        )}
       </section>
     </main>
-  );
-}
-
-function Input({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  return (
-    <label className="block text-sm font-bold">
-      {label}
-      <input className="mt-1 w-full rounded-lg border border-black/10 p-3 font-normal" {...props} />
-    </label>
   );
 }

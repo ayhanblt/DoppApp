@@ -4,12 +4,16 @@ import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getRoute } from "./geo";
 
 type TrackingMapProps = {
   restaurant: [number, number];
   address: [number, number];
   courier?: [number, number];
+  /** Önceden hesaplanmış tam rota (restoran → adres).
+   *  Geçilirse iç fetch atlanır — animasyon tutarlı kalır. */
+  routePoints?: [number, number][];
 };
 
 const restaurantIcon = L.divIcon({
@@ -37,14 +41,37 @@ function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
 
   useEffect(() => {
+    if (points.length < 2) return;
     map.fitBounds(points, { padding: [36, 36], maxZoom: 14 });
   }, [map, points]);
 
   return null;
 }
 
-export default function TrackingMap({ restaurant, address, courier }: TrackingMapProps) {
-  const points = useMemo(() => [restaurant, address] as [number, number][], [restaurant, address]);
+export default function TrackingMap({ restaurant, address, courier, routePoints: externalRoute }: TrackingMapProps) {
+  // Dışarıdan rota gelmezse kendi fetch eder (geriye dönük uyumluluk)
+  const [internalRoute, setInternalRoute] = useState<[number, number][] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (externalRoute) return; // dışarıdan verildi, fetch etme
+    let cancelled = false;
+    setLoading(true);
+    getRoute(restaurant, address).then((route) => {
+      if (cancelled) return;
+      setInternalRoute(route);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [restaurant, address, externalRoute]);
+
+  const route = externalRoute ?? internalRoute;
+
+  // FitBounds: rota varsa tüm noktaları kullan, yoksa sadece uç noktaları
+  const boundsPoints = useMemo<[number, number][]>(
+    () => (route && route.length > 1 ? route : [restaurant, address]),
+    [route, restaurant, address]
+  );
 
   return (
     <MapContainer
@@ -57,8 +84,24 @@ export default function TrackingMap({ restaurant, address, courier }: TrackingMa
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FitBounds points={points} />
-      <Polyline positions={points} pathOptions={{ color: "#ff5a2a", weight: 5, opacity: 0.7 }} />
+      <FitBounds points={boundsPoints} />
+
+      {/* Rota yüklenirken fallback kesik çizgi */}
+      {loading && !route && (
+        <Polyline
+          positions={[restaurant, address]}
+          pathOptions={{ color: "#ccc", weight: 3, opacity: 0.5, dashArray: "4 8" }}
+        />
+      )}
+
+      {/* Gerçek yol rotası (restoran → adres) */}
+      {route && (
+        <Polyline
+          positions={route}
+          pathOptions={{ color: "#ff5a2a", weight: 5, opacity: 0.75 }}
+        />
+      )}
+
       <Marker position={restaurant} icon={restaurantIcon} />
       <Marker position={address} icon={destinationIcon} />
       {courier && <Marker position={courier} icon={courierIcon} />}

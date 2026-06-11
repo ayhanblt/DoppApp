@@ -53,15 +53,25 @@ src/app
   page.tsx                    Redirects `/` to `/tr`
   layout.tsx                  Root metadata/fonts/global shell
   globals.css                 Tailwind import and global marker styles
+  api/admin/upload-image/     Saves uploaded menu images to public/images/menu
   [locale]/
     layout.tsx                Locale validation and static params
     page.tsx                  Customer app route
     admin/page.tsx            Admin route
 
 src/features
-  admin/AdminPanel.tsx        Local restaurant/item management UI
+  admin/
+    AdminPanel.tsx              Local restaurant/item management UI
+    AdminModal.tsx              Shared admin popup shell
+    AdminInput.tsx              Shared admin form input
+    EditRestaurantModal.tsx     Edit existing restaurant details
+    EditMenuItemsModal.tsx      Edit existing menu items (incl. image/options)
+    ImageUploadField.tsx        Menu image upload with local cache
+    OptionGroupsEditor.tsx      Option group builder for menu items
+    useImageCache.ts            localStorage cache for uploaded images
+    uploadMenuImage.ts          Client helper for image upload API
   catalog/FoodDeliveryApp.tsx Main customer experience
-  catalog/data.ts             Seed restaurant/menu data
+  catalog/data.ts             Seed restaurant/menu data (+ defaultOptionGroups)
   order/cart.ts               Cart calculations and item lookup helpers
   tracking/geo.ts             Geocoding and route interpolation helpers
   tracking/TrackingMap.tsx    Leaflet map component
@@ -186,8 +196,12 @@ Current implementation:
 - Successful login saves `localStorage.adminAuth = "true"`.
 - Logout removes `adminAuth` and returns to the login screen.
 - Adds restaurants.
-- Adds items to an existing restaurant.
-- Saves to `localStorage` under:
+- Adds items to an existing restaurant with optional option groups and image upload.
+- Edits existing restaurants via popup (name, category, emoji, badge, rating, ETA, delivery fee, coordinates).
+- Edits existing menu items via popup (name, description, price, calories, image, option groups).
+- Uploads menu images through `POST /api/admin/upload-image` into `public/images/menu/`.
+- Caches recent uploads in `localStorage` under `doppapp-image-cache`.
+- Saves restaurant data to `localStorage` under:
 
 ```text
 doppapp-restaurants

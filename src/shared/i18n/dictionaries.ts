@@ -57,6 +57,12 @@ export const dictionaries = {
     addRestaurant: "Restoran ekle",
     addItem: "Ürün ekle",
     saveDraft: "Yerel taslak kaydet",
+    edit: "Düzenle",
+    editRestaurant: "Restoranı düzenle",
+    editItems: "Ürünleri düzenle",
+    saveChanges: "Değişiklikleri kaydet",
+    selectItem: "Düzenlenecek ürün",
+    noItems: "Bu restoranda henüz ürün yok.",
     adminHint: "Bu panel şimdilik localStorage ile çalışır; backend eklendiğinde aynı data modeli kullanılabilir.",
     liveTracking: "Canlı kurye takibi",
     orderConfirmed: "Sipariş onaylandı",
@@ -69,7 +75,9 @@ export const dictionaries = {
       handoff: "Kuryeye verildi",
       delivering: "Kurye adrese yaklaşıyor",
       delivered: "Teslim edildi"
-    } satisfies Record<OrderStatus, string>
+    } satisfies Record<OrderStatus, string>,
+    celebration: "Tebrikler!",
+    caloriesSaved: "kaloriden kurtuldunuz!"
   },
   en: {
     appName: "DoppApp",
@@ -127,6 +135,12 @@ export const dictionaries = {
     addRestaurant: "Add restaurant",
     addItem: "Add item",
     saveDraft: "Save local draft",
+    edit: "Edit",
+    editRestaurant: "Edit restaurant",
+    editItems: "Edit items",
+    saveChanges: "Save changes",
+    selectItem: "Item to edit",
+    noItems: "This restaurant has no items yet.",
     adminHint: "This panel uses localStorage for now; the same data model can be wired to a backend later.",
     liveTracking: "Live courier tracking",
     orderConfirmed: "Order confirmed",
@@ -139,7 +153,9 @@ export const dictionaries = {
       handoff: "Handed to courier",
       delivering: "Courier is approaching",
       delivered: "Delivered"
-    } satisfies Record<OrderStatus, string>
+    } satisfies Record<OrderStatus, string>,
+    celebration: "Congratulations!",
+    caloriesSaved: "calories saved!"
   }
 };
 
