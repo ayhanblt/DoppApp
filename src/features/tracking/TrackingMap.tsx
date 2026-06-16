@@ -26,15 +26,18 @@ const restaurantIcon = L.divIcon({
 const courierIcon = L.divIcon({
   className: "courier-marker",
   html: "<span>🏍</span>",
+  // iconUrl: "/location.png",
   iconSize: [34, 34],
   iconAnchor: [17, 17]
 });
 
-const destinationIcon = L.divIcon({
+const destinationIcon = L.icon({
   className: "destination-marker",
-  html: "<span>⌂</span>",
-  iconSize: [30, 30],
-  iconAnchor: [15, 15]
+  // html: "<span>⌂</span>",
+ 
+  iconUrl: "/images/icons/location.svg",
+  iconSize: [35, 35],
+  iconAnchor: [20, 35]
 });
 
 function FitBounds({ points }: { points: [number, number][] }) {

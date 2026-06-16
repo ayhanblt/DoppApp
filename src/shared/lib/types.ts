@@ -1,6 +1,6 @@
 export type Locale = "tr" | "en";
 
-export type ThemeName = "grape" | "sunset" | "ocean" | "mint";
+export type ThemeName = "grape" | "sunset" | "mint";
 
 export type DeliverySpeed = "rabbit" | "turtle";
 
@@ -80,6 +80,7 @@ export type Order = {
   status: OrderStatus;
   placedAt: number;
   handoffAt: number;
+  deliveringAt: number;
   deliveredAt: number;
   items: CartItem[];
 };

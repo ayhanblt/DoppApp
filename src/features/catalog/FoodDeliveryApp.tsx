@@ -10,38 +10,15 @@ import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, CartItem, CartSelection, DeliverySpeed, Locale, MenuItem, Order, Restaurant, ThemeName } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findMenuItem, getItemUnitPrice } from "@/features/order/cart";
-import { coordinateDistanceKm, geocodeAddress, getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
+import { geocodeAddress, getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
+import { themes, buildOrderTimeline, themeIcons } from "@/features/catalog/appConfig";
 import { getRestaurantsAroundAddress, getRestaurantsOnRoadsAroundAddress, getStoredRestaurants } from "@/features/catalog/data";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
 const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
 const CelebrationPopup = dynamic(() => import("@/features/tracking/CelebrationPopup"), { ssr: false });
 
-const themes: Record<ThemeName, string> = {
-  grape: "#8b5cf6",
-  sunset: "#ff5a2a",
-  ocean: "#2563eb",
-  mint: "#10b981"
-};
-
-// Teslim sürecinin tüm timeline'ı - tek yerden yönetilir
-const DELIVERY_CONFIG = {
-  // Step süreler (milisaniye)
-  confirmedDuration: 2000,     // Sipariş onaylandı
-  preparingDuration: 8000,     // Restoran hazırlıyor
-  handoffDuration: 5000,       // Kuryeye verildi
-  deliveringDuration: 3000,    // Son 3 saniye delivering (hareket bitmeden)
-  
-  // Kurye hareket süreler (speed'e bağlı)
-  rabbit: {
-    baseMs: 10000,             // Base 10 saniye
-    kmMultiplierMs: 4000       // Her km için 4 saniye
-  },
-  turtle: {
-    baseMs: 18000,             // Base 18 saniye
-    kmMultiplierMs: 6000       // Her km için 6 saniye
-  }
-};
+// Tema renkleri ve timeline mantığı → /appConfig.ts'ten gelir
 
 type ActiveItem = { restaurant: Restaurant; item: MenuItem };
 
@@ -161,14 +138,10 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
     const data = new FormData(event.currentTarget);
     const now = Date.now();
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
-    const restaurantDistanceKm = coordinateDistanceKm(firstRestaurant.coordinate, addressCoordinate);
-    
-    // Teslim süresi konfigürasyondan hesaplanır
-    const speedConfig = DELIVERY_CONFIG[speed];
-    const courierMovementDuration = Math.round(speedConfig.baseMs + restaurantDistanceKm * speedConfig.kmMultiplierMs);
-    
-    const handoffAt = now + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration;
-    const deliveredAt = handoffAt + DELIVERY_CONFIG.handoffDuration + courierMovementDuration;
+
+    // Tüm timestamp'ler appConfig'den tek fonksiyonla türetilir
+    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed);
+
     setOrder({
       id: uid("order"),
       customerName: String(data.get("name") || "Demo"),
@@ -181,8 +154,9 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
       speed,
       status: "confirmed",
       placedAt: now,
-      handoffAt: handoffAt,
-      deliveredAt: deliveredAt,
+      handoffAt,
+      deliveringAt,
+      deliveredAt,
       items: cart
     });
     setCheckoutOpen(false);
@@ -212,8 +186,9 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
             <div>
-              <Link href={`/${locale}`} className="text-2xl font-black leading-none">{t.appName}</Link>
-              <p className="mt-1 text-xs font-semibold opacity-85 sm:text-sm">{t.tagline}</p>
+              <Link href={`/${locale}`} >
+                <img className="w-50 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} />
+              </Link>
             </div>
             <button
               className="flex items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
@@ -227,7 +202,6 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
               <span className="shrink-0 text-xs font-black underline">{t.changeAddress}</span>
             </button>
             <div className="flex items-center justify-start gap-2 lg:justify-end">
-              <a className="rounded-lg bg-white/14 px-3 py-2 text-sm font-black" href="#restaurants">{t.restaurants}</a>
               <button className="relative flex h-10 items-center gap-2 rounded-lg bg-white/18 px-3 font-black" onClick={() => setCheckoutOpen(true)} aria-label={t.cart}>
                 <ShoppingCart size={18} />
                 <span className="text-sm">{t.cart}</span>
@@ -237,24 +211,38 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
             <div className="flex gap-2">
-              {(Object.keys(themes) as ThemeName[]).map((name) => (
-                <button key={name} aria-label={name} className="h-9 w-9 rounded-full border border-white/30 shadow-sm" style={{ background: themes[name] }} onClick={() => setTheme(name)} />
-              ))}
+          
+              {(Object.keys(themes) as ThemeName[]).map((name) => {
+                const Icon = themeIcons[name];
+
+                return (
+                  <button
+                    key={name}
+                    aria-label={name}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm"
+                    style={{ background: themes[name] }}
+                    onClick={() => setTheme(name)}
+                  >
+                    <Icon size={18} className="text-white" />
+                  </button>
+                );
+              })}
             </div>
             <label className="flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-zinc-900">
               <Search size={18} className="text-zinc-500" />
               <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.searchPlaceholder} />
             </label>
             <div className="flex justify-start gap-2 lg:justify-end">
-            <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale === "tr" ? "en" : "tr"}`} aria-label="language">
-              <Languages size={18} />
-            </Link>
-            <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale}/admin`} aria-label={t.admin}>
-              <SlidersHorizontal size={18} />
-            </Link>
-            <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
-              <HelpCircle size={18} />
-            </button>
+              <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale === "tr" ? "en" : "tr"}`} aria-label="language">
+                {/* <Languages size={18} /> */}
+                <span className="font-bold text-xs">{locale === "tr" ? "EN" : "TR"}</span>
+              </Link>
+              <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale}/admin`} aria-label={t.admin}>
+                <SlidersHorizontal size={18} />
+              </Link>
+              <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
+                <HelpCircle size={18} />
+              </button>
             </div>
           </div>
         </div>
@@ -265,19 +253,19 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
           <div>
             <p className="mb-2 text-sm font-bold">{t.deliveryType}</p>
             <div className="grid grid-cols-2 gap-2">
-            {(["rabbit", "turtle"] as DeliverySpeed[]).map((mode) => (
-              <button
-                key={mode}
-                className={`rounded-lg border px-3 py-2 text-left ${speed === mode ? "border-[var(--accent)] bg-white shadow-md" : "border-black/10 bg-white/70"}`}
-                onClick={() => setSpeed(mode)}
-              >
-                <span className="flex items-center gap-2 font-black">
-                  <span className="text-xl" aria-hidden="true">{mode === "rabbit" ? "🐇" : "🐢"}</span>
-                  {t[mode]}
-                </span>
-                <span className="text-xs text-zinc-500">{t[`${mode}Hint`]}</span>
-              </button>
-            ))}
+              {(["rabbit", "turtle"] as DeliverySpeed[]).map((mode) => (
+                <button
+                  key={mode}
+                  className={`rounded-lg border px-3 py-2 text-left ${speed === mode ? "border-[var(--accent)] bg-white shadow-md" : "border-black/10 bg-white/70"}`}
+                  onClick={() => setSpeed(mode)}
+                >
+                  <span className="flex items-center gap-2 font-black">
+                    <span className="text-xl" aria-hidden="true">{mode === "rabbit" ? "🐇" : "🐢"}</span>
+                    {t[mode]}
+                  </span>
+                  <span className="text-xs text-zinc-500">{t[`${mode}Hint`]}</span>
+                </button>
+              ))}
             </div>
           </div>
           <p className="text-sm font-medium text-zinc-500">🚧 {t.demoNotice}</p>
@@ -432,15 +420,31 @@ export function FoodDeliveryApp({ locale }: { locale: Locale }) {
         <div className="fixed inset-0 z-40 bg-black/35 p-4">
           <div className="mx-auto max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black">{t.appName} 🍱</h3>
+              <h3 className="text-xl font-black">{t.appName}</h3>
               <button onClick={() => setInfoOpen(false)} className="h-9 w-9 rounded-full bg-zinc-100">×</button>
             </div>
             <p className="mt-4 text-zinc-700">{t.tagline}</p>
             <div className="mt-4 space-y-3 text-sm text-zinc-600">
-              <p>🍽️ {locale === "tr" ? "Sahte restoranlar, gerçekçi menüler ve opsiyonlar." : "Fake restaurants, realistic menus, and options."}</p>
-              <p>🛒 {locale === "tr" ? "Sepet ve demo sipariş akışı ödeme almadan çalışır." : "Cart and demo checkout run without payment."}</p>
-              <p>🗺️ {locale === "tr" ? "Takip ekranı ücretsiz OpenStreetMap haritası kullanır." : "Tracking uses the free OpenStreetMap map layer."}</p>
-              <p>🔥 {locale === "tr" ? "Sipariş sonunda yemediğin kaloriler hesaplanır." : "Calories you did not consume are calculated."}</p>
+              <p>
+                🍽️{" "}
+                {locale === "tr"
+                  ? "Gerçekmiş gibi hissettiren sahte restoran deneyimi — menüler, sipariş akışı ve seçimler tamamen simüle edilir."
+                  : "A fake restaurant experience that feels real — menus, ordering flow, and choices are fully simulated."}
+              </p>
+
+              <p>
+                🛒{" "}
+                {locale === "tr"
+                  ? "Sepet ve sipariş süreci gerçek ödeme olmadan çalışır, sadece deneyim ve etkileşim odaklıdır."
+                  : "Cart and ordering work without any real payment — purely for experience and interaction."}
+              </p>
+
+              <p>
+                🔥{" "}
+                {locale === "tr"
+                  ? "Dopamin odaklı etkileşimlerle açlık hissini bastırır, kalori almadan tatmin hissi sunar."
+                  : "Dopamine-driven interactions that reduce cravings and simulate satisfaction without calories."}
+              </p>
             </div>
           </div>
         </div>
@@ -562,17 +566,15 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
     return () => window.clearInterval(timer);
   }, []);
 
-  const status = now < order.placedAt + DELIVERY_CONFIG.confirmedDuration
+  const status = now < order.placedAt + 2000
     ? "confirmed"
-    : now < order.placedAt + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration
-    ? "preparing"
-    : now < order.placedAt + DELIVERY_CONFIG.confirmedDuration + DELIVERY_CONFIG.preparingDuration + DELIVERY_CONFIG.handoffDuration
-    ? "handoff"
-    : now < order.deliveredAt - DELIVERY_CONFIG.deliveringDuration
-    ? "delivering"
-    : now < order.deliveredAt
-    ? "delivering"  // Son 3 saniye de delivering
-    : "delivered";
+    : now < order.handoffAt
+      ? "preparing"
+      : now < order.deliveringAt
+        ? "handoff"
+        : now < order.deliveredAt
+          ? "delivering"
+          : "delivered";
 
   // Delivered statusuna geçildikten 2 saniye sonra celebration popup'ı göster (tek seferlik)
   useEffect(() => {
@@ -618,11 +620,11 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
           </div>
           <div className="mt-5">
             <TrackingMap
-                restaurant={order.restaurantCoordinate}
-                address={order.addressCoordinate}
-                courier={courier}
-                routePoints={displayRoute ?? undefined}
-              />
+              restaurant={order.restaurantCoordinate}
+              address={order.addressCoordinate}
+              courier={courier}
+              routePoints={displayRoute ?? undefined}
+            />
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-5">
             {(["confirmed", "preparing", "handoff", "delivering", "delivered"] as const).map((step) => (
@@ -631,7 +633,7 @@ function TrackingExperience({ locale, order, totals, restaurants, onBack }: { lo
               </div>
             ))}
           </div>
-           <p className="mt-4 text-sm text-zinc-500">{t.noRealDelivery} {t.mapCredit}</p>
+          <p className="mt-4 text-sm text-zinc-500">{t.noRealDelivery} {t.mapCredit}</p>
           <div className="mt-4 rounded-lg bg-zinc-50 p-3 text-sm">
             {order.items.map((cartItem) => {
               const item = findMenuItem(restaurants, cartItem);

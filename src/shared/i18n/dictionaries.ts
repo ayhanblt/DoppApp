@@ -45,7 +45,7 @@ export const dictionaries = {
     note: "Not",
     addressFound: "Adres koordinatı bulundu.",
     addressMissing: "Adres bulunamadı. Lütfen daha açık yaz.",
-    demoOrder: "Demo sipariş oluştur",
+    demoOrder: "Sipariş ver",
     admin: "Admin",
     adminLogin: "Admin girişi",
     username: "Kullanıcı adı",

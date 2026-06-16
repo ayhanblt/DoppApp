@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DoppApp",
-  description: "Fake food delivery demo with live courier tracking.",
+  description: "Fake food delivery with live courier tracking.",
 };
 
 export default function RootLayout({
