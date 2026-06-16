@@ -9,7 +9,6 @@ import type { Address, Locale, Order, Store, ThemeName } from "@/shared/lib/type
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findProduct, getItemUnitPrice } from "@/features/order/cart";
 import { buildOrderTimeline, themeIcons, themes } from "@/features/catalog/appConfig";
-import { getStoresAroundAddress, getStoresOnRoadsAroundAddress } from "@/features/catalog/data";
 import { useCatalog } from "./CatalogContext";
 import { geocodeAddress } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
@@ -44,11 +43,8 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   const firstStore = stores.find((store) => store.id === cart[0]?.storeId) ?? stores[0];
 
   function saveDeliveryAddress(address: Address) {
-    const center: [number, number] = [address.latitude, address.longitude];
     window.localStorage.setItem("deliveryAddress", JSON.stringify(address));
     setDeliveryAddress(address);
-    setStores(getStoresAroundAddress(center));
-    getStoresOnRoadsAroundAddress(center).then(setStores);
     setAddressModalOpen(false);
   }
 

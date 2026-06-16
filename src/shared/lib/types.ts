@@ -37,8 +37,9 @@ export type Store = {
   id: string;
   type: StoreType;
   name: Record<Locale, string>;
+  description?: Record<Locale, string>;
   category: Record<Locale, string>;
-  emoji: string;
+  logo: string;
   badge?: Record<Locale, string>;
   rating: number;
   reviews: number;

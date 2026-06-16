@@ -21,10 +21,7 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
   const [selectedItemId, setSelectedItemId] = useState(store.menu[0]?.id ?? "");
   const selectedItem = store.menu.find((item) => item.id === selectedItemId);
 
-  const [nameTr, setNameTr] = useState("");
-  const [nameEn, setNameEn] = useState("");
-  const [descriptionTr, setDescriptionTr] = useState("");
-  const [descriptionEn, setDescriptionEn] = useState("");
+
   const [price, setPrice] = useState("");
   const [calories, setCalories] = useState("");
   const [image, setImage] = useState("");
@@ -33,10 +30,7 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
 
   useEffect(() => {
     if (!selectedItem) return;
-    setNameTr(selectedItem.name.tr);
-    setNameEn(selectedItem.name.en);
-    setDescriptionTr(selectedItem.description.tr);
-    setDescriptionEn(selectedItem.description.en);
+
     setPrice(String(selectedItem.price));
     setCalories(String(selectedItem.calories));
     setImage(selectedItem.image);
@@ -48,10 +42,12 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
     event.preventDefault();
     if (!selectedItem) return;
 
+    const data = new FormData(event.currentTarget);
+
     const updatedItem: Product = {
       ...selectedItem,
-      name: { tr: nameTr, en: nameEn },
-      description: { tr: descriptionTr, en: descriptionEn },
+      name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
+      description: { tr: String(data.get("description_tr")), en: String(data.get("description_en")) },
       price: Number(price) || 0,
       calories: Number(calories) || 0,
       image: image || FALLBACK_IMAGE,
@@ -80,7 +76,7 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
             >
               {store.menu.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name[locale]}
+                  {item.name.tr}
                 </option>
               ))}
             </select>
@@ -88,12 +84,16 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
 
           {selectedItem && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <AdminInput label="TR ürün" value={nameTr} onChange={(event) => setNameTr(event.target.value)} required />
-              <AdminInput label="EN item" value={nameEn} onChange={(event) => setNameEn(event.target.value)} required />
-              <AdminInput label="TR açıklama" value={descriptionTr} onChange={(event) => setDescriptionTr(event.target.value)} required />
-              <AdminInput label="EN description" value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} required />
+              <div className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
+                <AdminInput name="name_tr" label="Ürün Adı (TR)" defaultValue={selectedItem?.name.tr} required />
+                <AdminInput name="name_en" label="Product Name (EN)" defaultValue={selectedItem?.name.en} required />
+                <AdminInput name="description_tr" label="Açıklama (TR)" defaultValue={selectedItem?.description.tr} required />
+                <AdminInput name="description_en" label="Description (EN)" defaultValue={selectedItem?.description.en} required />
+              </div>
               <AdminInput label={locale === "tr" ? "Fiyat" : "Price"} type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
-              <AdminInput label={locale === "tr" ? "Kalori" : "Calories"} type="number" value={calories} onChange={(event) => setCalories(event.target.value)} required />
+              {store.type !== "shop" && (
+                <AdminInput label={locale === "tr" ? "Kalori" : "Calories"} type="number" value={calories} onChange={(event) => setCalories(event.target.value)} />
+              )}
               
                 {store.type === "shop" && (
                   <label className="block text-sm font-bold sm:col-span-2">

@@ -8,7 +8,7 @@ import { EditProductsModal } from "@/features/admin/EditProductsModal";
 import { EditStoreModal } from "@/features/admin/EditStoreModal";
 import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
 import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
-import { seedStores } from "@/features/catalog/data";
+import { fetchStoresFromSupabase, saveStoreToSupabase } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale, MenuOptionGroup, Store, StoreType, ProductType } from "@/shared/lib/types";
 import { uid } from "@/shared/lib/format";
@@ -18,12 +18,17 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const [stores, setStores] = useState<Store[]>(() => {
-    if (typeof window === "undefined") return seedStores;
-    const raw = window.localStorage.getItem("doppapp-stores");
-    return raw ? (JSON.parse(raw) as Store[]) : seedStores;
-  });
-  const [selectedStore, setSelectedStore] = useState(seedStores[0].id);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [selectedStore, setSelectedStore] = useState("");
+
+  useEffect(() => {
+    async function load() {
+      const dbStores = await fetchStoresFromSupabase();
+      setStores(dbStores);
+      if (dbStores.length > 0) setSelectedStore(dbStores[0].id);
+    }
+    load();
+  }, []);
   const [message, setMessage] = useState("");
   const [itemImage, setItemImage] = useState("");
   const [itemOptionGroups, setItemOptionGroups] = useState<MenuOptionGroup[] | undefined>();
@@ -52,12 +57,13 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     setIsAuthenticated(false);
   }
 
-  function updateStore(updated: Store, closeItemsModal = false) {
+  async function updateStore(updated: Store, closeItemsModal = false) {
     const nextStores = stores.map((store) =>
       store.id === updated.id ? updated : store
     );
     setStores(nextStores);
-    save(nextStores);
+    await saveStoreToSupabase(updated);
+    setMessage(locale === "tr" ? "Veritabanına kaydedildi." : "Saved to DB.");
     setEditingStore(null);
     if (closeItemsModal) {
       setEditingItemsStore(null);
@@ -68,21 +74,17 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     }
   }
 
-  function save(storesToSave = stores) {
-    window.localStorage.setItem("doppapp-stores", JSON.stringify(storesToSave));
-    setMessage(locale === "tr" ? "Taslak kaydedildi." : "Draft saved.");
-  }
-
-  function addStore(event: React.FormEvent<HTMLFormElement>) {
+  async function addStore(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const next: Store = {
       id: uid("store"),
       type: String(data.get("type")) as StoreType,
-      name: { tr: String(data.get("nameTr")), en: String(data.get("nameEn")) },
-      category: { tr: String(data.get("categoryTr")), en: String(data.get("categoryEn")) },
-      emoji: String(data.get("emoji") || "🍽️"),
-      badge: { tr: String(data.get("badgeTr") || ""), en: String(data.get("badgeEn") || "") },
+      name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
+      description: { tr: String(data.get("desc_tr")), en: String(data.get("desc_en")) },
+      category: { tr: String(data.get("cat_tr")), en: String(data.get("cat_en")) },
+      logo: String(data.get("logo") || "https://placehold.co/100x100.webp?text=Logo"),
+      badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,
       rating: Number(data.get("rating") || 4.7),
       reviews: Number(data.get("reviews") || 100),
       eta: String(data.get("eta") || "20-30"),
@@ -93,13 +95,14 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     const nextStores = [...stores, next];
     setStores(nextStores);
     setSelectedStore(next.id);
-    save(nextStores);
+    await saveStoreToSupabase(next);
+    setMessage(locale === "tr" ? "Veritabanına eklendi." : "Added to DB.");
     event.currentTarget.reset();
   }
 
   const selectedStoreObj = stores.find(s => s.id === selectedStore);
 
-  function addItem(event: React.FormEvent<HTMLFormElement>) {
+  async function addItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const nextStores = stores.map((store) => {
@@ -111,8 +114,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           {
             id: uid("item"),
             ...(data.get("productType") ? { productType: String(data.get("productType")) as ProductType } : {}),
-            name: { tr: String(data.get("nameTr")), en: String(data.get("nameEn")) },
-            description: { tr: String(data.get("descriptionTr")), en: String(data.get("descriptionEn")) },
+            name: { tr: String(data.get("name")), en: String(data.get("name")) },
+            description: { tr: String(data.get("description")), en: String(data.get("description")) },
             price: Number(data.get("price") || 0),
             calories: Number(data.get("calories") || 0),
             image: itemImage || FALLBACK_IMAGE,
@@ -122,7 +125,9 @@ export function AdminPanel({ locale }: { locale: Locale }) {
       };
     });
     setStores(nextStores);
-    save(nextStores);
+    const targetStore = nextStores.find(s => s.id === selectedStore);
+    if (targetStore) await saveStoreToSupabase(targetStore);
+    setMessage(locale === "tr" ? "Ürün veritabanına eklendi." : "Item added to DB.");
     setItemImage("");
     setItemOptionGroups(undefined);
     event.currentTarget.reset();
@@ -196,13 +201,17 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                   </select>
                 </label>
               )}
-              <AdminInput name="nameTr" label="TR ad" required />
-              <AdminInput name="nameEn" label="EN name" required />
-              <AdminInput name="categoryTr" label="TR kategori" required />
-              <AdminInput name="categoryEn" label="EN category" required />
-              <AdminInput name="emoji" label="Emoji" />
-              <AdminInput name="badgeTr" label="TR rozet" />
-              <AdminInput name="badgeEn" label="EN badge" />
+              <div className="grid gap-4 sm:grid-cols-2 sm:col-span-2">
+                <AdminInput name="name_tr" label="İsim (TR)" required />
+                <AdminInput name="name_en" label="Name (EN)" required />
+                <AdminInput name="desc_tr" label="Açıklama (TR)" />
+                <AdminInput name="desc_en" label="Description (EN)" />
+                <AdminInput name="cat_tr" label="Kategori (TR)" required />
+                <AdminInput name="cat_en" label="Category (EN)" required />
+                <AdminInput name="badge_tr" label="Rozet (TR)" />
+                <AdminInput name="badge_en" label="Badge (EN)" />
+              </div>
+              <AdminInput name="logo" label="Logo URL" />
               <AdminInput name="rating" label="Puan" type="number" step="0.1" />
               <AdminInput name="reviews" label="Yorum sayısı" type="number" />
               <AdminInput name="eta" label="ETA dk" />
@@ -221,7 +230,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
               Restoran
               <select className="mt-1 w-full rounded-lg border border-black/10 p-3" value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
                 {stores.map((store) => (
-                  <option key={store.id} value={store.id}>{store.name[locale]}</option>
+                  <option key={store.id} value={store.id}>{store.name.tr}</option>
                 ))}
               </select>
             </label>
@@ -238,12 +247,12 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                   </select>
                 </label>
               )}
-              <AdminInput name="nameTr" label="TR ürün" required />
-              <AdminInput name="nameEn" label="EN item" required />
-              <AdminInput name="descriptionTr" label="TR açıklama" required />
-              <AdminInput name="descriptionEn" label="EN description" required />
-              <AdminInput name="price" label="Fiyat" type="number" required />
-              <AdminInput name="calories" label="Kalori" type="number" required />
+              <AdminInput name="name" label="Ürün Adı" required />
+              <AdminInput name="description" label="Açıklama" required />
+              <AdminInput name="price" label="Fiyat (TL)" type="number" required />
+              {selectedStoreObj?.type === "shop" ? null : (
+                <AdminInput name="calories" label="Kalori" type="number" />
+              )}
               <ImageUploadField locale={locale} value={itemImage} onChange={setItemImage} />
             </div>
             <OptionGroupsEditor locale={locale} value={itemOptionGroups} onChange={setItemOptionGroups} />
@@ -262,8 +271,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
               <div key={store.id} className="rounded-lg border border-black/10 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-2xl">{store.emoji}</p>
-                    <h3 className="font-black">{store.name[locale]}</h3>
+                    <img className="h-10 w-10 rounded-lg object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
+                    <h3 className="font-black">{store.name.tr}</h3>
                   </div>
                   <button
                     type="button"
@@ -274,7 +283,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                   </button>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{store.category[locale]} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
+                  <span>{store.category.tr} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
                   <button
                     type="button"
                     className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"

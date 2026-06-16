@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { defaultOptionGroups } from "@/features/catalog/data";
+
 import type { Locale, MenuOptionGroup } from "@/shared/lib/types";
 import { uid } from "@/shared/lib/format";
 
@@ -10,6 +10,37 @@ type OptionGroupsEditorProps = {
   value: MenuOptionGroup[] | undefined;
   onChange: (groups: MenuOptionGroup[] | undefined) => void;
 };
+
+const defaultOptionGroups: MenuOptionGroup[] = [
+  {
+    id: "spice",
+    label: { tr: "Lezzet", en: "Flavor" },
+    required: true,
+    options: [
+      { id: "mild", label: { tr: "Sade", en: "Mild" }, priceDelta: 0 },
+      { id: "normal", label: { tr: "Orta", en: "Regular" }, priceDelta: 0 },
+      { id: "hot", label: { tr: "Acılı", en: "Hot" }, priceDelta: 0 }
+    ]
+  },
+  {
+    id: "size",
+    label: { tr: "Boyut", en: "Size" },
+    options: [
+      { id: "small", label: { tr: "Küçük", en: "Small" }, priceDelta: -30 },
+      { id: "regular", label: { tr: "Normal", en: "Regular" }, priceDelta: 0 },
+      { id: "large", label: { tr: "Büyük", en: "Large" }, priceDelta: 45 }
+    ]
+  },
+  {
+    id: "extras",
+    label: { tr: "Ek ürünler", en: "Extras" },
+    multiple: true,
+    options: [
+      { id: "cheese", label: { tr: "Peynir sos", en: "Cheese sauce" }, priceDelta: 35 },
+      { id: "drink", label: { tr: "İçecek ekle", en: "Add drink" }, priceDelta: 45 }
+    ]
+  }
+];
 
 function cloneDefaultGroups(): MenuOptionGroup[] {
   return defaultOptionGroups.map((group) => ({
@@ -115,21 +146,9 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                   <Trash2 size={16} />
                 </button>
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Field
-                  label="TR grup adı"
-                  value={group.label.tr}
-                  onChange={(next) =>
-                    updateGroup(groupIndex, { label: { ...group.label, tr: next } })
-                  }
-                />
-                <Field
-                  label="EN group label"
-                  value={group.label.en}
-                  onChange={(next) =>
-                    updateGroup(groupIndex, { label: { ...group.label, en: next } })
-                  }
-                />
+              <div className="grid gap-2">
+                <input className="w-full rounded border p-2 text-sm" value={group.label.tr} onChange={(e) => updateGroup(groupIndex, { label: { ...group.label, tr: e.target.value } })} placeholder="Opsiyon grubu adı (örn: İçecek Seçimi)" />
+                <input className="w-full rounded border p-2 text-sm" value={group.label.en} onChange={(e) => updateGroup(groupIndex, { label: { ...group.label, en: e.target.value } })} placeholder="Option group name (e.g. Choose Drink)" />
               </div>
               <div className="mt-2 flex flex-wrap gap-4 text-sm">
                 <label className="flex items-center gap-2 font-bold">
@@ -151,25 +170,11 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
               </div>
               <div className="mt-3 space-y-2">
                 {group.options.map((option, optionIndex) => (
-                  <div key={option.id} className="grid gap-2 rounded-lg border border-black/10 bg-white p-2 sm:grid-cols-[1fr_1fr_120px_auto]">
-                    <Field
-                      label="TR opsiyon"
-                      value={option.label.tr}
-                      onChange={(next) =>
-                        updateOption(groupIndex, optionIndex, {
-                          label: { ...option.label, tr: next }
-                        })
-                      }
-                    />
-                    <Field
-                      label="EN option"
-                      value={option.label.en}
-                      onChange={(next) =>
-                        updateOption(groupIndex, optionIndex, {
-                          label: { ...option.label, en: next }
-                        })
-                      }
-                    />
+                  <div key={option.id} className="grid gap-2 rounded-lg border border-black/10 bg-white p-2 sm:grid-cols-[1fr_120px_auto]">
+                    <div className="grid gap-2">
+                      <input className="w-full rounded border p-2 text-sm" value={option.label.tr} onChange={(e) => updateOption(groupIndex, optionIndex, { label: { ...option.label, tr: e.target.value } })} placeholder="Opsiyon adı (örn: Kola)" />
+                      <input className="w-full rounded border p-2 text-sm" value={option.label.en} onChange={(e) => updateOption(groupIndex, optionIndex, { label: { ...option.label, en: e.target.value } })} placeholder="Option name (e.g. Cola)" />
+                    </div>
                     <Field
                       label={locale === "tr" ? "Fiyat farkı" : "Price delta"}
                       type="number"

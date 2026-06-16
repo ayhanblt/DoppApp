@@ -1,21 +1,29 @@
+import { supabase } from "@/shared/api/supabase";
+
 export type UploadMenuImageResult = {
   url: string;
   filename: string;
 };
 
 export async function uploadMenuImage(file: File): Promise<UploadMenuImageResult> {
-  const formData = new FormData();
-  formData.append("file", file);
+  const ext = file.name.split('.').pop() || "jpg";
+  const filename = `upload-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  
+  const { data, error } = await supabase.storage
+    .from('menu-images')
+    .upload(filename, file, { upsert: false });
 
-  const response = await fetch("/api/admin/upload-image", {
-    method: "POST",
-    body: formData
-  });
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(payload?.error ?? "upload_failed");
+  if (error) {
+    console.error(error);
+    throw new Error("upload_failed");
   }
 
-  return response.json() as Promise<UploadMenuImageResult>;
+  const { data: urlData } = supabase.storage
+    .from('menu-images')
+    .getPublicUrl(data.path);
+
+  return {
+    url: urlData.publicUrl,
+    filename: filename
+  };
 }

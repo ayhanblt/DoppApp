@@ -3,7 +3,7 @@
 Bu dosya, Claude Code veya benzeri otonom yapay zeka araçlarının projeyi anlarken ve kod üretirken kullanacağı spesifik bağlamı (context) ve kuralları içerir.
 
 ## Project Context
-DoppApp, çoklu kategori (Giyim, Elektronik, Restoran, Market) destekleyen, kurgusal bir e-ticaret ve kurye takip simülasyonudur. Projenin gerçek bir veritabanı veya ödeme altyapısı yoktur; tüm kalıcı veriler (persistence) tarayıcının `localStorage` API'si ile sağlanır. Kullanıcı bir ürün seçer, seçeneklerini belirler, sepete atar ve siparişi onayladıktan sonra haritada sanal bir kurye teslimatını izler. 
+DoppApp, çoklu kategori (Giyim, Elektronik, Restoran, Market) destekleyen, kurgusal bir e-ticaret ve kurye takip simülasyonudur. Projede veri kalıcılığı Supabase (BaaS) PostgreSQL veritabanı ve Storage üzerinden sağlanır. Kullanıcı bir ürün seçer, seçeneklerini belirler, sepete atar ve siparişi onayladıktan sonra haritada sanal bir kurye teslimatını izler. 
 
 ## Development Rules (Claude İçin Kod Yazma Kuralları)
 Claude kod üretirken veya refactor yaparken aşağıdaki kurallara harfiyen uymalıdır:
@@ -21,7 +21,7 @@ Claude kod üretirken veya refactor yaparken aşağıdaki kurallara harfiyen uym
 ## Before Coding Checklist (Kodlamaya Başlamadan Önce)
 Herhangi bir dosyayı düzenlemeye veya yeni özellik eklemeye başlamadan önce:
 1. İlgili feature/domain klasöründeki dosyaları tara (Örn: Sepet için `src/features/order/cart.ts`).
-2. Kullanılan patternleri anla. `localStorage` nasıl kullanılıyor? i18n çevirileri nasıl çekiliyor?
+2. Kullanılan patternleri anla. Supabase fetch/upsert işlemleri nasıl yapılıyor? i18n çevirileri nasıl çekiliyor?
 3. Etkilenecek alanları (Impact Analysis) kontrol et.
 4. Vitest + RTL tabanlı test ihtiyacını belirle.
 
@@ -30,4 +30,4 @@ Projeye eklenen her yeni iş mantığı için:
 - Unit test KESİNLİKLE yazılmalı (`*.test.ts` formatında).
 - "Arrange-Act-Assert" şablonu uygulanmalı.
 - Edge case (uç durumlar) mutlaka düşünülmeli (Örn: Kurye başlangıç koordinatı ile müşteri koordinatı aynıysa?).
-- `localStorage` veya Harita manipülasyonu yapan kısımlar için Mock stratejisi (örn. `vi.spyOn()`) uygulanmalı.
+- Supabase API veya Harita manipülasyonu yapan kısımlar için Mock stratejisi (örn. `vi.spyOn()`) uygulanmalı.

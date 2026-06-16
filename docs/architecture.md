@@ -2,8 +2,8 @@
 
 ## Genel Mimari Yaklaşım
 DoppApp, **Next.js 15 (App Router)** üzerinde çalışan, tamamen **Client-Side Heavy** (istemci ağırlıklı) bir React uygulamasıdır. 
-Şu an için bir gerçek backend veya veritabanı bulunmadığından, veri kalıcılığı `localStorage` üzerinden sağlanır.
-Mimari, gelecekte gerçek bir backend entegrasyonu (örn. Firebase veya Supabase) ve React Native mobile taşınabilirlik düşünülerek modüler bir yaklaşımla kurgulanmıştır.
+Şu an için bir gerçek backend olarak Supabase (PostgreSQL ve Storage) kullanılmaktadır. Veri kalıcılığı Supabase üzerinden sağlanır.
+Mimari, gelecekte React Native mobile taşınabilirlik düşünülerek modüler bir yaklaşımla kurgulanmıştır.
 
 Bileşen mimarisinde kodun temizliği ve tekrar kullanılabilirliği için **Feature-Sliced Design (FSD)** metodolojisine doğru bir geçiş benimsenmiştir. Bu yapı, projeyi katmanlara (layers) ve domainlere (slices) bölerek kontrolü artırır.
 
@@ -14,7 +14,7 @@ Bileşen mimarisinde kodun temizliği ve tekrar kullanılabilirliği için **Fea
 3. **Shared Katmanı (`shared/`):** Tüm projenin kullandığı ortak tipler (`types.ts`), formatlama fonksiyonları, ve çoklu dil sözlükleri (`dictionaries.ts`) burada yer alır.
 
 **Veri Akışı:**
-Veri `localStorage` üzerinden (veya gelecekte API'den) çekilir ve `CatalogContext.tsx` aracılığıyla global state'e alınır. Tüm sayfalar (`/shop`, `/food`, `/market`) bu context'i dinler. State güncellemeleri (örneğin sepete ürün ekleme) yine bu Context veya feature bazlı custom hook'lar üzerinden yönetilir.
+Veri Supabase API üzerinden asenkron çekilir ve `CatalogContext.tsx` aracılığıyla global state'e alınır. Tüm sayfalar (`/shop`, `/food`, `/market`) bu context'i dinler. State güncellemeleri (örneğin sepete ürün ekleme) yine bu Context veya feature bazlı custom hook'lar üzerinden yönetilir.
 
 ## Mevcut Klasör Yapısı (Current)
 

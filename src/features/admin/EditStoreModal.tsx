@@ -22,10 +22,11 @@ export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModa
     onSave({
       ...store,
       type: String(data.get("type")) as StoreType,
-      name: { tr: String(data.get("nameTr")), en: String(data.get("nameEn")) },
-      category: { tr: String(data.get("categoryTr")), en: String(data.get("categoryEn")) },
-      emoji: String(data.get("emoji") || "🍽️"),
-      badge: { tr: String(data.get("badgeTr") || ""), en: String(data.get("badgeEn") || "") },
+      name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
+      description: { tr: String(data.get("description_tr")), en: String(data.get("description_en")) },
+      category: { tr: String(data.get("category_tr")), en: String(data.get("category_en")) },
+      logo: String(data.get("logo") || "https://placehold.co/100x100.webp?text=Logo"),
+      badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,
       rating: Number(data.get("rating") || 4.7),
       reviews: Number(data.get("reviews") || 100),
       eta: String(data.get("eta") || "20-30"),
@@ -46,13 +47,17 @@ export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModa
             <option value="market">Market</option>
           </select>
         </label>
-        <AdminInput name="nameTr" label="TR ad" defaultValue={store.name.tr} required />
-        <AdminInput name="nameEn" label="EN name" defaultValue={store.name.en} required />
-        <AdminInput name="categoryTr" label="TR kategori" defaultValue={store.category.tr} required />
-        <AdminInput name="categoryEn" label="EN category" defaultValue={store.category.en} required />
-        <AdminInput name="emoji" label="Emoji" defaultValue={store.emoji} />
-        <AdminInput name="badgeTr" label="TR rozet" defaultValue={store.badge?.tr ?? ""} />
-        <AdminInput name="badgeEn" label="EN badge" defaultValue={store.badge?.en ?? ""} />
+        <div className="grid gap-4 sm:grid-cols-2 sm:col-span-2">
+          <AdminInput name="name_tr" label="İsim (TR)" defaultValue={store.name.tr} required />
+          <AdminInput name="name_en" label="Name (EN)" defaultValue={store.name.en} required />
+          <AdminInput name="description_tr" label="Açıklama (TR)" defaultValue={store.description?.tr} />
+          <AdminInput name="description_en" label="Description (EN)" defaultValue={store.description?.en} />
+          <AdminInput name="category_tr" label="Kategori (TR)" defaultValue={store.category.tr} required />
+          <AdminInput name="category_en" label="Category (EN)" defaultValue={store.category.en} required />
+          <AdminInput name="badge_tr" label="Rozet (TR)" defaultValue={store.badge?.tr} />
+          <AdminInput name="badge_en" label="Badge (EN)" defaultValue={store.badge?.en} />
+        </div>
+        <AdminInput name="logo" label="Logo URL" defaultValue={store.logo} />
         <AdminInput name="rating" label={locale === "tr" ? "Puan" : "Rating"} type="number" step="0.1" defaultValue={store.rating} />
         <AdminInput name="reviews" label={locale === "tr" ? "Yorum sayısı" : "Review count"} type="number" defaultValue={store.reviews} />
         <AdminInput name="eta" label="ETA" defaultValue={store.eta} />

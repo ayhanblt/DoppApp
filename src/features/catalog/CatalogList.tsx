@@ -91,7 +91,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
           <article key={store.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{store.emoji}</span>
+                <img className="h-12 w-12 rounded-full object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
                 <div>
                   {store.badge && <span className="rounded-full bg-[var(--accent)]/10 px-2 py-1 text-xs font-bold text-[var(--accent)]">{store.badge[locale]}</span>}
                   <h3 className="mt-1 text-lg font-black">{store.name[locale]}</h3>
@@ -132,6 +132,9 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
               <div className="flex-1">
                 <h3 className="text-xl font-black">{activeItem.item.name[locale]}</h3>
                 <p className="text-sm text-zinc-500">{activeItem.item.description[locale]}</p>
+                {activeItem.store.type === "food" && activeItem.item.calories > 0 && (
+                  <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(activeItem.item.calories, locale)} kcal</p>
+                )}
               </div>
               <button onClick={() => setActiveItem(null)} className="h-9 w-9 rounded-full bg-zinc-100">×</button>
             </div>

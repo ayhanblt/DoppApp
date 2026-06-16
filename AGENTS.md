@@ -9,7 +9,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 Bu doküman, projede kod yazacak tüm AI kodlama asistanlarının uyması gereken katı mimari kuralları ve standartları belirler.
 
 ## Projenin Amacı ve Özellikleri
-- Gerçek bir backend'i olmayan, tamamen LocalStorage üzerinden verileri tutan çoklu kategorili (Shop, Food, Market) e-ticaret/kurye takip simülasyonu.
+- Supabase tabanlı PostgreSQL veritabanı ve Storage kullanan çoklu kategorili (Shop, Food, Market) e-ticaret/kurye takip simülasyonu.
 - Çoklu dil (i18n) desteğine sahiptir (Tr/En).
 
 ## Klasör Yapısı (Feature-Sliced Design - FSD)

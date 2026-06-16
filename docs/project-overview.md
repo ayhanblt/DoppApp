@@ -11,8 +11,8 @@ Son kullanıcılar, gerçek bir e-ticaret uygulamasında bulabilecekleri şu öz
 4. Leaflet tabanlı interaktif bir harita üzerinde siparişin kurye tarafından teslim edilmesini canlı olarak takip etme.
 
 ## Business Mantığı
-Sistemde gerçek bir backend veya veritabanı bulunmamaktadır. 
-Tüm veriler (mağazalar, siparişler, sepet, dil tercihleri) tarayıcının `localStorage` API'si üzerinden yönetilir. 
+Sistem Supabase (BaaS) mimarisi ile gerçek bir PostgreSQL veritabanı altyapısına geçmiştir. 
+Tüm veriler (mağazalar, ürünler, resimler) Supabase üzerinden yönetilir. 
 İş mantığı şu prensiplere dayanır:
 - **Mağaza Çeşitliliği:** Sistem; *Shop* (elektronik, giyim), *Food* (restoranlar) ve *Market* (bakkal vb.) olmak üzere üç temel mağaza tipini destekler.
 - **Dinamik Teslimat Algoritması:** Teslimat süreleri, kullanıcının seçtiği teslimat adresi ile mağazanın konumu arasındaki gerçekçi harita mesafesine (OpenStreetMap üzerinden) ve seçilen kurye hızına ("rabbit" veya "turtle") göre milisaniye cinsinden hesaplanır.
@@ -30,4 +30,4 @@ Tüm veriler (mağazalar, siparişler, sepet, dil tercihleri) tarayıcının `lo
    Sipariş oluşturulduktan sonra müşteri Tracking sayfasına yönlendirilir. Burada sipariş durumları (Onaylandı, Hazırlanıyor, Kuryede, Teslim Edildi) zaman bazlı olarak güncellenirken, kuryenin haritadaki hareketi canlı izlenir.
 
 4. **Admin Yönetimi (`/admin`):**
-   Uygulamanın bir de yerel yönetici paneli bulunur. Yöneticiler yeni mağazalar ekleyebilir, mevcut mağazaları düzenleyebilir, ürün ve opsiyon grupları oluşturabilirler. Tüm bu değişiklikler sadece yöneticinin tarayıcı önbelleğinde (`localStorage`) saklanır, ancak gelecekte bir veritabanına bağlanacak altyapıdadır.
+   Uygulamanın bir de yerel yönetici paneli bulunur. Yöneticiler yeni mağazalar ekleyebilir, mevcut mağazaları düzenleyebilir, ürün ve opsiyon grupları oluşturabilirler. Tüm bu değişiklikler doğrudan Supabase veritabanına kalıcı olarak kaydedilir ve Storage üzerinde görseller tutulur.
