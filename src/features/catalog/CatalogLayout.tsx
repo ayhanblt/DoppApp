@@ -42,6 +42,14 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   const totals = getCartTotals(stores, cart);
   const firstStore = stores.find((store) => store.id === cart[0]?.storeId) ?? stores[0];
 
+  let searchPlaceholder = t.searchPlaceholderFood;
+  if (currentTheme === "grape") searchPlaceholder = t.searchPlaceholderShop;
+  else if (currentTheme === "mint") searchPlaceholder = t.searchPlaceholderMarket;
+
+  useEffect(() => {
+    setQuery("");
+  }, [currentTheme, setQuery]);
+
   function saveDeliveryAddress(address: Address) {
     window.localStorage.setItem("deliveryAddress", JSON.stringify(address));
     setDeliveryAddress(address);
@@ -96,24 +104,27 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     <main className="min-h-screen bg-[#fff7ef] text-zinc-950" style={{ "--accent": themeColor } as React.CSSProperties}>
       <header className="sticky top-0 z-30 bg-[var(--accent)] px-4 pb-4 pt-3 text-white shadow-lg shadow-black/10 transition-colors duration-300">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
-            <div>
-              <Link href={`/${locale}`} >
-                <img className="w-50 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} />
-              </Link>
+          {/* Mobile: Row 1 - Logo & Cart | Desktop: Same row */}
+          <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_1.2fr_1fr]">
+            <Link href={`/${locale}`} >
+              <img className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} />
+            </Link>
+            
+            <div className="hidden lg:block w-full">
+              <button
+                className="flex w-full items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
+                onClick={() => setAddressModalOpen(true)}
+              >
+                <MapPin size={18} className="shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
+                  <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
+                </span>
+                <span className="shrink-0 text-xs font-black underline">{t.changeAddress}</span>
+              </button>
             </div>
-            <button
-              className="flex items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
-              onClick={() => setAddressModalOpen(true)}
-            >
-              <MapPin size={18} className="shrink-0" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
-                <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
-              </span>
-              <span className="shrink-0 text-xs font-black underline">{t.changeAddress}</span>
-            </button>
-            <div className="flex items-center justify-start gap-2 lg:justify-end">
+
+            <div className="flex items-center justify-end">
               <button className="relative flex h-10 items-center gap-2 rounded-lg bg-white/18 px-3 font-black" onClick={() => setCheckoutOpen(true)} aria-label={t.cart}>
                 <ShoppingCart size={18} />
                 <span className="text-sm">{t.cart}</span>
@@ -121,32 +132,56 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               </button>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
-            <div className="flex gap-2">
-              <Link href={`/${locale}/shop`} aria-label="shop" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["grape"] }}>
-                {(() => { const Icon = themeIcons["grape"]; return <Icon size={18} className="text-white" />; })()}
-              </Link>
-              <Link href={`/${locale}/food`} aria-label="food" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["sunset"] }}>
-                {(() => { const Icon = themeIcons["sunset"]; return <Icon size={18} className="text-white" />; })()}
-              </Link>
-              <Link href={`/${locale}/market`} aria-label="market" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["mint"] }}>
-                {(() => { const Icon = themeIcons["mint"]; return <Icon size={18} className="text-white" />; })()}
-              </Link>
+
+          {/* Mobile: Row 2 - Delivery Address */}
+          <div className="mt-3 block lg:hidden">
+            <button
+              className="flex w-full items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
+              onClick={() => setAddressModalOpen(true)}
+            >
+              <MapPin size={18} className="shrink-0" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
+                <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
+              </span>
+            </button>
+          </div>
+
+          {/* Mobile: Row 3 & 4 | Desktop: Row 2 */}
+          <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
+            
+            {/* Mobile: Row 3 - Search | Desktop: Center Column */}
+            <div className="w-full order-1 lg:order-2">
+              <label className="flex w-full items-center gap-2 rounded-lg bg-white px-4 py-3 text-zinc-900">
+                <Search size={18} className="text-zinc-500" />
+                <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />
+              </label>
             </div>
-            <label className="flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-zinc-900">
-              <Search size={18} className="text-zinc-500" />
-              <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.searchPlaceholder} />
-            </label>
-            <div className="flex justify-start gap-2 lg:justify-end">
-              <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`)} aria-label="language">
-                <span className="font-bold text-xs">{locale === "tr" ? "EN" : "TR"}</span>
-              </Link>
-              <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={`/${locale}/admin`} aria-label={t.admin}>
-                <SlidersHorizontal size={18} />
-              </Link>
-              <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
-                <HelpCircle size={18} />
-              </button>
+
+            {/* Mobile: Row 4 - Categories & Info | Desktop: Left & Right Columns via contents */}
+            <div className="order-2 flex items-center justify-between lg:contents">
+              {/* Categories */}
+              <div className="flex gap-2 lg:order-1">
+                <Link href={`/${locale}/shop`} aria-label="shop" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["grape"] }}>
+                  {(() => { const Icon = themeIcons["grape"]; return <Icon size={18} className="text-white" />; })()}
+                </Link>
+                <Link href={`/${locale}/food`} aria-label="food" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["sunset"] }}>
+                  {(() => { const Icon = themeIcons["sunset"]; return <Icon size={18} className="text-white" />; })()}
+                </Link>
+                <Link href={`/${locale}/market`} aria-label="market" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["mint"] }}>
+                  {(() => { const Icon = themeIcons["mint"]; return <Icon size={18} className="text-white" />; })()}
+                </Link>
+              </div>
+
+              {/* Language & Info */}
+              <div className="flex gap-2 lg:order-3 lg:justify-end">
+                <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`)} aria-label="language">
+                  <span className="font-bold text-xs">{locale === "tr" ? "EN" : "TR"}</span>
+                </Link>
+                <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
+                  <HelpCircle size={18} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

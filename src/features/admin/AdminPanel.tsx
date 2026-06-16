@@ -35,6 +35,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [editingStore, setEditingStore] = useState<Store | null>(null);
   const [editingItemsStore, setEditingItemsStore] = useState<Store | null>(null);
 
+  const [newStoreLogo, setNewStoreLogo] = useState("");
+
   useEffect(() => {
     setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
     setAuthReady(true);
@@ -211,7 +213,12 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                 <AdminInput name="badge_tr" label="Rozet (TR)" />
                 <AdminInput name="badge_en" label="Badge (EN)" />
               </div>
-              <AdminInput name="logo" label="Logo URL" />
+              
+              <div className="sm:col-span-2">
+                <input type="hidden" name="logo" value={newStoreLogo} />
+                <ImageUploadField locale={locale} value={newStoreLogo} onChange={setNewStoreLogo} />
+              </div>
+
               <AdminInput name="rating" label="Puan" type="number" step="0.1" />
               <AdminInput name="reviews" label="Yorum sayısı" type="number" />
               <AdminInput name="eta" label="ETA dk" />
@@ -283,7 +290,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                   </button>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{store.category.tr} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
+                  <span>{store.category.tr} · ★ {Number(store.rating).toFixed(1)} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
                   <button
                     type="button"
                     className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"

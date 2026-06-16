@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Minus, Plus } from "lucide-react";
+import { Clock, Bike, Minus, Plus } from "lucide-react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
@@ -90,17 +90,21 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         {filtered.map((store) => (
           <article key={store.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
-              <div className="flex items-center gap-3">
-                <img className="h-12 w-12 rounded-full object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
-                <div>
-                  {store.badge && <span className="rounded-full bg-[var(--accent)]/10 px-2 py-1 text-xs font-bold text-[var(--accent)]">{store.badge[locale]}</span>}
-                  <h3 className="mt-1 text-lg font-black">{store.name[locale]}</h3>
-                  <p className="text-sm text-zinc-500">{store.category[locale]} · ★ {store.rating} · {formatNumber(store.reviews, locale)}</p>
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <img className="h-12 w-12 shrink-0 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-lg font-black leading-tight">
+                    {store.name[locale]}
+                  </h3>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-500">
+                    <span className="truncate">{store.category[locale]} · ★ {Number(store.rating).toFixed(1)} · {formatNumber(store.reviews, locale)}</span>
+                    {store.badge && <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">{store.badge[locale]}</span>}
+                  </p>
                 </div>
               </div>
-              <div className="text-right text-sm text-zinc-600">
-                <p>⏱ {store.eta}</p>
-                <p>🏍 {formatMoney(store.deliveryFee, locale)}</p>
+              <div className="ml-3 shrink-0 text-right text-sm text-zinc-600">
+                <p className="flex items-center justify-end gap-1"><Clock size={14} /> {store.eta}</p>
+                <p className="flex items-center justify-end gap-1"><Bike size={14} /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : (locale === "tr" ? "Ücretsiz" : "Free")}</p>
               </div>
             </div>
             <div className="space-y-3 p-4">
@@ -111,7 +115,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                     <h4 className="font-black">{item.name[locale]}</h4>
                     <p className="text-sm text-zinc-500">{item.description[locale]}</p>
                     {item.calories > 0 && <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories, locale)} kcal</p>}
-                    {item.optionGroups && <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p>}
+                    {item.optionGroups && item.optionGroups.length > 0 && <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p>}
                   </div>
                   <div className="col-span-2 flex items-center justify-between gap-3">
                     <strong>{formatMoney(item.price, locale)}</strong>
@@ -125,8 +129,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       </div>
 
       {activeItem && (
-        <div className="fixed inset-0 z-40 bg-black/35 p-4">
-          <div className="mx-auto max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-4">
+          <div className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
             <div className="flex gap-4">
               <img className="h-24 w-24 rounded-lg object-cover" src={activeItem.item.image} alt="" />
               <div className="flex-1">

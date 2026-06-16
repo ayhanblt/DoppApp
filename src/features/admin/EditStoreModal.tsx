@@ -3,7 +3,9 @@
 import { Save } from "lucide-react";
 import { AdminInput } from "@/features/admin/AdminInput";
 import { AdminModal } from "@/features/admin/AdminModal";
+import { useState } from "react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
+import { ImageUploadField } from "@/features/admin/ImageUploadField";
 import type { Locale, Store, StoreType } from "@/shared/lib/types";
 
 type EditStoreModalProps = {
@@ -15,6 +17,7 @@ type EditStoreModalProps = {
 
 export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModalProps) {
   const t = dictionaries[locale];
+  const [logo, setLogo] = useState(store.logo);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,7 +60,12 @@ export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModa
           <AdminInput name="badge_tr" label="Rozet (TR)" defaultValue={store.badge?.tr} />
           <AdminInput name="badge_en" label="Badge (EN)" defaultValue={store.badge?.en} />
         </div>
-        <AdminInput name="logo" label="Logo URL" defaultValue={store.logo} />
+        
+        <div className="sm:col-span-2">
+          <input type="hidden" name="logo" value={logo} />
+          <ImageUploadField locale={locale} value={logo} onChange={setLogo} />
+        </div>
+
         <AdminInput name="rating" label={locale === "tr" ? "Puan" : "Rating"} type="number" step="0.1" defaultValue={store.rating} />
         <AdminInput name="reviews" label={locale === "tr" ? "Yorum sayısı" : "Review count"} type="number" defaultValue={store.reviews} />
         <AdminInput name="eta" label="ETA" defaultValue={store.eta} />

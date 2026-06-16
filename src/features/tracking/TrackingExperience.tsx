@@ -79,17 +79,19 @@ export default function TrackingExperience({
   return (
     <main className="min-h-screen bg-[#fff7ef] p-4 text-zinc-950">
       <section className="mx-auto max-w-7xl py-6">
-        <button onClick={onBack} className="mb-4 rounded-lg bg-white px-4 py-2 font-bold shadow-sm">{t.backToApp}</button>
+        <div className="mb-4 flex items-center justify-between">
+          <button onClick={onBack} className="rounded-lg bg-white px-4 py-2 font-bold shadow-sm">{t.backToApp}</button>
+          <div className="rounded-lg bg-white shadow-sm px-4 py-2 text-right">
+            <p className="text-xs text-zinc-500">{t.savedCalories}</p>
+            <strong className="text-sm">{formatNumber(totals.calories, locale)} kcal</strong>
+          </div>
+        </div>
         <div className="rounded-lg bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-orange-600">{t.orderConfirmed}</p>
               <h1 className="text-2xl font-black">{t.liveTracking}</h1>
               <p className="text-sm text-zinc-500">{order.addressText}</p>
-            </div>
-            <div className="rounded-lg bg-orange-50 px-4 py-3 text-right">
-              <p className="text-sm text-zinc-500">{t.savedCalories}</p>
-              <strong>{formatNumber(totals.calories, locale)} kcal</strong>
             </div>
           </div>
           <div className="mt-5">
