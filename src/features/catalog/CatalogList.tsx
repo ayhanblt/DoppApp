@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Clock, Bike, Minus, Plus } from "lucide-react";
+import Image from "next/image";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
@@ -92,7 +93,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
           <article key={store.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <img className="h-12 w-12 shrink-0 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
+                <Image width={96} height={96} className="h-12 w-12 shrink-0 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-lg font-black leading-tight">
                     {store.name[locale]}
@@ -111,7 +112,9 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
             <div className="space-y-3 p-4">
               {store.menu.map((item) => (
                 <div key={item.id} className="grid grid-cols-[80px_1fr] gap-3 rounded-lg border border-black/10 p-3">
-                  <img 
+                  <Image 
+                    width={160}
+                    height={160}
                     className="h-20 w-20 rounded-md object-cover cursor-pointer transition-transform hover:scale-105" 
                     src={item.image} 
                     alt={item.name[locale]} 
@@ -138,7 +141,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-4">
           <div className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
             <div className="flex gap-4">
-              <img className="h-24 w-24 rounded-lg object-cover" src={activeItem.item.image} alt="" />
+              <Image width={192} height={192} className="h-24 w-24 rounded-lg object-cover" src={activeItem.item.image} alt="" />
               <div className="flex-1">
                 <h3 className="text-xl font-black">{activeItem.item.name[locale]}</h3>
                 <p className="text-sm text-zinc-500">{activeItem.item.description[locale]}</p>
@@ -194,7 +197,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
             ×
           </button>
           <div className="relative w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
-            <img src={enlargedImage} alt="" className="max-h-[80vh] w-full rounded-lg object-contain shadow-2xl" />
+            <Image width={1200} height={1200} src={enlargedImage} alt="" className="max-h-[80vh] w-full rounded-lg object-contain shadow-2xl" />
           </div>
         </div>
       )}

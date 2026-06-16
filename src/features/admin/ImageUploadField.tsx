@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale } from "@/shared/lib/types";
 import { uploadMenuImage } from "@/features/admin/uploadMenuImage";
@@ -40,7 +41,9 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
     <div className="sm:col-span-2">
       <p className="text-sm font-bold">{t.itemImage}</p>
       <div className="mt-2 flex flex-wrap items-start gap-3">
-        <img
+        <Image
+          width={160}
+          height={160}
           className="h-20 w-20 rounded-lg border border-black/10 object-cover"
           src={value || FALLBACK_IMAGE}
           alt=""
@@ -83,7 +86,7 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
                     className={`overflow-hidden rounded-md border ${value === entry.url ? "border-orange-600 ring-2 ring-orange-600/30" : "border-black/10"}`}
                     onClick={() => onChange(entry.url)}
                   >
-                    <img className="h-12 w-12 object-cover" src={entry.url} alt="" />
+                    <Image width={96} height={96} className="h-12 w-12 object-cover" src={entry.url} alt="" />
                   </button>
                 ))}
               </div>

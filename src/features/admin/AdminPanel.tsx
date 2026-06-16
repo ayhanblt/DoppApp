@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogOut, Pencil, Plus, Save } from "lucide-react";
+import { LogOut, Pencil, Plus, Save, ArrowLeft } from "lucide-react";
+import Image from "next/image";
 import { AdminInput } from "@/features/admin/AdminInput";
 import { EditProductsModal } from "@/features/admin/EditProductsModal";
 import { EditStoreModal } from "@/features/admin/EditStoreModal";
@@ -278,7 +279,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
               <div key={store.id} className="rounded-lg border border-black/10 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <img className="h-10 w-10 rounded-lg object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
+                    <Image width={80} height={80} className="h-10 w-10 rounded-lg object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
                     <h3 className="font-black">{store.name.tr}</h3>
                   </div>
                   <button

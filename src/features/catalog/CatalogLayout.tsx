@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair } from "lucide-react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
@@ -117,7 +118,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
           {/* Mobile: Row 1 - Logo & Cart | Desktop: Same row */}
           <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_1.2fr_1fr]">
             <Link href={`/${locale}`} >
-              <img className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} />
+              <Image width={320} height={160} className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} priority />
             </Link>
 
             <div className="hidden lg:block w-full">
@@ -345,7 +346,8 @@ function AddressModal({
               setCoordinate([lat, lng]);
               setMapOpen(true);
               const addressData = await reverseGeocode(lat, lng);
-              setAddress(addressData?.full || `${data.city || ""}, ${data.region || ""}, ${data.country || ""}`.trim());
+              const finalFull = addressData?.full || `${data.city || ""}, ${data.region || ""}, ${data.country || ""}`.trim();
+              setAddress(finalFull);
               setMessage(t.approxLocationUsed);
             } else {
               throw new Error("Invalid IP location data");
@@ -397,7 +399,7 @@ function AddressModal({
     event.preventDefault();
     setIsSaving(true);
     let finalShort = "";
-    let finalFull = address.trim();
+    const finalFull = address.trim();
     try {
       const addressData = await reverseGeocode(coordinate[0], coordinate[1]);
       if (addressData) {
