@@ -4,41 +4,50 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Delivery Timeline Configuration
+# DoppApp - AI Agent Operations Manual
 
-All delivery timing is centralized in `DELIVERY_CONFIG` in `src/features/catalog/FoodDeliveryApp.tsx`:
+Bu doküman, projede kod yazacak tüm AI kodlama asistanlarının uyması gereken katı mimari kuralları ve standartları belirler.
 
-```typescript
-const DELIVERY_CONFIG = {
-  // Step süreler (milisaniye)
-  confirmedDuration: 2000,     // Sipariş onaylandı (2 saniye)
-  preparingDuration: 8000,     // Restoran hazırlıyor (8 saniye)
-  handoffDuration: 5000,       // Kuryeye verildi (5 saniye)
-  deliveringDuration: 3000,    // Son 3 saniye delivering (teslimden 3sn önce)
-  
-  // Kurye hareket süreler (mesafeye bağlı)
-  rabbit: {
-    baseMs: 10000,             // Base 10 saniye
-    kmMultiplierMs: 4000       // Her km için 4 saniye
-  },
-  turtle: {
-    baseMs: 18000,             // Base 18 saniye
-    kmMultiplierMs: 6000       // Her km için 6 saniye
-  }
-};
-```
+## Projenin Amacı ve Özellikleri
+- Gerçek bir backend'i olmayan, tamamen LocalStorage üzerinden verileri tutan çoklu kategorili (Shop, Food, Market) e-ticaret/kurye takip simülasyonu.
+- Çoklu dil (i18n) desteğine sahiptir (Tr/En).
 
-## Timeline Calculation
+## Klasör Yapısı (Feature-Sliced Design - FSD)
+Projeye yeni bir özellik ekleneceğinde FSD prensiplerine sadık kalınmalıdır:
+- **`app/`**: Sadece rota (URL) tanımlamaları ve layoutlar bulunur. İş mantığı burada yazılmaz.
+- **`features/`**: Domain bazlı iş mantığı (Örn: `catalog`, `admin`, `order`, `tracking`). Her feature sadece kendi scope'undan sorumludur.
+- **`shared/`**: Uygulama genelinde paylaşılan her şey (`types.ts`, `dictionaries.ts`, helper fonksiyonları).
 
-1. **placedAt**: Order creation time (now)
-2. **confirmed**: placedAt → placedAt + 2000ms
-3. **preparing**: placedAt + 2000ms → placedAt + 10000ms (2s + 8s)
-4. **handoff**: placedAt + 10000ms → placedAt + 15000ms (2s + 8s + 5s)
-5. **delivering**: placedAt + 15000ms → deliveredAt - 3000ms
-6. **delivering** (last 3s): deliveredAt - 3000ms → deliveredAt
-7. **delivered**: deliveredAt
+## Kod Yazma Standartları
+- **Tip Güvenliği:** `any` kullanımı kesinlikle yasaktır. Her zaman `src/shared/lib/types.ts` içerisindeki veya yeni tanımlanmış kesin TypeScript tiplerini kullanın.
+- **React Hook'ları:** Mümkün olduğunca custom hook'lar oluşturarak bileşen içindeki state karmaşasını engelleyin.
+- **Bileşen Boyutu:** Bir bileşen 200 satırı aşıyorsa, onu daha küçük mantıksal alt bileşenlere bölmeye çalışın.
 
-Courier movement duration = baseMs + (distanceKm × kmMultiplierMs)
+## State Yönetimi
+- Projede Redux, MobX, Zustand gibi harici state yönetim kütüphaneleri KULLANILMAYACAKTIR.
+- Global arayüz state işlemleri için `CatalogContext.tsx` yapısını koruyun veya benzer native React Context'leri kullanın.
 
-**Important**: When updating `DELIVERY_CONFIG`, all status transitions and courier animation timing are automatically synced.
+## Error Handling ve Validation
+- Hata yönetimi için fırlatılacak hatalar mutlaka yakalanmalı (`try/catch`) ve UI katmanında kullanıcıya dostane bir dille (i18n üzerinden) gösterilmelidir.
+- Veri validasyonları için ileride `zod` eklenecektir, şimdilik manuel tip kontrollerini sıkı tutun.
 
+## Naming Convention (İsimlendirme)
+- **Dosyalar:** React bileşenleri `PascalCase` (Örn: `TrackingMap.tsx`), yardımcı fonksiyonlar ve hook'lar `camelCase` (Örn: `useImageCache.ts`, `geo.ts`).
+- **Değişkenler:** Anlaşılır ve uzun isimler kullanın. `arr`, `obj`, `data` gibi jenerik isimlerden kaçının. (Örn: `filteredStores` kullanın).
+
+## Test Yazma Kuralları
+- Test framework'ü olarak **Vitest + React Testing Library (RTL)** kullanılmaktadır.
+- Yeni bir fonksiyon veya karmaşık UI bileşeni eklerken mutlaka `*.test.ts` veya `*.test.tsx` dosyasını oluşturun.
+- Birim testler "Arrange-Act-Assert" şablonunda yazılmalı ve "Happy Path" dışında sınır/hata (Boundary/Error) durumlarını kapsamalıdır.
+
+## Review Checklist (Kod Yazdıktan Sonra Kontrol Edilecekler)
+- [ ] Yeni metin eklendiyse `dictionaries.ts` dosyasına hem Türkçe hem İngilizce çevirisi yapıldı mı?
+- [ ] Bileşene özgü CSS ihtiyacı varsa Tailwind class'ları kullanıldı mı? (Custom CSS/SCSS yazmayın).
+- [ ] Harita tabanlı (`leaflet`) bir kütüphane eklendiyse SSR hatalarını önlemek için `dynamic(..., { ssr: false })` kullanıldı mı?
+- [ ] `tsc --noEmit` çalıştırıldığında tip hatası alınıyor mu?
+- [ ] Eklenen iş mantığı (business logic) için bir test senaryosu düşünüldü mü?
+
+## Delivery Timeline Configuration
+Sipariş statü geçişleri ve kurye hareket süreleri `DELIVERY_CONFIG` içinde yönetilir (`src/features/catalog/appConfig.ts` veya ilgili dosya).
+Kurye hızı hesaplaması: `baseMs + (distanceKm × kmMultiplierMs)`.
+Bu süreler güncellendiğinde animasyonlar otomatik olarak senkronize olur.
