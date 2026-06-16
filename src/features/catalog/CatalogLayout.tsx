@@ -3,14 +3,14 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair } from "lucide-react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, Locale, Order, Store, ThemeName } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findProduct, getItemUnitPrice } from "@/features/order/cart";
 import { buildOrderTimeline, themeIcons, themes } from "@/features/catalog/appConfig";
 import { useCatalog } from "./CatalogContext";
-import { geocodeAddress } from "@/features/tracking/geo";
+import { geocodeAddress, reverseGeocode } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
 
 const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
@@ -49,6 +49,16 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   useEffect(() => {
     setQuery("");
   }, [currentTheme, setQuery]);
+
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   function saveDeliveryAddress(address: Address) {
     window.localStorage.setItem("deliveryAddress", JSON.stringify(address));
@@ -109,16 +119,16 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
             <Link href={`/${locale}`} >
               <img className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} />
             </Link>
-            
+
             <div className="hidden lg:block w-full">
               <button
                 className="flex w-full items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
                 onClick={() => setAddressModalOpen(true)}
               >
                 <MapPin size={18} className="shrink-0" />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
-                  <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
+                <span className="flex min-w-0 flex-1 items-center justify-start gap-2">
+                  <span className="shrink-0 text-xs font-semibold opacity-80">{t.deliveryAddress}:</span>
+                  <span className="truncate text-sm font-black text-left">{deliveryAddress ? `${deliveryAddress.title}${deliveryAddress.shortAddress ? ` · ${deliveryAddress.shortAddress}` : ""}` : t.addressRequired}</span>
                 </span>
                 <span className="shrink-0 text-xs font-black underline">{t.changeAddress}</span>
               </button>
@@ -133,33 +143,26 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
             </div>
           </div>
 
-          {/* Mobile: Row 2 - Delivery Address */}
-          <div className="mt-3 block lg:hidden">
-            <button
-              className="flex w-full items-center gap-3 rounded-lg bg-white/14 px-3 py-2 text-left"
-              onClick={() => setAddressModalOpen(true)}
-            >
-              <MapPin size={18} className="shrink-0" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold opacity-80">{t.deliveryAddress}</span>
-                <span className="block truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</span>
-              </span>
-            </button>
-          </div>
+          <div className="mt-3 flex flex-col lg:grid lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center lg:gap-3">
 
-          {/* Mobile: Row 3 & 4 | Desktop: Row 2 */}
-          <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_1.2fr_1fr] lg:items-center">
-            
-            {/* Mobile: Row 3 - Search | Desktop: Center Column */}
-            <div className="w-full order-1 lg:order-2">
-              <label className="flex w-full items-center gap-2 rounded-lg bg-white px-4 py-3 text-zinc-900">
-                <Search size={18} className="text-zinc-500" />
-                <input className="w-full bg-transparent outline-none" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />
+            <div className="w-full order-1 lg:order-2 flex items-center gap-2">
+              {/* Mobile Address Button - Hidden on Desktop */}
+              <button
+                className="flex shrink-0 max-w-[30%] items-center justify-center gap-1.5 rounded-lg bg-white/14 px-3 py-2 text-left lg:hidden"
+                onClick={() => setAddressModalOpen(true)}
+              >
+                <MapPin size={16} className="shrink-0" />
+                <span className="truncate text-sm font-black">{deliveryAddress ? `${deliveryAddress.title}${deliveryAddress.shortAddress ? ` · ${deliveryAddress.shortAddress}` : ""}` : t.addressRequired}</span>
+              </button>
+
+              <label className="flex flex-1 items-center gap-2 rounded-lg bg-white px-3 py-2 text-zinc-900 shadow-sm">
+                <Search size={16} className="shrink-0 text-zinc-500" />
+                <input className="min-w-0 w-full bg-transparent text-sm outline-none placeholder:text-zinc-400" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />
               </label>
             </div>
 
             {/* Mobile: Row 4 - Categories & Info | Desktop: Left & Right Columns via contents */}
-            <div className="order-2 flex items-center justify-between lg:contents">
+            <div className={`order-2 flex items-center justify-between lg:contents transition-all duration-300 overflow-hidden ${isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-20 opacity-100 mt-3 lg:mt-0"}`}>
               {/* Categories */}
               <div className="flex gap-2 lg:order-1">
                 <Link href={`/${locale}/shop`} aria-label="shop" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["grape"] }}>
@@ -176,7 +179,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               {/* Language & Info */}
               <div className="flex gap-2 lg:order-3 lg:justify-end">
                 <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`)} aria-label="language">
-                  <span className="font-bold text-xs">{locale === "tr" ? "EN" : "TR"}</span>
+                  <span className="font-bold text-xs">{locale === "tr" ? t.langEn : t.langTr}</span>
                 </Link>
                 <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
                   <HelpCircle size={18} />
@@ -223,8 +226,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                 ) : null;
               })}
               <div className="rounded-lg bg-zinc-50 p-3 text-sm">
-                <p>{t.deliveryFee}: {formatMoney(totals.deliveryFee, locale)}</p>
-                <p>{t.savedCalories}: {formatNumber(totals.calories, locale)} kcal</p>
+                <p>{t.deliveryFee}: {totals.deliveryFee === 0 ? t.free : formatMoney(totals.deliveryFee, locale)}</p>
                 <strong>{t.total}: {formatMoney(totals.total, locale)}</strong>
               </div>
               <input className="w-full rounded-lg border border-black/10 p-3" name="name" placeholder={t.customerName} required />
@@ -304,8 +306,66 @@ function AddressModal({
   const [coordinate, setCoordinate] = useState<[number, number]>(
     initialAddress ? [initialAddress.latitude, initialAddress.longitude] : [39.9208, 32.8541]
   );
-  const [mapOpen, setMapOpen] = useState(Boolean(initialAddress));
+  const [mapOpen, setMapOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+
+  function findMyLocation() {
+    if (!("geolocation" in navigator)) {
+      setMessage(t.addressMissing);
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCoordinate([lat, lng]);
+        setMapOpen(true);
+
+        try {
+          const addressData = await reverseGeocode(lat, lng);
+          if (addressData) {
+            setAddress(addressData.full);
+            setMessage("");
+          }
+        } catch (err) {}
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+
+        // IP tabanlı konum servisine fallback (GeoJS)
+        fetch("https://get.geojs.io/v1/ip/geo.json")
+          .then(res => res.json())
+          .then(async (data) => {
+            const lat = Number(data.latitude);
+            const lng = Number(data.longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              setCoordinate([lat, lng]);
+              setMapOpen(true);
+              const addressData = await reverseGeocode(lat, lng);
+              setAddress(addressData?.full || `${data.city || ""}, ${data.region || ""}, ${data.country || ""}`.trim());
+              setMessage(t.approxLocationUsed);
+            } else {
+              throw new Error("Invalid IP location data");
+            }
+            setIsLocating(false);
+          })
+          .catch(() => {
+            if (error.code === 1) {
+              setMessage(t.locationDenied);
+            } else if (error.code === 2) {
+              setMessage(t.locationUnavailable);
+            } else {
+              setMessage(t.addressMissing);
+            }
+            setIsLocating(false);
+          });
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    );
+  }
 
   async function findOnMap() {
     setMessage("");
@@ -321,15 +381,54 @@ function AddressModal({
     setMapOpen(true);
   }
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  const handleMapChange = async (newCoord: [number, number]) => {
+    setCoordinate(newCoord);
+    try {
+      const addressData = await reverseGeocode(newCoord[0], newCoord[1]);
+      if (addressData) {
+        setAddress(addressData.full);
+      }
+    } catch (err) {}
+  };
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSaving(true);
+    let finalShort = "";
+    let finalFull = address.trim();
+    try {
+      const addressData = await reverseGeocode(coordinate[0], coordinate[1]);
+      if (addressData) {
+        finalShort = addressData.short;
+        // Eğer kullanıcı manuel olarak textarea'yı silip sadece kapı no falan yazmışsa,
+        // ya da IP konumu kalmışsa, emin olmak için submit anında da adresi harmanlıyoruz.
+        // Ancak kullanıcının yazdığı notu (örn: Kat 5) kaybetmemek için, 
+        // eğer textarea adresi harita adresinden farklıysa, ikisini birleştiriyoruz.
+        if (addressData.full !== address.trim()) {
+           // IP adresi gibi jenerik şeyleri ayıklamak zor, bu yüzden basitçe:
+           // Eğer address "Turkey" falan içeriyorsa muhtemelen eski IP adresidir, 
+           // ama biz yine de güvenli tarafta kalıp, harita adresini başa ekleyelim,
+           // kullanıcının yazdığını sona parantez/tire ile ekleyelim.
+           // Ya da handleMapChange ile zaten textarea güncelleneceği için, 
+           // kullanıcı pini sürükleyince adres otomatik dolacak. 
+           // Kullanıcı sonrasında "Kat 2" eklerse, addressData.full ile eşleşmeyecek.
+           // O yüzden submit anında *sadece shortAddress* çekmek daha güvenli!
+           // Çünkü handleMapChange zaten textarea'yı güncelliyor.
+        }
+      }
+    } catch(err) {}
+
     onSave({
       id: initialAddress?.id ?? uid("address"),
       title: title.trim(),
-      address: address.trim(),
+      address: finalFull,
+      shortAddress: finalShort,
       latitude: coordinate[0],
       longitude: coordinate[1]
     });
+    setIsSaving(false);
   }
 
   return (
@@ -346,18 +445,26 @@ function AddressModal({
         <div className="mt-5 grid gap-3">
           <input className="w-full rounded-lg border border-black/10 p-3" value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t.addressTitle} required />
           <textarea className="min-h-24 w-full rounded-lg border border-black/10 p-3" value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t.addressDescription} required />
-          <button className="rounded-lg border border-black/10 px-4 py-3 font-black" type="button" onClick={findOnMap}>{t.pickFromMap}</button>
+          <div className="flex gap-2">
+            <button className="flex-1 rounded-lg border border-black/10 px-4 py-3 font-black" type="button" onClick={findOnMap}>{t.pickFromMap}</button>
+            <button
+              className={`flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-3 text-zinc-700 transition-colors hover:bg-zinc-200 ${isLocating ? 'animate-pulse' : ''}`}
+              type="button"
+              onClick={findMyLocation}
+              disabled={isLocating}
+              aria-label={t.useCurrentLocation}
+            >
+              <Crosshair size={18} />
+            </button>
+          </div>
           {message && <p className="text-sm font-bold text-[var(--accent)]">{message}</p>}
           {mapOpen && (
             <div className="space-y-2">
-              <AddressPickerMap value={coordinate} onChange={setCoordinate} />
-              <p className="text-xs font-medium text-zinc-500">
-                {coordinate[0].toFixed(5)}, {coordinate[1].toFixed(5)}
-              </p>
+              <AddressPickerMap value={coordinate} onChange={handleMapChange} />
             </div>
           )}
-          <button disabled={!mapOpen} className="rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45">
-            {t.saveAddress}
+          <button disabled={!mapOpen || isSaving} className="rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45">
+            {isSaving ? "..." : t.saveAddress}
           </button>
         </div>
       </form>

@@ -63,6 +63,7 @@ export type Address = {
   id: string;
   title: string;
   address: string;
+  shortAddress?: string;
   latitude: number;
   longitude: number;
 };

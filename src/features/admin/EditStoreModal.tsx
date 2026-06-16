@@ -66,10 +66,10 @@ export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModa
           <ImageUploadField locale={locale} value={logo} onChange={setLogo} />
         </div>
 
-        <AdminInput name="rating" label={locale === "tr" ? "Puan" : "Rating"} type="number" step="0.1" defaultValue={store.rating} />
-        <AdminInput name="reviews" label={locale === "tr" ? "Yorum sayısı" : "Review count"} type="number" defaultValue={store.reviews} />
+        <AdminInput name="rating" label={t.rating} type="number" step="0.1" defaultValue={store.rating} />
+        <AdminInput name="reviews" label={t.reviewCount} type="number" defaultValue={store.reviews} />
         <AdminInput name="eta" label="ETA" defaultValue={store.eta} />
-        <AdminInput name="deliveryFee" label={locale === "tr" ? "Teslimat ücreti" : "Delivery fee"} type="number" defaultValue={store.deliveryFee} />
+        <AdminInput name="deliveryFee" label={t.deliveryFee} type="number" defaultValue={store.deliveryFee} />
         <AdminInput name="lat" label="Latitude" type="number" step="0.0001" defaultValue={store.coordinate[0]} />
         <AdminInput name="lng" label="Longitude" type="number" step="0.0001" defaultValue={store.coordinate[1]} />
         <button type="submit" className="sm:col-span-2 mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 py-3 font-black text-white">

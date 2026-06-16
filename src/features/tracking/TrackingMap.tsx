@@ -6,6 +6,8 @@ import L from "leaflet";
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { getRoute } from "./geo";
+import { renderToStaticMarkup } from "react-dom/server";
+import { House, MapPinHouse, Truck } from "lucide-react";
 
 type TrackingMapProps = {
   restaurant: [number, number];
@@ -17,27 +19,48 @@ type TrackingMapProps = {
 };
 
 const restaurantIcon = L.divIcon({
-  className: "restaurant-marker",
-  html: "<span>🍽</span>",
-  iconSize: [32, 32],
-  iconAnchor: [16, 16]
+  className: "bg-transparent",
+  html: renderToStaticMarkup(
+    <div className="flex items-center justify-center drop-shadow-md w-12 h-12">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full rounded-br-none rotate-45 bg-zinc-800 border-1 border-white text-white">
+        <div className="-rotate-45 flex items-center justify-center">
+          <House size={16} strokeWidth={2} />
+        </div>
+      </div>
+    </div>
+  ),
+  iconSize: [48, 48],
+  iconAnchor: [24, 47]
 });
 
 const courierIcon = L.divIcon({
-  className: "courier-marker",
-  html: "<span>🏍</span>",
-  // iconUrl: "/location.png",
-  iconSize: [34, 34],
-  iconAnchor: [17, 17]
+  className: "bg-transparent",
+  html: renderToStaticMarkup(
+    <div className="flex items-center justify-center drop-shadow-md w-14 h-14">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full rounded-br-none rotate-45 bg-[#fb4824] border-1 border-white text-white">
+        <div className="-rotate-45 flex items-center justify-center">
+          <Truck size={18} strokeWidth={2.5} />
+        </div>
+      </div>
+    </div>
+  ),
+  iconSize: [56, 56],
+  iconAnchor: [28, 55]
 });
 
-const destinationIcon = L.icon({
-  className: "destination-marker",
-  // html: "<span>⌂</span>",
- 
-  iconUrl: "/images/icons/location.svg",
-  iconSize: [35, 35],
-  iconAnchor: [20, 35]
+const destinationIcon = L.divIcon({
+  className: "bg-transparent",
+  html: renderToStaticMarkup(
+    <div className="flex items-center justify-center drop-shadow-md w-12 h-12">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full rounded-br-none rotate-45 bg-emerald-500 border-1 border-white text-white">
+        <div className="-rotate-45 flex items-center justify-center">
+          <MapPinHouse size={16} strokeWidth={2} />
+        </div>
+      </div>
+    </div>
+  ),
+  iconSize: [48, 48],
+  iconAnchor: [24, 47]
 });
 
 function FitBounds({ points }: { points: [number, number][] }) {

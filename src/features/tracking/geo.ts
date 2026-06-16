@@ -15,6 +15,41 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
   return [Number(result.lat), Number(result.lon)];
 }
 
+type GeocodeResult = {
+  full: string;
+  short: string;
+};
+
+export async function reverseGeocode(lat: number, lon: number): Promise<GeocodeResult | null> {
+  const params = new URLSearchParams({
+    lat: lat.toString(),
+    lon: lon.toString(),
+    format: "json",
+    addressdetails: "1"
+  });
+
+  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
+    headers: { Accept: "application/json" }
+  });
+
+  if (!response.ok) return null;
+  const result = await response.json();
+  if (!result || !result.address) return null;
+
+  const addr = result.address;
+  const district = addr.city_district || addr.town || addr.county || addr.suburb || "";
+  const city = addr.city || addr.province || addr.state || "";
+  
+  const shortArr = [];
+  if (district) shortArr.push(district);
+  if (city && city !== district) shortArr.push(city);
+  
+  return {
+    full: result.display_name || "",
+    short: shortArr.join(", ") || result.display_name || ""
+  };
+}
+
 export function interpolateRoute(from: [number, number], to: [number, number], progress: number): [number, number] {
   const clamped = Math.min(1, Math.max(0, progress));
   return [

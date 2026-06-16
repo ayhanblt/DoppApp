@@ -6,6 +6,8 @@ import L from "leaflet";
 import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { Marker as LeafletMarker } from "leaflet";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Home, MapPin } from "lucide-react";
 
 type AddressPickerMapProps = {
   value: [number, number];
@@ -13,10 +15,18 @@ type AddressPickerMapProps = {
 };
 
 const addressIcon = L.divIcon({
-  className: "destination-marker",
-  html: "<span>⌂</span>",
-  iconSize: [30, 30],
-  iconAnchor: [15, 15]
+  className: "bg-transparent",
+  html: renderToStaticMarkup(
+    <div className="flex items-center justify-center drop-shadow-md w-12 h-12">
+      <div className="flex h-7 w-7 items-center justify-center rounded-full rounded-br-none rotate-45 bg-[#fb4824] border-1 border-white text-white">
+        <div className="-rotate-45 flex items-center justify-center">
+          <Home size={16} strokeWidth={2.5} />
+        </div>
+      </div>
+    </div>
+  ),
+  iconSize: [48, 48],
+  iconAnchor: [24, 47]
 });
 
 function Recenter({ coordinate }: { coordinate: [number, number] }) {

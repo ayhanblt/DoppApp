@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
+import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale } from "@/shared/lib/types";
 import { uploadMenuImage } from "@/features/admin/uploadMenuImage";
 import { useImageCache } from "@/features/admin/useImageCache";
@@ -15,6 +16,7 @@ type ImageUploadFieldProps = {
 };
 
 export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldProps) {
+  const t = dictionaries[locale];
   const inputRef = useRef<HTMLInputElement>(null);
   const { entries, addEntry } = useImageCache();
   const [uploading, setUploading] = useState(false);
@@ -28,7 +30,7 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
       onChange(result.url);
       addEntry({ url: result.url, filename: result.filename, uploadedAt: Date.now() });
     } catch {
-      setError(locale === "tr" ? "Görsel yüklenemedi." : "Image upload failed.");
+      setError(t.imageUploadFailed);
     } finally {
       setUploading(false);
     }
@@ -36,7 +38,7 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
 
   return (
     <div className="sm:col-span-2">
-      <p className="text-sm font-bold">{locale === "tr" ? "Ürün görseli" : "Item image"}</p>
+      <p className="text-sm font-bold">{t.itemImage}</p>
       <div className="mt-2 flex flex-wrap items-start gap-3">
         <img
           className="h-20 w-20 rounded-lg border border-black/10 object-cover"
@@ -62,7 +64,7 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
             onClick={() => inputRef.current?.click()}
           >
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
-            {locale === "tr" ? "Görsel yükle" : "Upload image"}
+            {t.uploadImage}
           </button>
           {value && (
             <p className="break-all text-xs text-zinc-500">{value}</p>
@@ -71,7 +73,7 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
           {entries.length > 0 && (
             <div>
               <p className="text-xs font-bold text-zinc-500">
-                {locale === "tr" ? "Son yüklenenler" : "Recent uploads"}
+                {t.recentUploads}
               </p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {entries.slice(0, 6).map((entry) => (

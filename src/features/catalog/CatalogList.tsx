@@ -16,6 +16,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
   const [activeItem, setActiveItem] = useState<ActiveItem | null>(null);
   const [selections, setSelections] = useState<CartSelection>({});
   const [quantity, setQuantity] = useState(1);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const normalized = query.toLocaleLowerCase(locale);
@@ -103,14 +104,19 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                 </div>
               </div>
               <div className="ml-3 shrink-0 text-right text-sm text-zinc-600">
-                <p className="flex items-center justify-end gap-1"><Clock size={14} /> {store.eta}</p>
-                <p className="flex items-center justify-end gap-1"><Bike size={14} /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : (locale === "tr" ? "Ücretsiz" : "Free")}</p>
+                <p className="flex items-center justify-end gap-1"><Clock size={14} /> {store.eta} {t.min} </p>
+                <p className="flex items-center justify-end gap-1"><Bike size={14} /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : t.free}</p>
               </div>
             </div>
             <div className="space-y-3 p-4">
               {store.menu.map((item) => (
                 <div key={item.id} className="grid grid-cols-[80px_1fr] gap-3 rounded-lg border border-black/10 p-3">
-                  <img className="h-20 w-20 rounded-md object-cover" src={item.image} alt={item.name[locale]} />
+                  <img 
+                    className="h-20 w-20 rounded-md object-cover cursor-pointer transition-transform hover:scale-105" 
+                    src={item.image} 
+                    alt={item.name[locale]} 
+                    onClick={() => setEnlargedImage(item.image)}
+                  />
                   <div className="min-w-0">
                     <h4 className="font-black">{item.name[locale]}</h4>
                     <p className="text-sm text-zinc-500">{item.description[locale]}</p>
@@ -171,6 +177,24 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                 {t.add}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {enlargedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <button 
+            onClick={() => setEnlargedImage(null)}
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-2xl font-bold text-white transition-colors hover:bg-white/20 md:right-8 md:top-8"
+            aria-label={t.close}
+          >
+            ×
+          </button>
+          <div className="relative w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
+            <img src={enlargedImage} alt="" className="max-h-[80vh] w-full rounded-lg object-contain shadow-2xl" />
           </div>
         </div>
       )}

@@ -65,7 +65,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     );
     setStores(nextStores);
     await saveStoreToSupabase(updated);
-    setMessage(locale === "tr" ? "Veritabanına kaydedildi." : "Saved to DB.");
+    setMessage(t.savedToDb);
     setEditingStore(null);
     if (closeItemsModal) {
       setEditingItemsStore(null);
@@ -98,7 +98,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     setStores(nextStores);
     setSelectedStore(next.id);
     await saveStoreToSupabase(next);
-    setMessage(locale === "tr" ? "Veritabanına eklendi." : "Added to DB.");
+    setMessage(t.addedToDb);
     event.currentTarget.reset();
   }
 
@@ -129,7 +129,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     setStores(nextStores);
     const targetStore = nextStores.find(s => s.id === selectedStore);
     if (targetStore) await saveStoreToSupabase(targetStore);
-    setMessage(locale === "tr" ? "Ürün veritabanına eklendi." : "Item added to DB.");
+    setMessage(t.itemAddedToDb);
     setItemImage("");
     setItemOptionGroups(undefined);
     event.currentTarget.reset();
@@ -290,7 +290,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
                   </button>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{store.category.tr} · ★ {Number(store.rating).toFixed(1)} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
+                  <span>{store.category.tr} · ★ {Number(store.rating).toFixed(1)} · {store.menu.length} {t.itemCount}</span>
                   <button
                     type="button"
                     className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"

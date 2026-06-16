@@ -90,9 +90,9 @@ export function EditProductsModal({ locale, store, onClose, onSave }: EditProduc
                 <AdminInput name="description_tr" label="Açıklama (TR)" defaultValue={selectedItem?.description.tr} required />
                 <AdminInput name="description_en" label="Description (EN)" defaultValue={selectedItem?.description.en} required />
               </div>
-              <AdminInput label={locale === "tr" ? "Fiyat" : "Price"} type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
+              <AdminInput label={t.price} type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
               {store.type !== "shop" && (
-                <AdminInput label={locale === "tr" ? "Kalori" : "Calories"} type="number" value={calories} onChange={(event) => setCalories(event.target.value)} />
+                <AdminInput label={t.calories} type="number" value={calories} onChange={(event) => setCalories(event.target.value)} />
               )}
               
                 {store.type === "shop" && (

@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 
 import type { Locale, MenuOptionGroup } from "@/shared/lib/types";
+import { dictionaries } from "@/shared/i18n/dictionaries";
 import { uid } from "@/shared/lib/format";
 
 type OptionGroupsEditorProps = {
@@ -51,6 +52,7 @@ function cloneDefaultGroups(): MenuOptionGroup[] {
 
 export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEditorProps) {
   const enabled = Boolean(value?.length);
+  const t = dictionaries[locale];
   const groups = value ?? [];
 
   function updateGroups(next: MenuOptionGroup[]) {
@@ -107,7 +109,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
             checked={enabled}
             onChange={(event) => onChange(event.target.checked ? cloneDefaultGroups() : undefined)}
           />
-          {locale === "tr" ? "Opsiyon grupları ekle" : "Add option groups"}
+          {t.addOptionGroups}
         </label>
         {enabled && (
           <div className="flex gap-2">
@@ -116,14 +118,14 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
               className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold"
               onClick={() => onChange(cloneDefaultGroups())}
             >
-              {locale === "tr" ? "Standart şablon" : "Default template"}
+              {t.defaultTemplate}
             </button>
             <button
               type="button"
               className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold"
               onClick={addGroup}
             >
-              <Plus size={14} /> {locale === "tr" ? "Grup ekle" : "Add group"}
+              <Plus size={14} /> {t.addGroup}
             </button>
           </div>
         )}
@@ -135,13 +137,13 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
             <div key={group.id} className="rounded-lg bg-zinc-50 p-3">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-sm font-black">
-                  {locale === "tr" ? `Grup ${groupIndex + 1}` : `Group ${groupIndex + 1}`}
+                  {t.groupIndex(groupIndex + 1)}
                 </p>
                 <button
                   type="button"
                   className="text-zinc-400"
                   onClick={() => removeGroup(groupIndex)}
-                  aria-label={locale === "tr" ? "Grubu sil" : "Remove group"}
+                  aria-label={t.removeGroup}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -157,7 +159,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                     checked={Boolean(group.required)}
                     onChange={(event) => updateGroup(groupIndex, { required: event.target.checked || undefined })}
                   />
-                  {locale === "tr" ? "Zorunlu" : "Required"}
+                  {t.required}
                 </label>
                 <label className="flex items-center gap-2 font-bold">
                   <input
@@ -165,7 +167,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                     checked={Boolean(group.multiple)}
                     onChange={(event) => updateGroup(groupIndex, { multiple: event.target.checked || undefined })}
                   />
-                  {locale === "tr" ? "Çoklu seçim" : "Multiple"}
+                  {t.multipleSelection}
                 </label>
               </div>
               <div className="mt-3 space-y-2">
@@ -176,7 +178,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                       <input className="w-full rounded border p-2 text-sm" value={option.label.en} onChange={(e) => updateOption(groupIndex, optionIndex, { label: { ...option.label, en: e.target.value } })} placeholder="Option name (e.g. Cola)" />
                     </div>
                     <Field
-                      label={locale === "tr" ? "Fiyat farkı" : "Price delta"}
+                      label={t.priceDelta}
                       type="number"
                       value={String(option.priceDelta)}
                       onChange={(next) =>
@@ -187,7 +189,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                       type="button"
                       className="self-end text-zinc-400"
                       onClick={() => removeOption(groupIndex, optionIndex)}
-                      aria-label={locale === "tr" ? "Opsiyonu sil" : "Remove option"}
+                      aria-label={t.removeOption}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -198,7 +200,7 @@ export function OptionGroupsEditor({ locale, value, onChange }: OptionGroupsEdit
                   className="flex items-center gap-1 text-xs font-bold text-orange-600"
                   onClick={() => addOption(groupIndex)}
                 >
-                  <Plus size={14} /> {locale === "tr" ? "Opsiyon ekle" : "Add option"}
+                  <Plus size={14} /> {t.addOption}
                 </button>
               </div>
             </div>
