@@ -1,12 +1,12 @@
-import type { CartItem, MenuItem, Restaurant } from "@/shared/lib/types";
+import type { CartItem, Product, Store } from "@/shared/lib/types";
 
-export function findMenuItem(restaurants: Restaurant[], cartItem: CartItem): MenuItem | undefined {
-  return restaurants
-    .find((restaurant) => restaurant.id === cartItem.restaurantId)
+export function findProduct(stores: Store[], cartItem: CartItem): Product | undefined {
+  return stores
+    .find((store) => store.id === cartItem.storeId)
     ?.menu.find((item) => item.id === cartItem.itemId);
 }
 
-export function getItemUnitPrice(item: MenuItem, cartItem: CartItem) {
+export function getItemUnitPrice(item: Product, cartItem: CartItem) {
   const optionDelta = item.optionGroups?.reduce((total, group) => {
     const selected = cartItem.selections[group.id] ?? [];
     const delta = selected.reduce((sum, optionId) => {
@@ -20,19 +20,19 @@ export function getItemUnitPrice(item: MenuItem, cartItem: CartItem) {
   return item.price + (optionDelta ?? 0);
 }
 
-export function getCartTotals(restaurants: Restaurant[], cart: CartItem[]) {
+export function getCartTotals(stores: Store[], cart: CartItem[]) {
   const subtotal = cart.reduce((sum, cartItem) => {
-    const item = findMenuItem(restaurants, cartItem);
+    const item = findProduct(stores, cartItem);
     return item ? sum + getItemUnitPrice(item, cartItem) * cartItem.quantity : sum;
   }, 0);
 
   const deliveryFee = cart.reduce((maxFee, cartItem) => {
-    const restaurant = restaurants.find((candidate) => candidate.id === cartItem.restaurantId);
-    return Math.max(maxFee, restaurant?.deliveryFee ?? 0);
+    const store = stores.find((candidate) => candidate.id === cartItem.storeId);
+    return Math.max(maxFee, store?.deliveryFee ?? 0);
   }, 0);
 
   const calories = cart.reduce((sum, cartItem) => {
-    const item = findMenuItem(restaurants, cartItem);
+    const item = findProduct(stores, cartItem);
     return item ? sum + item.calories * cartItem.quantity : sum;
   }, 0);
 

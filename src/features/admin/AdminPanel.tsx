@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogOut, Pencil, Plus, Save } from "lucide-react";
 import { AdminInput } from "@/features/admin/AdminInput";
-import { EditMenuItemsModal } from "@/features/admin/EditMenuItemsModal";
-import { EditRestaurantModal } from "@/features/admin/EditRestaurantModal";
+import { EditProductsModal } from "@/features/admin/EditProductsModal";
+import { EditStoreModal } from "@/features/admin/EditStoreModal";
 import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
 import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
-import { seedRestaurants } from "@/features/catalog/data";
+import { seedStores } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { Locale, MenuOptionGroup, Restaurant } from "@/shared/lib/types";
+import type { Locale, MenuOptionGroup, Store, StoreType, ProductType } from "@/shared/lib/types";
 import { uid } from "@/shared/lib/format";
 
 export function AdminPanel({ locale }: { locale: Locale }) {
@@ -18,17 +18,17 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const [restaurants, setRestaurants] = useState<Restaurant[]>(() => {
-    if (typeof window === "undefined") return seedRestaurants;
-    const raw = window.localStorage.getItem("doppapp-restaurants");
-    return raw ? (JSON.parse(raw) as Restaurant[]) : seedRestaurants;
+  const [stores, setStores] = useState<Store[]>(() => {
+    if (typeof window === "undefined") return seedStores;
+    const raw = window.localStorage.getItem("doppapp-stores");
+    return raw ? (JSON.parse(raw) as Store[]) : seedStores;
   });
-  const [selectedRestaurant, setSelectedRestaurant] = useState(seedRestaurants[0].id);
+  const [selectedStore, setSelectedStore] = useState(seedStores[0].id);
   const [message, setMessage] = useState("");
   const [itemImage, setItemImage] = useState("");
   const [itemOptionGroups, setItemOptionGroups] = useState<MenuOptionGroup[] | undefined>();
-  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
-  const [editingItemsRestaurant, setEditingItemsRestaurant] = useState<Restaurant | null>(null);
+  const [editingStore, setEditingStore] = useState<Store | null>(null);
+  const [editingItemsStore, setEditingItemsStore] = useState<Store | null>(null);
 
   useEffect(() => {
     setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
@@ -52,32 +52,33 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     setIsAuthenticated(false);
   }
 
-  function updateRestaurant(updated: Restaurant, closeItemsModal = false) {
-    const nextRestaurants = restaurants.map((restaurant) =>
-      restaurant.id === updated.id ? updated : restaurant
+  function updateStore(updated: Store, closeItemsModal = false) {
+    const nextStores = stores.map((store) =>
+      store.id === updated.id ? updated : store
     );
-    setRestaurants(nextRestaurants);
-    save(nextRestaurants);
-    setEditingRestaurant(null);
+    setStores(nextStores);
+    save(nextStores);
+    setEditingStore(null);
     if (closeItemsModal) {
-      setEditingItemsRestaurant(null);
+      setEditingItemsStore(null);
     } else {
-      setEditingItemsRestaurant((current) =>
+      setEditingItemsStore((current) =>
         current?.id === updated.id ? updated : current
       );
     }
   }
 
-  function save(restaurantsToSave = restaurants) {
-    window.localStorage.setItem("doppapp-restaurants", JSON.stringify(restaurantsToSave));
+  function save(storesToSave = stores) {
+    window.localStorage.setItem("doppapp-stores", JSON.stringify(storesToSave));
     setMessage(locale === "tr" ? "Taslak kaydedildi." : "Draft saved.");
   }
 
-  function addRestaurant(event: React.FormEvent<HTMLFormElement>) {
+  function addStore(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const next: Restaurant = {
-      id: uid("restaurant"),
+    const next: Store = {
+      id: uid("store"),
+      type: String(data.get("type")) as StoreType,
       name: { tr: String(data.get("nameTr")), en: String(data.get("nameEn")) },
       category: { tr: String(data.get("categoryTr")), en: String(data.get("categoryEn")) },
       emoji: String(data.get("emoji") || "🍽️"),
@@ -89,24 +90,27 @@ export function AdminPanel({ locale }: { locale: Locale }) {
       coordinate: [Number(data.get("lat") || 41.037), Number(data.get("lng") || 28.985)],
       menu: []
     };
-    const nextRestaurants = [...restaurants, next];
-    setRestaurants(nextRestaurants);
-    setSelectedRestaurant(next.id);
-    save(nextRestaurants);
+    const nextStores = [...stores, next];
+    setStores(nextStores);
+    setSelectedStore(next.id);
+    save(nextStores);
     event.currentTarget.reset();
   }
+
+  const selectedStoreObj = stores.find(s => s.id === selectedStore);
 
   function addItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const nextRestaurants = restaurants.map((restaurant) => {
-      if (restaurant.id !== selectedRestaurant) return restaurant;
+    const nextStores = stores.map((store) => {
+      if (store.id !== selectedStore) return store;
       return {
-        ...restaurant,
+        ...store,
         menu: [
-          ...restaurant.menu,
+          ...store.menu,
           {
             id: uid("item"),
+            ...(data.get("productType") ? { productType: String(data.get("productType")) as ProductType } : {}),
             name: { tr: String(data.get("nameTr")), en: String(data.get("nameEn")) },
             description: { tr: String(data.get("descriptionTr")), en: String(data.get("descriptionEn")) },
             price: Number(data.get("price") || 0),
@@ -117,8 +121,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
         ]
       };
     });
-    setRestaurants(nextRestaurants);
-    save(nextRestaurants);
+    setStores(nextStores);
+    save(nextStores);
     setItemImage("");
     setItemOptionGroups(undefined);
     event.currentTarget.reset();
@@ -168,9 +172,30 @@ export function AdminPanel({ locale }: { locale: Locale }) {
         </div>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_1fr]">
-          <form onSubmit={addRestaurant} className="rounded-lg bg-white p-5 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addRestaurant}</h2>
+          <form onSubmit={addStore} className="rounded-lg bg-white p-5 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addStore}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
+              
+              <label className="block text-sm font-bold sm:col-span-2">
+                Mağaza Tipi
+                <select name="type" className="mt-1 w-full rounded-lg border border-black/10 p-3" defaultValue="food">
+                  <option value="shop">Shop (Giyim, Elektronik vs.)</option>
+                  <option value="food">Food (Yemek)</option>
+                  <option value="market">Market</option>
+                </select>
+              </label>
+              
+              {selectedStoreObj?.type === "shop" && (
+                <label className="block text-sm font-bold sm:col-span-2">
+                  Ürün Tipi
+                  <select name="productType" className="mt-1 w-full rounded-lg border border-black/10 p-3">
+                    <option value="">Seçiniz</option>
+                    <option value="clothing">Giyim</option>
+                    <option value="electronics">Elektronik</option>
+                    <option value="other">Diğer</option>
+                  </select>
+                </label>
+              )}
               <AdminInput name="nameTr" label="TR ad" required />
               <AdminInput name="nameEn" label="EN name" required />
               <AdminInput name="categoryTr" label="TR kategori" required />
@@ -194,13 +219,25 @@ export function AdminPanel({ locale }: { locale: Locale }) {
             <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addItem}</h2>
             <label className="mb-3 block text-sm font-bold">
               Restoran
-              <select className="mt-1 w-full rounded-lg border border-black/10 p-3" value={selectedRestaurant} onChange={(event) => setSelectedRestaurant(event.target.value)}>
-                {restaurants.map((restaurant) => (
-                  <option key={restaurant.id} value={restaurant.id}>{restaurant.name[locale]}</option>
+              <select className="mt-1 w-full rounded-lg border border-black/10 p-3" value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>{store.name[locale]}</option>
                 ))}
               </select>
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
+              
+              {selectedStoreObj?.type === "shop" && (
+                <label className="block text-sm font-bold sm:col-span-2">
+                  Ürün Tipi
+                  <select name="productType" className="mt-1 w-full rounded-lg border border-black/10 p-3">
+                    <option value="">Seçiniz</option>
+                    <option value="clothing">Giyim</option>
+                    <option value="electronics">Elektronik</option>
+                    <option value="other">Diğer</option>
+                  </select>
+                </label>
+              )}
               <AdminInput name="nameTr" label="TR ürün" required />
               <AdminInput name="nameEn" label="EN item" required />
               <AdminInput name="descriptionTr" label="TR açıklama" required />
@@ -219,29 +256,29 @@ export function AdminPanel({ locale }: { locale: Locale }) {
         {message && <p className="mt-4 rounded-lg bg-emerald-50 p-3 font-bold text-emerald-700">{message}</p>}
 
         <div className="mt-6 rounded-lg bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-black">{restaurants.length} restoran</h2>
+          <h2 className="text-xl font-black">{stores.length} restoran</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {restaurants.map((restaurant) => (
-              <div key={restaurant.id} className="rounded-lg border border-black/10 p-4">
+            {stores.map((store) => (
+              <div key={store.id} className="rounded-lg border border-black/10 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-2xl">{restaurant.emoji}</p>
-                    <h3 className="font-black">{restaurant.name[locale]}</h3>
+                    <p className="text-2xl">{store.emoji}</p>
+                    <h3 className="font-black">{store.name[locale]}</h3>
                   </div>
                   <button
                     type="button"
                     className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold"
-                    onClick={() => setEditingRestaurant(restaurant)}
+                    onClick={() => setEditingStore(store)}
                   >
                     <Pencil size={14} /> {t.edit}
                   </button>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{restaurant.category[locale]} · {restaurant.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
+                  <span>{store.category[locale]} · {store.menu.length} {locale === "tr" ? "ürün" : "items"}</span>
                   <button
                     type="button"
                     className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"
-                    onClick={() => setEditingItemsRestaurant(restaurant)}
+                    onClick={() => setEditingItemsStore(store)}
                   >
                     <Pencil size={12} /> {t.edit}
                   </button>
@@ -251,21 +288,21 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        {editingRestaurant && (
-          <EditRestaurantModal
+        {editingStore && (
+          <EditStoreModal
             locale={locale}
-            restaurant={editingRestaurant}
-            onClose={() => setEditingRestaurant(null)}
-            onSave={updateRestaurant}
+            store={editingStore}
+            onClose={() => setEditingStore(null)}
+            onSave={updateStore}
           />
         )}
 
-        {editingItemsRestaurant && (
-          <EditMenuItemsModal
+        {editingItemsStore && (
+          <EditProductsModal
             locale={locale}
-            restaurant={editingItemsRestaurant}
-            onClose={() => setEditingItemsRestaurant(null)}
-            onSave={(updated) => updateRestaurant(updated, true)}
+            store={editingItemsStore}
+            onClose={() => setEditingItemsStore(null)}
+            onSave={(updated) => updateStore(updated, true)}
           />
         )}
       </section>

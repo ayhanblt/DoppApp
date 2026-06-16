@@ -1,9 +1,10 @@
-import type { Restaurant } from "@/shared/lib/types";
+import type { Store } from "@/shared/lib/types";
 import { coordinateDistanceKm, offsetCoordinate, snapCoordinateToRoad } from "@/features/tracking/geo";
 
 export const defaultOptionGroups = [
   {
     id: "spice",
+    type: "food",
     label: { tr: "Lezzet seçimi", en: "Flavor" },
     required: true,
     options: [
@@ -14,6 +15,7 @@ export const defaultOptionGroups = [
   },
   {
     id: "size",
+    type: "food",
     label: { tr: "Boyut", en: "Size" },
     options: [
       { id: "small", label: { tr: "Küçük", en: "Small" }, priceDelta: -30 },
@@ -23,6 +25,7 @@ export const defaultOptionGroups = [
   },
   {
     id: "extras",
+    type: "food",
     label: { tr: "Ek ürünler", en: "Extras" },
     multiple: true,
     options: [
@@ -34,9 +37,44 @@ export const defaultOptionGroups = [
 
 const img = (name: string) => `/images/menu/${name}`;
 
-export const seedRestaurants: Restaurant[] = [
+export const seedStores: Store[] = [
+  {
+    id: "tech-haven",
+    type: "shop",
+    name: { tr: "Teknoloji Cenneti", en: "Tech Haven" },
+    category: { tr: "Elektronik", en: "Electronics" },
+    emoji: "💻",
+    badge: { tr: "Yeni", en: "New" },
+    rating: 4.9,
+    reviews: 120,
+    eta: "1-2 gün",
+    deliveryFee: 0,
+    coordinate: [41.0422, 29.0094],
+    menu: [
+      { id: "laptop-pro", productType: "electronics", name: { tr: "Pro Laptop", en: "Pro Laptop" }, description: { tr: "Güçlü işlemci", en: "Powerful CPU" }, price: 45000, calories: 0, image: "/images/doppapp-logo.webp", optionGroups: [] },
+      { id: "wireless-mouse", productType: "electronics", name: { tr: "Kablosuz Mouse", en: "Wireless Mouse" }, description: { tr: "Ergonomik tasarım", en: "Ergonomic design" }, price: 1200, calories: 0, image: "/images/doppapp-logo.webp", optionGroups: [] }
+    ]
+  },
+  {
+    id: "fresh-market",
+    type: "market",
+    name: { tr: "Taze Market", en: "Fresh Market" },
+    category: { tr: "Market", en: "Grocery" },
+    emoji: "🛒",
+    badge: { tr: "Hızlı", en: "Fast" },
+    rating: 4.5,
+    reviews: 890,
+    eta: "15-20",
+    deliveryFee: 15,
+    coordinate: [41.0369, 28.9851],
+    menu: [
+      { id: "milk", name: { tr: "Süt 1L", en: "Milk 1L" }, description: { tr: "Tam yağlı taze süt", en: "Full fat fresh milk" }, price: 45, calories: 600, image: "/images/doppapp-logo.webp" },
+      { id: "bread", name: { tr: "Ekmek", en: "Bread" }, description: { tr: "Taze fırın ekmeği", en: "Fresh bakery bread" }, price: 15, calories: 250, image: "/images/doppapp-logo.webp" }
+    ]
+  },
   {
     id: "chicken-bite",
+    type: "food",
     name: { tr: "Tek Lokma Tavuk", en: "One Bite Chicken" },
     category: { tr: "Tavuk", en: "Chicken" },
     emoji: "🍗",
@@ -54,6 +92,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "tokyo-ramen",
+    type: "food",
     name: { tr: "Tokyo Ramen İstasyonu", en: "Tokyo Ramen Station" },
     category: { tr: "Japon", en: "Japanese" },
     emoji: "🍜",
@@ -71,6 +110,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "pasta-lab",
+    type: "food",
     name: { tr: "PastaLab Mutfak", en: "PastaLab Kitchen" },
     category: { tr: "İtalyan", en: "Italian" },
     emoji: "🍝",
@@ -87,6 +127,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "green-poke",
+    type: "food",
     name: { tr: "Green Poke House", en: "Green Poke House" },
     category: { tr: "Salata", en: "Salad" },
     emoji: "🥗",
@@ -104,6 +145,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "mom-kitchen",
+    type: "food",
     name: { tr: "Anne Eli Lokantası", en: "Mom's Korean Kitchen" },
     category: { tr: "Ev yemeği", en: "Home cooking" },
     emoji: "🍚",
@@ -121,6 +163,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "burger-factory",
+    type: "food",
     name: { tr: "Burger Factory", en: "Burger Factory" },
     category: { tr: "Burger", en: "Burger" },
     emoji: "🍔",
@@ -137,6 +180,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "dragon-china",
+    type: "food",
     name: { tr: "Dragon China", en: "Dragon China" },
     category: { tr: "Çin", en: "Chinese" },
     emoji: "🥡",
@@ -152,6 +196,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "spicy-tteok",
+    type: "food",
     name: { tr: "Acı Tatlı Tteokbokki", en: "Spicy Sweet Tteokbokki" },
     category: { tr: "Sokak lezzeti", en: "Street food" },
     emoji: "🧡",
@@ -168,6 +213,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "sweet-roastery",
+    type: "food",
     name: { tr: "Tatlı Roastery", en: "Sweet Roastery" },
     category: { tr: "Kafe", en: "Cafe" },
     emoji: "☕",
@@ -184,6 +230,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "mala-house",
+    type: "food",
     name: { tr: "Mala Hong", en: "Mala Hong" },
     category: { tr: "Mala", en: "Mala" },
     emoji: "🌶️",
@@ -200,6 +247,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "delicious-dessert",
+    type: "food",
     name: { tr: "Delicious Dessert", en: "Delicious Dessert" },
     category: { tr: "Dondurma", en: "Ice cream" },
     emoji: "🍦",
@@ -216,6 +264,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "pretty-gopchang",
+    type: "food",
     name: { tr: "Şık Gopchang", en: "Pretty Gopchang" },
     category: { tr: "Izgara", en: "Grill" },
     emoji: "🔥",
@@ -232,6 +281,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "sushi-hiro",
+    type: "food",
     name: { tr: "Sushi Hiro", en: "Sushi Hiro" },
     category: { tr: "Sushi", en: "Sushi" },
     emoji: "🍣",
@@ -248,6 +298,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "yup-tteok",
+    type: "food",
     name: { tr: "Yup Tteok", en: "Yup Tteok" },
     category: { tr: "Kore atıştırmalık", en: "Korean snack" },
     emoji: "🌶️",
@@ -264,6 +315,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "pizza-lab",
+    type: "food",
     name: { tr: "Taş Fırın PizzaLab", en: "Stone Oven PizzaLab" },
     category: { tr: "Pizza", en: "Pizza" },
     emoji: "🍕",
@@ -279,6 +331,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "tako-king",
+    type: "food",
     name: { tr: "Takoyaki Kralı", en: "Takoyaki King" },
     category: { tr: "Japon sokak", en: "Japanese street" },
     emoji: "🐙",
@@ -294,6 +347,7 @@ export const seedRestaurants: Restaurant[] = [
   },
   {
     id: "bingsu-24",
+    type: "food",
     name: { tr: "Bingsu 24", en: "Bingsu 24" },
     category: { tr: "Tatlı", en: "Dessert" },
     emoji: "🍧",
@@ -309,46 +363,46 @@ export const seedRestaurants: Restaurant[] = [
   }
 ];
 
-export function getStoredRestaurants() {
-  if (typeof window === "undefined") return seedRestaurants;
-  const raw = window.localStorage.getItem("doppapp-restaurants");
-  if (!raw) return seedRestaurants;
+export function getStoredStores() {
+  if (typeof window === "undefined") return seedStores;
+  const raw = window.localStorage.getItem("doppapp-stores");
+  if (!raw) return seedStores;
   try {
-    return JSON.parse(raw) as Restaurant[];
+    return JSON.parse(raw) as Store[];
   } catch {
-    return seedRestaurants;
+    return seedStores;
   }
 }
 
-function restaurantSeed(id: string) {
+function storeSeed(id: string) {
   return id.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
 }
 
-export function getRestaurantsAroundAddress(center: [number, number]) {
-  return getStoredRestaurants().map((restaurant, index) => {
-    const seed = restaurantSeed(restaurant.id);
+export function getStoresAroundAddress(center: [number, number]) {
+  return getStoredStores().map((store, index) => {
+    const seed = storeSeed(store.id);
     const distanceKm = 0.5 + ((seed * 37 + index * 53) % 450) / 100;
     const bearing = (seed * 29 + index * 47) % 360;
 
     return {
-      ...restaurant,
+      ...store,
       coordinate: offsetCoordinate(center, distanceKm, bearing)
     };
   });
 }
 
-export async function getRestaurantsOnRoadsAroundAddress(center: [number, number]) {
-  const candidates = getRestaurantsAroundAddress(center);
+export async function getStoresOnRoadsAroundAddress(center: [number, number]) {
+  const candidates = getStoresAroundAddress(center);
   const snapped = await Promise.all(
-    candidates.map(async (restaurant) => {
-      const roadCoordinate = await snapCoordinateToRoad(restaurant.coordinate).catch(() => null);
-      if (!roadCoordinate) return restaurant;
+    candidates.map(async (store) => {
+      const roadCoordinate = await snapCoordinateToRoad(store.coordinate).catch(() => null);
+      if (!roadCoordinate) return store;
 
       const distanceKm = coordinateDistanceKm(center, roadCoordinate);
-      if (distanceKm < 0.5 || distanceKm > 5) return restaurant;
+      if (distanceKm < 0.5 || distanceKm > 5) return store;
 
       return {
-        ...restaurant,
+        ...store,
         coordinate: roadCoordinate
       };
     })

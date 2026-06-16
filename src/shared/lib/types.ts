@@ -2,6 +2,8 @@ export type Locale = "tr" | "en";
 
 export type ThemeName = "grape" | "sunset" | "mint";
 
+export type StoreType = "shop" | "food" | "market";
+
 export type DeliverySpeed = "rabbit" | "turtle";
 
 export type MenuOption = {
@@ -18,18 +20,22 @@ export type MenuOptionGroup = {
   options: MenuOption[];
 };
 
-export type MenuItem = {
+export type ProductType = "clothing" | "electronics" | "other";
+
+export type Product = {
   id: string;
+  productType?: ProductType; // Only for "shop"
   name: Record<Locale, string>;
   description: Record<Locale, string>;
   price: number;
-  calories: number;
+  calories: number; // Maybe optional for non-food, but leaving as is for simplicity
   image: string;
-  optionGroups?: MenuOptionGroup[];
+  optionGroups?: MenuOptionGroup[]; // Only for "shop" and maybe food
 };
 
-export type Restaurant = {
+export type Store = {
   id: string;
+  type: StoreType;
   name: Record<Locale, string>;
   category: Record<Locale, string>;
   emoji: string;
@@ -39,14 +45,14 @@ export type Restaurant = {
   eta: string;
   deliveryFee: number;
   coordinate: [number, number];
-  menu: MenuItem[];
+  menu: Product[];
 };
 
 export type CartSelection = Record<string, string[]>;
 
 export type CartItem = {
   id: string;
-  restaurantId: string;
+  storeId: string;
   itemId: string;
   quantity: number;
   selections: CartSelection;
@@ -74,7 +80,7 @@ export type Order = {
   addressText: string;
   note: string;
   addressCoordinate: [number, number];
-  restaurantCoordinate: [number, number];
+  storeCoordinate: [number, number];
   courierStartCoordinate: [number, number];
   speed: DeliverySpeed;
   status: OrderStatus;

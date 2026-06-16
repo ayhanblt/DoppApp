@@ -7,19 +7,19 @@ import { AdminModal } from "@/features/admin/AdminModal";
 import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
 import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { Locale, MenuItem, MenuOptionGroup, Restaurant } from "@/shared/lib/types";
+import type { Locale, Product, MenuOptionGroup, Store, ProductType } from "@/shared/lib/types";
 
-type EditMenuItemsModalProps = {
+type EditProductsModalProps = {
   locale: Locale;
-  restaurant: Restaurant;
+  store: Store;
   onClose: () => void;
-  onSave: (restaurant: Restaurant) => void;
+  onSave: (store: Store) => void;
 };
 
-export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: EditMenuItemsModalProps) {
+export function EditProductsModal({ locale, store, onClose, onSave }: EditProductsModalProps) {
   const t = dictionaries[locale];
-  const [selectedItemId, setSelectedItemId] = useState(restaurant.menu[0]?.id ?? "");
-  const selectedItem = restaurant.menu.find((item) => item.id === selectedItemId);
+  const [selectedItemId, setSelectedItemId] = useState(store.menu[0]?.id ?? "");
+  const selectedItem = store.menu.find((item) => item.id === selectedItemId);
 
   const [nameTr, setNameTr] = useState("");
   const [nameEn, setNameEn] = useState("");
@@ -28,6 +28,7 @@ export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: Edit
   const [price, setPrice] = useState("");
   const [calories, setCalories] = useState("");
   const [image, setImage] = useState("");
+  const [productType, setProductType] = useState<Product["productType"]>();
   const [optionGroups, setOptionGroups] = useState<MenuOptionGroup[] | undefined>();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: Edit
     setPrice(String(selectedItem.price));
     setCalories(String(selectedItem.calories));
     setImage(selectedItem.image);
+    setProductType(selectedItem.productType);
     setOptionGroups(selectedItem.optionGroups);
   }, [selectedItem]);
 
@@ -46,25 +48,26 @@ export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: Edit
     event.preventDefault();
     if (!selectedItem) return;
 
-    const updatedItem: MenuItem = {
+    const updatedItem: Product = {
       ...selectedItem,
       name: { tr: nameTr, en: nameEn },
       description: { tr: descriptionTr, en: descriptionEn },
       price: Number(price) || 0,
       calories: Number(calories) || 0,
       image: image || FALLBACK_IMAGE,
+      ...(productType ? { productType } : {}),
       ...(optionGroups?.length ? { optionGroups } : { optionGroups: undefined })
     };
 
     onSave({
-      ...restaurant,
-      menu: restaurant.menu.map((item) => (item.id === selectedItem.id ? updatedItem : item))
+      ...store,
+      menu: store.menu.map((item) => (item.id === selectedItem.id ? updatedItem : item))
     });
   }
 
   return (
     <AdminModal locale={locale} title={t.editItems} onClose={onClose}>
-      {restaurant.menu.length === 0 ? (
+      {store.menu.length === 0 ? (
         <p className="rounded-lg bg-zinc-50 p-4 text-sm text-zinc-500">{t.noItems}</p>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -75,7 +78,7 @@ export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: Edit
               value={selectedItemId}
               onChange={(event) => setSelectedItemId(event.target.value)}
             >
-              {restaurant.menu.map((item) => (
+              {store.menu.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name[locale]}
                 </option>
@@ -91,7 +94,19 @@ export function EditMenuItemsModal({ locale, restaurant, onClose, onSave }: Edit
               <AdminInput label="EN description" value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} required />
               <AdminInput label={locale === "tr" ? "Fiyat" : "Price"} type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
               <AdminInput label={locale === "tr" ? "Kalori" : "Calories"} type="number" value={calories} onChange={(event) => setCalories(event.target.value)} required />
-              <ImageUploadField locale={locale} value={image} onChange={setImage} />
+              
+                {store.type === "shop" && (
+                  <label className="block text-sm font-bold sm:col-span-2">
+                    Ürün Tipi
+                    <select className="mt-1 w-full rounded-lg border border-black/10 p-3" value={productType || ""} onChange={e => setProductType(e.target.value as ProductType)}>
+                      <option value="">Seçiniz</option>
+                      <option value="clothing">Giyim</option>
+                      <option value="electronics">Elektronik</option>
+                      <option value="other">Diğer</option>
+                    </select>
+                  </label>
+                )}
+                <ImageUploadField locale={locale} value={image} onChange={setImage} />
             </div>
           )}
 
