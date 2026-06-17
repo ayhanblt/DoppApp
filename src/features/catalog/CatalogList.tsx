@@ -90,7 +90,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
       <div className="mt-4 grid gap-4 pb-28 md:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((store) => (
-          <article key={store.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+          <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <Image width={96} height={96} className="h-12 w-12 shrink-0 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
@@ -109,9 +109,10 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                 <p className="flex items-center justify-end gap-1"><Bike size={14} /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : t.free}</p>
               </div>
             </div>
-            <div className="space-y-3 p-4">
+            <div className="flex flex-1 flex-col space-y-3 p-4">
               {store.menu.map((item) => (
-                <div key={item.id} className="grid grid-cols-[80px_1fr] gap-3 rounded-lg border border-black/10 p-3">
+                <div key={item.id} className="flex h-full flex-col justify-between gap-3 rounded-lg border border-black/10 p-3">
+                  <div className="grid grid-cols-[80px_1fr] gap-3">
                   <Image 
                     width={160}
                     height={160}
@@ -121,12 +122,13 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                     onClick={() => setEnlargedImage(item.image)}
                   />
                   <div className="min-w-0">
-                    <h4 className="font-black">{item.name[locale]}</h4>
-                    <p className="text-sm text-zinc-500">{item.description[locale]}</p>
+                    <h4 className="line-clamp-1 cursor-pointer font-black hover:underline" onClick={() => openItem(store, item)}>{item.name[locale]}</h4>
+                    <p className="line-clamp-2 text-sm text-zinc-500">{item.description[locale]}</p>
                     {item.calories > 0 && <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories, locale)} kcal</p>}
                     {item.optionGroups && item.optionGroups.length > 0 && <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p>}
                   </div>
-                  <div className="col-span-2 flex items-center justify-between gap-3">
+                  </div>
+                  <div className="mt-auto flex items-end justify-between gap-3">
                     <strong>{formatMoney(item.price, locale)}</strong>
                     <button className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-black text-white" onClick={() => openItem(store, item)}>{t.add}</button>
                   </div>
@@ -138,20 +140,33 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       </div>
 
       {activeItem && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-4">
-          <div className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
-            <div className="flex gap-4">
-              <Image width={192} height={192} className="h-24 w-24 rounded-lg object-cover" src={activeItem.item.image} alt="" />
-              <div className="flex-1">
-                <h3 className="text-xl font-black">{activeItem.item.name[locale]}</h3>
-                <p className="text-sm text-zinc-500">{activeItem.item.description[locale]}</p>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-4 md:p-8">
+          <div className="flex w-full max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row">
+            
+            <div className="relative h-64 shrink-0 bg-zinc-100 md:h-auto md:w-1/2">
+              <Image 
+                fill
+                className="cursor-pointer object-cover transition-opacity hover:opacity-90" 
+                src={activeItem.item.image} 
+                alt="" 
+                onClick={() => setEnlargedImage(activeItem.item.image)}
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <button onClick={() => setActiveItem(null)} className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 md:hidden">×</button>
+            </div>
+
+            <div className="relative flex flex-1 flex-col overflow-auto p-5 md:p-8">
+              <button onClick={() => setActiveItem(null)} className="absolute right-5 top-5 hidden h-9 w-9 items-center justify-center rounded-full bg-zinc-100 md:flex">×</button>
+              
+              <div className="pr-2 md:pr-8">
+                <h3 className="text-2xl font-black">{activeItem.item.name[locale]}</h3>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-500">{activeItem.item.description[locale]}</p>
                 {activeItem.store.type === "food" && activeItem.item.calories > 0 && (
-                  <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(activeItem.item.calories, locale)} kcal</p>
+                  <p className="mt-3 text-sm font-bold text-emerald-700">🔥 {formatNumber(activeItem.item.calories, locale)} kcal</p>
                 )}
               </div>
-              <button onClick={() => setActiveItem(null)} className="h-9 w-9 rounded-full bg-zinc-100">×</button>
-            </div>
-            <div className="mt-5 space-y-4">
+
+              <div className="mt-6 space-y-4">
               {activeItem.item.optionGroups?.map((group) => (
                 <div key={group.id}>
                   <p className="mb-2 font-black">{group.label[locale]} {group.required && <span className="text-xs text-[var(--accent)]">{t.required}</span>}</p>
@@ -182,7 +197,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {enlargedImage && (
         <div 

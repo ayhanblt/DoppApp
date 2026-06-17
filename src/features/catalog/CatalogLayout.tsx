@@ -434,8 +434,8 @@ function AddressModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/45 p-4">
-      <form onSubmit={submit} className="mx-auto max-h-[94vh] max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4">
+      <form onSubmit={submit} className="w-full max-h-[94vh] max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-[var(--accent)]">{t.deliveryAddress}</p>
