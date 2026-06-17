@@ -90,8 +90,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
       <div className="mt-4 grid gap-4 pb-28 md:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((store) => (
-          <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-black/5 bg-gradient-to-r from-orange-50 to-white p-4">
+          <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm transition-all hover:border-[var(--accent)]/40 hover:shadow-md">
+            <div className="flex items-center justify-between border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <Image width={96} height={96} className="h-12 w-12 shrink-0 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
                 <div className="min-w-0 flex-1">
@@ -109,10 +109,10 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                 <p className="flex items-center justify-end gap-1"><Bike size={14} /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : t.free}</p>
               </div>
             </div>
-            <div className="flex flex-1 flex-col space-y-3 p-4">
+            <div className="flex flex-1 flex-col divide-y divide-black/5 px-5 pb-5">
               {store.menu.map((item) => (
-                <div key={item.id} className="flex h-full flex-col justify-between gap-3 rounded-lg border border-black/10 p-3">
-                  <div className="grid grid-cols-[80px_1fr] gap-3">
+                <div key={item.id} className="flex h-full flex-col justify-between gap-3 py-5 transition-colors hover:bg-zinc-50/50">
+                  <div className="grid grid-cols-[80px_1fr] gap-4">
                   <Image 
                     width={160}
                     height={160}
