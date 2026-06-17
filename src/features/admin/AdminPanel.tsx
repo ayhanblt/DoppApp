@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogOut, Pencil, Plus, Save, ArrowLeft } from "lucide-react";
-import Image from "next/image";
-import { AdminInput } from "@/features/admin/AdminInput";
-import { EditProductsModal } from "@/features/admin/EditProductsModal";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { EditStoreModal } from "@/features/admin/EditStoreModal";
-import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
-import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
-import { fetchStoresFromSupabase, saveStoreToSupabase } from "@/features/catalog/data";
+import { EditProductsModal } from "@/features/admin/EditProductsModal";
+import { AddStoreForm } from "@/features/admin/AddStoreForm";
+import { AddItemForm } from "@/features/admin/AddItemForm";
+import { CategoryManager } from "@/features/admin/CategoryManager";
+import { StoreList } from "@/features/admin/StoreList";
+import { AdminInput } from "@/features/admin/AdminInput";
+import { fetchStoresFromSupabase, saveStoreToSupabase, deleteStoreFromSupabase, fetchConfigFromSupabase, saveConfigToSupabase } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { Locale, MenuOptionGroup, Store, StoreType, ProductType } from "@/shared/lib/types";
 import { uid } from "@/shared/lib/format";
+import type { StoreCategory, ProductCategory, Locale, MenuOptionGroup, Store, StoreType, GlobalConfig, Product } from "@/shared/lib/types";
 
 export function AdminPanel({ locale }: { locale: Locale }) {
   const t = dictionaries[locale];
@@ -22,21 +23,33 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState("");
 
+  const [config, setConfig] = useState<GlobalConfig | null>(null);
+  const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
+  const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
+  const [activeTab, setActiveTab] = useState<StoreType | "all">("all");
+  const [adminMode, setAdminMode] = useState<"stores" | "categories">("stores");
+
+  const loadData = async () => {
+    const [dbStores, dbConfig, dbStoreCats, dbProdCats] = await Promise.all([
+      fetchStoresFromSupabase(),
+      fetchConfigFromSupabase(),
+      import('@/features/catalog/data').then(m => m.fetchStoreCategories()),
+      import('@/features/catalog/data').then(m => m.fetchProductCategories())
+    ]);
+    const sortedStores = dbStores.sort((a, b) => a.name.tr.localeCompare(b.name.tr));
+    setStores(sortedStores);
+    if (sortedStores.length > 0) setSelectedStore(sortedStores[0].id);
+    setConfig(dbConfig);
+    setStoreCategories(dbStoreCats);
+    setProductCategories(dbProdCats);
+  };
+
   useEffect(() => {
-    async function load() {
-      const dbStores = await fetchStoresFromSupabase();
-      setStores(dbStores);
-      if (dbStores.length > 0) setSelectedStore(dbStores[0].id);
-    }
-    load();
+    loadData();
   }, []);
   const [message, setMessage] = useState("");
-  const [itemImage, setItemImage] = useState("");
-  const [itemOptionGroups, setItemOptionGroups] = useState<MenuOptionGroup[] | undefined>();
   const [editingStore, setEditingStore] = useState<Store | null>(null);
   const [editingItemsStore, setEditingItemsStore] = useState<Store | null>(null);
-
-  const [newStoreLogo, setNewStoreLogo] = useState("");
 
   useEffect(() => {
     setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
@@ -63,9 +76,15 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   async function updateStore(updated: Store, closeItemsModal = false) {
     const nextStores = stores.map((store) =>
       store.id === updated.id ? updated : store
-    );
+    ).sort((a, b) => a.name.tr.localeCompare(b.name.tr));
     setStores(nextStores);
-    await saveStoreToSupabase(updated);
+    const success = await saveStoreToSupabase(updated);
+    if (!success) {
+      alert("Veritabanına kaydedilirken bir hata oluştu! Lütfen konsolu (F12) kontrol edin.");
+      // Revert state if failed
+      setStores(stores);
+      return;
+    }
     setMessage(t.savedToDb);
     setEditingStore(null);
     if (closeItemsModal) {
@@ -77,63 +96,39 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     }
   }
 
-  async function addStore(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const next: Store = {
-      id: uid("store"),
-      type: String(data.get("type")) as StoreType,
-      name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
-      description: { tr: String(data.get("desc_tr")), en: String(data.get("desc_en")) },
-      category: { tr: String(data.get("cat_tr")), en: String(data.get("cat_en")) },
-      logo: String(data.get("logo") || "https://placehold.co/100x100.webp?text=Logo"),
-      badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,
-      rating: Number(data.get("rating") || 4.7),
-      reviews: Number(data.get("reviews") || 100),
-      eta: String(data.get("eta") || "20-30"),
-      deliveryFee: Number(data.get("deliveryFee") || 60),
-      coordinate: [Number(data.get("lat") || 41.037), Number(data.get("lng") || 28.985)],
-      menu: []
-    };
-    const nextStores = [...stores, next];
+  async function addStore(next: Omit<Store, "id" | "menu">) {
+    const fullStore: Store = { ...next, id: uid("store"), menu: [] };
+    const nextStores = [...stores, fullStore].sort((a, b) => a.name.tr.localeCompare(b.name.tr));
     setStores(nextStores);
-    setSelectedStore(next.id);
-    await saveStoreToSupabase(next);
+    setSelectedStore(fullStore.id);
+    await saveStoreToSupabase(fullStore);
     setMessage(t.addedToDb);
-    event.currentTarget.reset();
+  }
+
+  async function deleteStore(id: string, name: string) {
+    if (!confirm(`"${name}" mağazasını tamamen silmek istediğinize emin misiniz?`)) return;
+    setStores(stores.filter(s => s.id !== id));
+    await deleteStoreFromSupabase(id);
+    setMessage("Mağaza başarıyla silindi.");
   }
 
   const selectedStoreObj = stores.find(s => s.id === selectedStore);
 
-  async function addItem(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  async function addItem(storeId: string, itemData: Omit<Product, "id">) {
     const nextStores = stores.map((store) => {
-      if (store.id !== selectedStore) return store;
+      if (store.id !== storeId) return store;
       return {
         ...store,
         menu: [
           ...store.menu,
-          {
-            id: uid("item"),
-            ...(data.get("productType") ? { productType: String(data.get("productType")) as ProductType } : {}),
-            name: { tr: String(data.get("name")), en: String(data.get("name")) },
-            description: { tr: String(data.get("description")), en: String(data.get("description")) },
-            price: Number(data.get("price") || 0),
-            calories: Number(data.get("calories") || 0),
-            image: itemImage || FALLBACK_IMAGE,
-            ...(itemOptionGroups?.length ? { optionGroups: itemOptionGroups } : {})
-          }
+          { id: uid("item"), ...itemData }
         ]
       };
     });
     setStores(nextStores);
-    const targetStore = nextStores.find(s => s.id === selectedStore);
+    const targetStore = nextStores.find(s => s.id === storeId);
     if (targetStore) await saveStoreToSupabase(targetStore);
     setMessage(t.itemAddedToDb);
-    setItemImage("");
-    setItemOptionGroups(undefined);
-    event.currentTarget.reset();
   }
 
   if (!authReady) {
@@ -179,136 +174,44 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_1fr]">
-          <form onSubmit={addStore} className="rounded-lg bg-white p-5 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addStore}</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              
-              <label className="block text-sm font-bold sm:col-span-2">
-                Mağaza Tipi
-                <select name="type" className="mt-1 w-full rounded-lg border border-black/10 p-3" defaultValue="food">
-                  <option value="shop">Shop (Giyim, Elektronik vs.)</option>
-                  <option value="food">Food (Yemek)</option>
-                  <option value="market">Market</option>
-                </select>
-              </label>
-              
-              {selectedStoreObj?.type === "shop" && (
-                <label className="block text-sm font-bold sm:col-span-2">
-                  Ürün Tipi
-                  <select name="productType" className="mt-1 w-full rounded-lg border border-black/10 p-3">
-                    <option value="">Seçiniz</option>
-                    <option value="clothing">Giyim</option>
-                    <option value="electronics">Elektronik</option>
-                    <option value="other">Diğer</option>
-                  </select>
-                </label>
-              )}
-              <div className="grid gap-4 sm:grid-cols-2 sm:col-span-2">
-                <AdminInput name="name_tr" label="İsim (TR)" required />
-                <AdminInput name="name_en" label="Name (EN)" required />
-                <AdminInput name="desc_tr" label="Açıklama (TR)" />
-                <AdminInput name="desc_en" label="Description (EN)" />
-                <AdminInput name="cat_tr" label="Kategori (TR)" required />
-                <AdminInput name="cat_en" label="Category (EN)" required />
-                <AdminInput name="badge_tr" label="Rozet (TR)" />
-                <AdminInput name="badge_en" label="Badge (EN)" />
-              </div>
-              
-              <div className="sm:col-span-2">
-                <input type="hidden" name="logo" value={newStoreLogo} />
-                <ImageUploadField locale={locale} value={newStoreLogo} onChange={setNewStoreLogo} />
-              </div>
 
-              <AdminInput name="rating" label="Puan" type="number" step="0.1" />
-              <AdminInput name="reviews" label="Yorum sayısı" type="number" />
-              <AdminInput name="eta" label="ETA dk" />
-              <AdminInput name="deliveryFee" label="Teslimat ücreti" type="number" />
-              <AdminInput name="lat" label="Latitude" type="number" step="0.0001" />
-              <AdminInput name="lng" label="Longitude" type="number" step="0.0001" />
-            </div>
-            <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 py-3 font-black text-white">
-              <Save size={18} /> {t.saveDraft}
-            </button>
-          </form>
-
-          <form onSubmit={addItem} className="rounded-lg bg-white p-5 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-black"><Plus size={20} /> {t.addItem}</h2>
-            <label className="mb-3 block text-sm font-bold">
-              Restoran
-              <select className="mt-1 w-full rounded-lg border border-black/10 p-3" value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
-                {stores.map((store) => (
-                  <option key={store.id} value={store.id}>{store.name.tr}</option>
-                ))}
-              </select>
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              
-              {selectedStoreObj?.type === "shop" && (
-                <label className="block text-sm font-bold sm:col-span-2">
-                  Ürün Tipi
-                  <select name="productType" className="mt-1 w-full rounded-lg border border-black/10 p-3">
-                    <option value="">Seçiniz</option>
-                    <option value="clothing">Giyim</option>
-                    <option value="electronics">Elektronik</option>
-                    <option value="other">Diğer</option>
-                  </select>
-                </label>
-              )}
-              <AdminInput name="name" label="Ürün Adı" required />
-              <AdminInput name="description" label="Açıklama" required />
-              <AdminInput name="price" label="Fiyat (TL)" type="number" required />
-              {selectedStoreObj?.type === "shop" ? null : (
-                <AdminInput name="calories" label="Kalori" type="number" />
-              )}
-              <ImageUploadField locale={locale} value={itemImage} onChange={setItemImage} />
-            </div>
-            <OptionGroupsEditor locale={locale} value={itemOptionGroups} onChange={setItemOptionGroups} />
-            <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 py-3 font-black text-white">
-              <Save size={18} /> {t.saveDraft}
-            </button>
-          </form>
+        <div className="mt-4 flex gap-2 border-b border-black/10 pb-4">
+          <button className={`px-4 py-2 font-bold ${adminMode === 'stores' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('stores')}>Mağazalar & Ürünler</button>
+          <button className={`px-4 py-2 font-bold ${adminMode === 'categories' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('categories')}>Kategori Yönetimi</button>
         </div>
 
-        {message && <p className="mt-4 rounded-lg bg-emerald-50 p-3 font-bold text-emerald-700">{message}</p>}
+        {adminMode === 'stores' ? (
+          <>
+            <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_1fr]">
+              <AddStoreForm locale={locale} storeCategories={storeCategories} onAddStore={addStore} />
+              <AddItemForm locale={locale} stores={stores} storeCategories={storeCategories} productCategories={productCategories} activeTab={activeTab} selectedStore={selectedStore} setSelectedStore={setSelectedStore} onAddItem={addItem} />
+            </div>
 
-        <div className="mt-6 rounded-lg bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-black">{stores.length} restoran</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {stores.map((store) => (
-              <div key={store.id} className="rounded-lg border border-black/10 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <Image width={80} height={80} className="h-10 w-10 rounded-lg object-cover border border-black/10" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
-                    <h3 className="font-black">{store.name.tr}</h3>
-                  </div>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold"
-                    onClick={() => setEditingStore(store)}
-                  >
-                    <Pencil size={14} /> {t.edit}
-                  </button>
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{store.category.tr} · ★ {Number(store.rating).toFixed(1)} · {store.menu.length} {t.itemCount}</span>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs font-bold text-zinc-700"
-                    onClick={() => setEditingItemsStore(store)}
-                  >
-                    <Pencil size={12} /> {t.edit}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+            {message && <p className="mt-4 rounded-lg bg-emerald-50 p-3 font-bold text-emerald-700">{message}</p>}
+
+            <StoreList 
+              locale={locale} 
+              stores={stores} 
+              activeTab={activeTab} 
+              setActiveTab={setActiveTab} 
+              onEditStore={setEditingStore} 
+              onEditItems={setEditingItemsStore} 
+              onDeleteStore={deleteStore} 
+            />
+          </>
+        ) : (
+          <CategoryManager 
+            storeCategories={storeCategories}
+            productCategories={productCategories}
+            onRefresh={loadData}
+          />
+        )}
 
         {editingStore && (
           <EditStoreModal
             locale={locale}
             store={editingStore}
+            storeCategories={storeCategories}
             onClose={() => setEditingStore(null)}
             onSave={updateStore}
           />
@@ -318,8 +221,9 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           <EditProductsModal
             locale={locale}
             store={editingItemsStore}
+            productCategories={productCategories}
             onClose={() => setEditingItemsStore(null)}
-            onSave={(updated) => updateStore(updated, true)}
+            onSave={(updated: Store) => updateStore(updated, true)}
           />
         )}
       </section>

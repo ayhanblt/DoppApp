@@ -6,6 +6,25 @@ export type StoreType = "shop" | "food" | "market";
 
 export type DeliverySpeed = "rabbit" | "turtle";
 
+export type StoreCategory = {
+  id: string;
+  type: StoreType;
+  name_tr: string;
+  name_en: string;
+  parent_id?: string | null;
+  sort_order: number;
+};
+
+export type ProductCategory = {
+  id: string;
+  store_cat_id: string;
+  name_tr: string;
+  name_en: string;
+  sort_order: number;
+};
+
+export type GlobalConfig = Record<string, never>;
+
 export type MenuOption = {
   id: string;
   label: Record<Locale, string>;
@@ -20,17 +39,24 @@ export type MenuOptionGroup = {
   options: MenuOption[];
 };
 
-export type ProductType = "clothing" | "electronics" | "other";
 
 export type Product = {
   id: string;
-  productType?: ProductType; // Only for "shop"
   name: Record<Locale, string>;
   description: Record<Locale, string>;
   price: number;
-  calories: number; // Maybe optional for non-food, but leaving as is for simplicity
+  calories?: number; 
   image: string;
-  optionGroups?: MenuOptionGroup[]; // Only for "shop" and maybe food
+  optionGroups?: MenuOptionGroup[];
+  product_category_id: string;
+  section_label_tr?: string | null;
+  section_label_en?: string | null;
+  section_color?: string | null;
+  product_categories?: {
+    id: string;
+    name_tr: string;
+    name_en: string;
+  };
 };
 
 export type Store = {
@@ -38,7 +64,12 @@ export type Store = {
   type: StoreType;
   name: Record<Locale, string>;
   description?: Record<Locale, string>;
-  category: Record<Locale, string>;
+  category_id: string;
+  store_categories?: {
+    id: string;
+    name_tr: string;
+    name_en: string;
+  };
   logo: string;
   badge?: Record<Locale, string>;
   rating: number;

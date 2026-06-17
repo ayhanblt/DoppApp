@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair } from "lucide-react";
+import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair, Rabbit, Turtle } from "lucide-react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, Locale, Order, Store, ThemeName } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
@@ -23,7 +23,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     deliveryAddress, setDeliveryAddress,
     addressModalOpen, setAddressModalOpen,
     query, setQuery,
-    speed,
+    speed, setSpeed,
     cart, setCart,
     checkoutOpen, setCheckoutOpen,
     infoOpen, setInfoOpen,
@@ -84,7 +84,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       customerName: String(data.get("name") || "Demo"),
       phone: String(data.get("phone") || ""),
       addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
-      note: String(data.get("note") || ""),
+      note: "",
       addressCoordinate,
       storeCoordinate: firstStore.coordinate,
       courierStartCoordinate: firstStore.coordinate,
@@ -237,8 +237,25 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                 <p className="mt-1 text-zinc-600">{deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}</p>
                 <button className="mt-2 text-sm font-black text-[var(--accent)]" type="button" onClick={() => setAddressModalOpen(true)}>{t.changeAddress}</button>
               </div>
-              <input className="w-full rounded-lg border border-black/10 p-3" name="note" placeholder={t.note} />
-              <button disabled={!cart.length} className="w-full rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45">{t.demoOrder}</button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSpeed("rabbit")}
+                  className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg border-2 p-3 transition-colors ${speed === "rabbit" ? "border-orange-500 bg-orange-50 text-orange-700" : "border-black/10 text-zinc-500 hover:bg-zinc-50"}`}
+                >
+                  <Rabbit size={24} />
+                  <span className="text-sm font-bold">{locale === 'tr' ? 'Tavşan Hızı' : 'Rabbit Speed'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSpeed("turtle")}
+                  className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg border-2 p-3 transition-colors ${speed === "turtle" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-black/10 text-zinc-500 hover:bg-zinc-50"}`}
+                >
+                  <Turtle size={24} />
+                  <span className="text-sm font-bold">{locale === 'tr' ? 'Kaplumbağa' : 'Turtle Speed'}</span>
+                </button>
+              </div>
+              <button disabled={!cart.length} className="w-full rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45 shadow-md hover:shadow-lg transition-shadow">{t.demoOrder}</button>
             </div>
           </form>
         </div>

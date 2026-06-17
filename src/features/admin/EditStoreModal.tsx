@@ -1,33 +1,36 @@
 "use client";
 
 import { Save } from "lucide-react";
-import { AdminInput } from "@/features/admin/AdminInput";
+import { AdminInput, AdminTextarea, AdminLangTabs } from "@/features/admin/AdminInput";
 import { AdminModal } from "@/features/admin/AdminModal";
 import { useState } from "react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { ImageUploadField } from "@/features/admin/ImageUploadField";
-import type { Locale, Store, StoreType } from "@/shared/lib/types";
+import type { Locale, Store, StoreType, StoreCategory } from "@/shared/lib/types";
 
 type EditStoreModalProps = {
   locale: Locale;
   store: Store;
+  storeCategories: StoreCategory[];
   onClose: () => void;
   onSave: (store: Store) => void;
 };
 
-export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModalProps) {
+export function EditStoreModal({ locale, store, storeCategories, onClose, onSave }: EditStoreModalProps) {
   const t = dictionaries[locale];
   const [logo, setLogo] = useState(store.logo);
+  const [storeType, setStoreType] = useState<StoreType>(store.type);
+  const [lang, setLang] = useState<"tr"|"en">("tr");
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     onSave({
       ...store,
-      type: String(data.get("type")) as StoreType,
+      type: storeType,
       name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
       description: { tr: String(data.get("description_tr")), en: String(data.get("description_en")) },
-      category: { tr: String(data.get("category_tr")), en: String(data.get("category_en")) },
+      category_id: String(data.get("categoryId")),
       logo: String(data.get("logo") || "https://placehold.co/100x100.webp?text=Logo"),
       badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,
       rating: Number(data.get("rating") || 4.7),
@@ -44,21 +47,35 @@ export function EditStoreModal({ locale, store, onClose, onSave }: EditStoreModa
 
         <label className="block text-sm font-bold sm:col-span-2">
           Mağaza Tipi
-          <select name="type" className="mt-1 w-full rounded-lg border border-black/10 p-3" defaultValue={store.type}>
+          <select name="type" className="mt-1 w-full rounded-lg border border-black/10 p-3 h-[46px]" value={storeType} onChange={e => setStoreType(e.target.value as StoreType)}>
             <option value="shop">Shop (Giyim, Elektronik vs.)</option>
             <option value="food">Food (Yemek)</option>
             <option value="market">Market</option>
           </select>
         </label>
+        <AdminLangTabs active={lang} onChange={setLang} />
         <div className="grid gap-4 sm:grid-cols-2 sm:col-span-2">
-          <AdminInput name="name_tr" label="İsim (TR)" defaultValue={store.name.tr} required />
-          <AdminInput name="name_en" label="Name (EN)" defaultValue={store.name.en} required />
-          <AdminInput name="description_tr" label="Açıklama (TR)" defaultValue={store.description?.tr} />
-          <AdminInput name="description_en" label="Description (EN)" defaultValue={store.description?.en} />
-          <AdminInput name="category_tr" label="Kategori (TR)" defaultValue={store.category.tr} required />
-          <AdminInput name="category_en" label="Category (EN)" defaultValue={store.category.en} required />
-          <AdminInput name="badge_tr" label="Rozet (TR)" defaultValue={store.badge?.tr} />
-          <AdminInput name="badge_en" label="Badge (EN)" defaultValue={store.badge?.en} />
+          <div className={lang === "tr" ? "sm:col-span-2 space-y-4" : "hidden"}>
+            <AdminInput name="name_tr" label="İsim" defaultValue={store.name.tr} required={lang === "tr"} />
+            <AdminTextarea name="desc_tr" label="Açıklama" defaultValue={store.description?.tr} />
+          </div>
+          <div className={lang === "en" ? "sm:col-span-2 space-y-4" : "hidden"}>
+            <AdminInput name="name_en" label="Name" defaultValue={store.name.en} required={lang === "en"} />
+            <AdminTextarea name="desc_en" label="Description" defaultValue={store.description?.en} />
+          </div>
+          <label className="block text-sm font-bold sm:col-span-2">
+            Kategori
+            <select name="categoryId" className="mt-1 w-full rounded-lg border border-black/10 p-3 h-[46px]" defaultValue={store.category_id || ""} required>
+              <option value="">Seçiniz</option>
+              {storeCategories.filter(c => c.type === storeType).map(c => <option key={c.id} value={c.id}>{c.name_tr} ({c.name_en})</option>)}
+            </select>
+          </label>
+          <div className={lang === "tr" ? "sm:col-span-2 space-y-4" : "hidden"}>
+            <AdminInput name="badge_tr" label="Rozet" defaultValue={store.badge?.tr} />
+          </div>
+          <div className={lang === "en" ? "sm:col-span-2 space-y-4" : "hidden"}>
+            <AdminInput name="badge_en" label="Badge" defaultValue={store.badge?.en} />
+          </div>
         </div>
         
         <div className="sm:col-span-2">

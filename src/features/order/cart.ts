@@ -33,7 +33,7 @@ export function getCartTotals(stores: Store[], cart: CartItem[]) {
 
   const calories = cart.reduce((sum, cartItem) => {
     const item = findProduct(stores, cartItem);
-    return item ? sum + item.calories * cartItem.quantity : sum;
+    return item ? sum + (item.calories || 0) * cartItem.quantity : sum;
   }, 0);
 
   return { subtotal, deliveryFee, total: subtotal + deliveryFee, calories };

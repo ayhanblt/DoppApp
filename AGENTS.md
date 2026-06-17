@@ -12,6 +12,12 @@ Bu doküman, projede kod yazacak tüm AI kodlama asistanlarının uyması gereke
 - Supabase tabanlı PostgreSQL veritabanı ve Storage kullanan çoklu kategorili (Shop, Food, Market) e-ticaret/kurye takip simülasyonu.
 - Çoklu dil (i18n) desteğine sahiptir (Tr/En).
 
+## V2 Kategori Hiyerarşisi (Önemli Veritabanı Kuralları)
+- **`store_categories`**: Mağazaların ait olduğu ana kategorilerdir. `parent_id` ile kendi içerisinde ağaç (Tree) yapısı kurar. (Örn: `electronics` -> `computer_accessories`).
+- **`product_categories`**: Doğrudan bir `store_category`'ye bağlı ürün alt kategorileridir (Örn: Burger kategorisindeki İçecekler). `store_cat_id` ile bağlanır.
+- **`stores`**: `category_id` (FK) ile `store_categories` tablosuna bağlanır. Eski JSON `category` alanı kullanımdan kaldırılmıştır.
+- **`products`**: `product_category_id` (FK) ile `product_categories` tablosuna bağlanır. Mağazaların ürün gruplarına özel başlık verebilmesi için opsiyonel `section_label_tr/en` kullanır. Arayüzde başlık olarak `COALESCE(section_label, product_category.name)` mantığı esastır.
+
 ## Klasör Yapısı (Feature-Sliced Design - FSD)
 Projeye yeni bir özellik ekleneceğinde FSD prensiplerine sadık kalınmalıdır:
 - **`app/`**: Sadece rota (URL) tanımlamaları ve layoutlar bulunur. İş mantığı burada yazılmaz.
@@ -34,6 +40,11 @@ Projeye yeni bir özellik ekleneceğinde FSD prensiplerine sadık kalınmalıdı
 ## Naming Convention (İsimlendirme)
 - **Dosyalar:** React bileşenleri `PascalCase` (Örn: `TrackingMap.tsx`), yardımcı fonksiyonlar ve hook'lar `camelCase` (Örn: `useImageCache.ts`, `geo.ts`).
 - **Değişkenler:** Anlaşılır ve uzun isimler kullanın. `arr`, `obj`, `data` gibi jenerik isimlerden kaçının. (Örn: `filteredStores` kullanın).
+
+## Form ve UI Standartları (Çok Önemli)
+- **Çok Dilli Formlar (Language Tabs):** Admin panelindeki formlarda (Ekleme/Düzenleme) her dil için alt alta `name_tr`, `name_en` gibi inputlar kullanmak YERİNE, `AdminLangTabs` bileşenini kullanın. Tasarım `sm:col-span-2 space-y-4` sınıfı ile tam genişlikte (full-width) olmalıdır. Formlar gereksiz yere uzamamalıdır.
+- **Zengin Metin (Rich Text / Markdown):** Ürün açıklamaları ve uzun metinlerde standart `AdminInput` yerine çok satırlı `AdminTextarea` kullanın. Bu alanlara Markdown formatında (örn: madde imleri için `-`) veri girilebilir.
+- **Frontend Gösterimi:** Markdown içeren veriler (açıklamalar vb.) listeleme ve detay ekranlarında mutlaka `react-markdown` kütüphanesi kullanılarak parse edilmelidir. Sadece düz metin olarak (`<p>{desc}</p>`) basılmamalıdır.
 
 ## Test Yazma Kuralları
 - Test framework'ü olarak **Vitest + React Testing Library (RTL)** kullanılmaktadır.

@@ -1,59 +1,65 @@
-# DoppApp Design Document
+# DoppApp Premium Design System
 
-Bu doküman, DoppApp projesinin UI/UX tasarım sistemini, renk paletini, tipografisini ve kullanılan görsel yapıları standartlaştırmak için oluşturulmuştur. Tasarım kararları "Feature-Sliced Design" kurallarına göre birleştirilmiş ve TailwindCSS kullanılarak inşa edilmiştir.
+Bu doküman, DoppApp projesinin güncellenmiş "Senior UI / Premium" tasarım sistemini, renk paletini, tipografisini ve kullanılan görsel yapıları standartlaştırmak için oluşturulmuştur. Bundan sonra eklenecek tüm yeni özellikler ve bileşenler bu "Design System" kurallarını baz almalıdır.
 
 ---
 
-## 1. Tipografi (Typography)
+## 1. Tipografi ve Etkileşim (Typography & Interaction)
 
 Uygulamanın genelinde **Geist Sans** ve monospace alanlarda **Geist Mono** fontları kullanılmıştır.
-- **Heading (H1, H2, H3):** Font ağırlığı yüksek (`font-black` veya `font-bold`), dikkat çekici ve kolay okunabilir olarak tercih edilmiştir.
-- **Gövde Metinleri (Body):** Düzenli ağırlıkta (`font-regular`) ve gri tonlarda (`text-zinc-500` veya `text-zinc-600`) kullanılarak hiyerarşi sağlanmıştır.
+- **Premium Seçim Rengi (Text Selection):** Kullanıcı bir metni seçtiğinde varsayılan mavi yerine marka rengi (Turuncu/Grape/Mint) arka plan, beyaz metin kullanılır (`::selection`).
+- **Scrollbar:** Tüm sayfalarda klasik kalın scrollbar yerine, iOS/Mac tarzı yarı saydam ve köşeleri yuvarlatılmış premium kaydırma çubuğu kullanılır.
 
-## 2. Renk Paleti (Color Palette)
+## 2. Renk Paleti ve Arka Planlar (Colors & Backgrounds)
 
-Uygulama, dinamik tema yapısıyla (kategori bazlı renkler) çalışmaktadır. 
-
-### Kategori Temaları (Accent Colors)
-- **Shop (Alışveriş - Grape):** `#6b21a8` (Mor tonları)
-- **Food (Yemek - Sunset):** `#ea580c` (Turuncu tonları)
-- **Market (Market - Mint):** `#059669` (Yeşil tonları)
-
-### Zemin ve Gri Tonları
-- **Genel Arka Plan:** `#fff7ef` (Açık krem - Sıcaklık hissi vermek için)
-- **Kart Arka Planları:** `#ffffff` (Saf beyaz)
-- **Metin Renkleri:** 
-  - Ana Başlıklar: `text-zinc-950` veya `text-black`
-  - İkincil Metinler / Açıklamalar: `text-zinc-500`
-  - Sınırlar (Borders): `border-black/10` (Hafif geçirgen siyah)
+Uygulama, içeriği (beyaz kartları) ön plana çıkarmak için nötr ve ferah bir arkaplan kullanır.
+- **Genel Uygulama Arka Planı (App BG):** `#fafafa` (Çok açık nötr gri). Kartların havada yüzmesini sağlar. (Önceden kullanılan sıcak kremsi #fff7ef tamamen terkedilmiştir).
+- **Kart Arka Planları:** `#ffffff` (Saf beyaz).
+- **Mağaza (Store) Başlıkları:** Saf beyaz listelerden ayrışması için çok hafif marka rengi tonlaması (`bg-[var(--accent)]/5`) kullanılır. Gradient (renk geçişi) kullanımı yasaktır.
+- **Sınırlar (Borders):**
+  - Kart dış sınırları: `border-black/10` (Hafif ve net).
+  - Hover durumundaki sınırlar: `hover:border-[var(--accent)]/40` (Kullanıcı fareyi gezdirdiğinde markayı hissettirir).
+  - İç ayırıcılar (Dividers): `divide-y divide-black/5` kullanılarak ürünler arası çizgi çekilir. Kutu-içinde-kutu (Box-within-a-box) mantığı kullanılmaz.
 
 ## 3. Bileşen Yapıları (Component Patterns)
 
-DoppApp'teki modern ve canlı UI hissini yaratmak için belirli kalıplar (patterns) izlenmiştir:
+### 3.1. Yumuşak Gölgeler ve Köşeler (Soft UI)
+- **Köşe Yuvarlama (Radius):** Modern ve samimi bir his için global olarak `16px` (1rem) yani Tailwind'in `rounded-2xl` hissiyatı standartlaştırılmıştır.
+- **Gölgelendirme (Shadows):** Klasik siyah lekeler yerine çok katmanlı, dumanlı gölgeler `globals.css` içerisine tanımlanmıştır. (Örn: `0 8px 30px rgba(0,0,0,0.05)`).
+- **Hover Gölgeleri:** Tıklanabilir büyük kartlar üzerine gelindiğinde `hover:shadow-md` ile kullanıcıya tepki verir.
 
-### 3.1. Kartlar ve Gölgeler
-Tüm ana bileşenler (Mağaza kartları, ürün listeleri, popup modal'lar) şu Tailwind yapısını takip eder:
-- **Köşe Yuvarlama:** `rounded-lg` (Büyük bloklar için) veya `rounded-full` (İkonlar ve butonlar için).
-- **Gölgelendirme:** `shadow-sm` veya `shadow-2xl` (Modal pop-uplar gibi öne çıkması gereken yerlerde).
-- **Sınır:** `border border-black/10` hafif kontur vermek için.
+### 3.2. Butonlar (Buttons) ve Mikro-Animasyonlar
+Projeye eklenen her `button` elementi otomatik olarak şu mikro-animasyon kurallarına tabiidir:
+1. `cursor: pointer` aktiftir.
+2. `transition: all 0.2s` geçişi vardır.
+3. Fare ile üzerine gelindiğinde (Hover): `filter: brightness(1.05)` ile çok zarifçe parlar.
+4. Tıklandığında (Active): `transform: scale(0.96)` ile buton hafifçe içe göçer ve gerçekçi bir basma hissi verir.
 
-### 3.2. Butonlar (Buttons)
-- **Ana Aksiyon Butonları (Primary):** Dinamik kategori rengini arkaplan olarak alır `bg-[var(--accent)]` ve beyaz kalın metin kullanır `text-white font-black`.
-- **İkincil Butonlar (Secondary):** Beyaz arkaplanlı, hafif gölgeli `bg-white shadow-sm border border-black/10 text-zinc-600`.
+### 3.3. Modal ve Overlays (Popuplar)
+Açılır pencereler (Ürün Ekleme, Adres Seçimi) artık dikey ve basit kutular yerine **Geniş Split-Layout (Bölünmüş Düzen)** yapısını kullanır.
 
-### 3.3. İkonlar
-Uygulama genelinde **Lucide React** ikon seti kullanılmaktadır. Arayüzün karmaşıklaşmaması için ikonlar genellikle `size={18}` veya `size={14}` gibi minimal boyutlarda tercih edilmektedir (Örn: `Clock`, `Bike`, `ShoppingCart`).
-
-### 3.4. Modal ve Overlays (Popuplar)
-Açılır pencereler (Ürün Ekleme, Adres Seçimi) ekranın tam ortasında belirir:
+**Örnek Ürün Detay Modalı Yapısı:**
 ```tsx
-<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-4">
-  <div className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
-     {/* İçerik */}
+<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 md:p-8">
+  {/* Görselin kesilmemesi için min-h-[500px] hayatidir */}
+  <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row">
+    
+    {/* SOL: Tam Yükseklik Görsel (Image) */}
+    <div className="relative h-64 shrink-0 bg-zinc-100 md:h-auto md:w-1/2">
+       <Image fill src="..." alt="..." className="object-cover" />
+    </div>
+
+    {/* SAĞ: Kaydırılabilir İçerik (Scrollable Content) */}
+    <div className="relative flex flex-1 flex-col overflow-auto p-5 md:p-8">
+       {/* Başlık, Açıklama, Opsiyonlar, Buton */}
+    </div>
+    
   </div>
 </div>
 ```
 
-## 4. Animasyonlar ve Etkileşim (Interaction & Motion)
-- Temalar arası geçişte header renginin yavaşça değişmesi için `transition-colors duration-300` kullanılmıştır.
-- Kurye takip ekranındaki araç (motor) animasyonları Leaflet.js tarafında `requestAnimationFrame` kullanılarak saniyede 60 kare hızında akıcı olarak render edilmektedir.
+## 4. Uzun Metinler (Truncation / Line Clamping)
+Ürün listelerinde (Grid veya List view) yüksekliklerin eşitsizliğini (UI kırılmalarını) önlemek için metinler sabitlenir:
+- **Ürün Başlığı:** `line-clamp-1`
+- **Ürün Açıklaması:** `line-clamp-2`
+- Orijinal uzun metin tıklanarak açılan Split-Modal içerisindeki `whitespace-pre-wrap` etiketine sahip alanda tam olarak gösterilir. HTML `title` tooltip'leri ucuz bir hissiyat yarattığı için kullanılmaz.
