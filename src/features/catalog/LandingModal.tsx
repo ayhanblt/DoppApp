@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import { ShoppingBag, MapPin } from "lucide-react";
+import { MapPin, Rocket } from "lucide-react";
 
 type LandingModalProps = {
   locale: Locale;
@@ -43,17 +43,17 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => handleClose(true)}>
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl flex flex-col items-center text-center" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-6 h-24 w-24 rounded-full bg-gradient-to-br from-[var(--accent)] to-orange-400 flex items-center justify-center shadow-lg text-white">
-          <ShoppingBag size={48} />
+        <div className="mb-6 h-28 w-28 rounded-3xl bg-zinc-100 flex items-center justify-center shadow-inner border border-black/5">
+          <img src="/images/doppapp-logo-tek.svg" className="w-16 h-16 object-contain" alt="DoppApp Logo" />
         </div>
         
         <h2 className="text-3xl font-black mb-3">DoppApp&apos;e Hoş Geldin!</h2>
         <p className="text-zinc-600 mb-8 font-medium">Hayalindekileri sepetine ekle ve siparişini ver, paylaş.</p>
 
-        <div className="flex w-full items-center justify-between gap-4 mt-2">
+        <div className="flex flex-col md:flex-row w-full items-center justify-between gap-4 mt-2">
           <button
             onClick={() => handleClose(false)}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 py-3 font-bold text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+            className="flex w-full md:flex-1 items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 py-3 font-bold text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
           >
             <MapPin size={18} />
             Konumunu Seç
@@ -61,9 +61,11 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
           
           <button
             onClick={() => handleClose(true)}
-            className="flex-1 rounded-xl bg-gradient-to-r from-[var(--accent)] to-orange-500 py-3.5 font-black text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+            className="flex w-full md:flex-1 items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+            style={{ backgroundColor: 'var(--accent)', filter: 'brightness(1.15)' }}
           >
             Hemen Başla
+            <Rocket size={18} />
           </button>
         </div>
       </div>

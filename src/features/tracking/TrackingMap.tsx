@@ -7,7 +7,7 @@ import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet
 import { useEffect, useMemo, useState } from "react";
 import { getRoute } from "./geo";
 import { renderToStaticMarkup } from "react-dom/server";
-import { House, MapPinHouse, Truck } from "lucide-react";
+import { House, Package, ShoppingBag } from "lucide-react";
 
 type TrackingMapProps = {
   restaurant: [number, number];
@@ -24,7 +24,7 @@ const restaurantIcon = L.divIcon({
     <div className="flex items-center justify-center drop-shadow-md w-12 h-12">
       <div className="flex h-8 w-8 items-center justify-center rounded-full rounded-br-none rotate-45 bg-zinc-800 border-1 border-white text-white">
         <div className="-rotate-45 flex items-center justify-center">
-          <House size={16} strokeWidth={2} />
+          <ShoppingBag size={16} strokeWidth={2} />
         </div>
       </div>
     </div>
@@ -39,7 +39,7 @@ const courierIcon = L.divIcon({
     <div className="flex items-center justify-center drop-shadow-md w-14 h-14">
       <div className="flex h-10 w-10 items-center justify-center rounded-full rounded-br-none rotate-45 bg-[#fb4824] border-1 border-white text-white">
         <div className="-rotate-45 flex items-center justify-center">
-          <Truck size={18} strokeWidth={2.5} />
+          <Package size={18} strokeWidth={2.5} />
         </div>
       </div>
     </div>
@@ -54,7 +54,7 @@ const destinationIcon = L.divIcon({
     <div className="flex items-center justify-center drop-shadow-md w-12 h-12">
       <div className="flex h-8 w-8 items-center justify-center rounded-full rounded-br-none rotate-45 bg-emerald-500 border-1 border-white text-white">
         <div className="-rotate-45 flex items-center justify-center">
-          <MapPinHouse size={16} strokeWidth={2} />
+          <House size={16} strokeWidth={2} />
         </div>
       </div>
     </div>

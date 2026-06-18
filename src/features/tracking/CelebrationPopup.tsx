@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
-import { X } from "lucide-react";
+import { X, Share2 } from "lucide-react";
 import { Locale, CartItem } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { formatMoney, formatNumber } from "@/shared/lib/format";
@@ -122,9 +122,10 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
         <div className="flex flex-col gap-3">
           <button
             onClick={handleShareClick}
-            className="w-full rounded-xl bg-gradient-to-r from-[var(--accent)] to-orange-500 py-3 font-black text-white hover:opacity-90 shadow-md"
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
           >
             Siparişini Paylaş
+            <Share2 size={18} />
           </button>
 
           <button

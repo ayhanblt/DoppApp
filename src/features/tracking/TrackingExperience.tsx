@@ -8,7 +8,8 @@ import { formatMoney, formatNumber } from "@/shared/lib/format";
 import { findProduct } from "@/features/order/cart";
 import { getCartTotals } from "@/features/order/cart";
 import { getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
-import { ArrowLeft, Info, Gift, X } from "lucide-react";
+import { ArrowLeft, Info, Gift, X, Share2 } from "lucide-react";
+import ReceiptShareModal from "./ReceiptShareModal";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
 const CelebrationPopup = dynamic(() => import("@/features/tracking/CelebrationPopup"), { ssr: false });
@@ -32,6 +33,29 @@ export default function TrackingExperience({
   const [celebrationShown, setCelebrationShown] = useState(false);
   const [displayRoute, setDisplayRoute] = useState<[number, number][] | null>(null);
   const [savingsModalOpen, setSavingsModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState("");
+
+  const handleShareClick = () => {
+    const items = order.items.map(item => {
+      const store = stores.find(s => s.id === item.storeId);
+      const product = store?.menu.find(p => p.id === item.itemId);
+      return {
+        name: product ? product.name[locale] : "Ürün",
+        qty: item.quantity,
+        image: product?.image
+      };
+    });
+    
+    const data = JSON.stringify({
+      locale,
+      total: formatMoney(totals.total, locale),
+      items
+    });
+    
+    setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
+    setShareModalOpen(true);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -80,13 +104,13 @@ export default function TrackingExperience({
 
   return (
     <main className="min-h-screen bg-[#fff7ef] p-4 text-zinc-950">
-      <section className="mx-auto max-w-7xl py-6">
+      <section className="mx-auto max-w-7xl py-6 pb-24">
         <div className="mb-4 flex items-center justify-between">
-          <button onClick={onBack} className="rounded-lg bg-white px-4 py-2 font-bold shadow-sm flex items-center gap-1">
+          <button onClick={onBack} className="h-10 sm:h-11 px-3 sm:px-4 flex items-center justify-center gap-1 rounded-lg bg-white font-bold shadow-sm text-sm sm:text-base">
             <ArrowLeft size={20} className="-ml-1" />
-            {t.backToApp}
+            <span className="hidden sm:inline">{t.backToApp}</span>
           </button>
-          <button onClick={() => setSavingsModalOpen(true)} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 font-bold shadow-sm transition-colors hover:bg-zinc-50">
+          <button onClick={() => setSavingsModalOpen(true)} className="h-10 sm:h-11 px-3 sm:px-4 flex items-center justify-center gap-2 rounded-lg bg-white font-bold shadow-sm transition-colors hover:bg-zinc-50">
             <Gift size={20} className="text-[var(--accent)]" />
             <span className="text-sm font-bold">{t.yourSavings}</span>
           </button>
@@ -170,6 +194,22 @@ export default function TrackingExperience({
           cart={order?.items || []}
           onClose={() => setCelebrationOpen(false)}
         />
+      )}
+
+      {shareModalOpen && (
+        <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShareModalOpen(false)} />
+      )}
+
+      {status === "delivered" && !celebrationOpen && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-zinc-200 flex justify-center z-40">
+          <button
+            onClick={handleShareClick}
+            className="w-full max-w-md flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
+          >
+            Siparişi Paylaş
+            <Share2 size={18} />
+          </button>
+        </div>
       )}
     </main>
   );

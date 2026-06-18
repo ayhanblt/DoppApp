@@ -303,7 +303,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                                 </ReactMarkdown>
                               </div>
                               {(item.calories || 0) > 0 && <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</p>}
-                              {item.optionGroups && item.optionGroups.length > 0 && <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p>}
+                              {item.optionGroups && item.optionGroups.length > 0 ? <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p> : <div className="mt-1 h-4"></div>}
                             </div>
                           </div>
                           <div className="mt-1 flex items-end justify-between gap-2">
@@ -325,7 +325,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 md:p-8">
           <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row">
 
-            <div className="relative h-64 shrink-0 bg-zinc-100 md:h-auto md:w-1/2">
+            <div className="relative aspect-square shrink-0 bg-zinc-100 md:w-1/2">
               <Image
                 fill
                 className="cursor-pointer object-cover transition-opacity hover:opacity-90"

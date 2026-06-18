@@ -4,9 +4,10 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair, Rabbit, Turtle } from "lucide-react";
+import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair, Rabbit, Turtle, Save, FolderDown } from "lucide-react";
+import toast from "react-hot-toast";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import type { Address, Locale, Order, Store, ThemeName } from "@/shared/lib/types";
+import type { Address, Locale, Order, Store, ThemeName, CartItem } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findProduct, getItemUnitPrice } from "@/features/order/cart";
 import { buildOrderTimeline, themeIcons, themes } from "@/features/catalog/appConfig";
@@ -53,6 +54,11 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   }, [currentTheme, setQuery]);
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const [saveCartName, setSaveCartName] = useState("");
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const [savedCarts, setSavedCarts] = useState<{name: string, items: CartItem[]}[]>([]);
+  const [selectedCartIndex, setSelectedCartIndex] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,6 +121,61 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     setCheckoutOpen(false);
   }
 
+  function openRestorePrompt() {
+    const saved = window.localStorage.getItem("doppapp_saved_carts");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSavedCarts(parsed);
+          setSelectedCartIndex(0);
+          setShowRestorePrompt(true);
+        } else {
+          toast.error(locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+        }
+      } catch (e) {
+        toast.error(locale === 'tr' ? "Sepetler okunurken hata oluştu." : "Error reading saved carts.");
+      }
+    } else {
+      toast.error(locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+    }
+  }
+
+  function handleRestoreCart() {
+    const cartToRestore = savedCarts[selectedCartIndex];
+    if (cartToRestore && cartToRestore.items) {
+      setCart(cartToRestore.items);
+      setShowRestorePrompt(false);
+      toast.success(locale === 'tr' ? `"${cartToRestore.name}" isimli sepetiniz geri yüklendi!` : `Cart "${cartToRestore.name}" restored!`);
+    }
+  }
+
+  function handleSaveCart() {
+    if (!saveCartName.trim()) return;
+    const newCart = {
+      name: saveCartName,
+      items: cart
+    };
+    
+    let existingCarts = [];
+    const saved = window.localStorage.getItem("doppapp_saved_carts");
+    if (saved) {
+      try {
+        existingCarts = JSON.parse(saved);
+        if (!Array.isArray(existingCarts)) existingCarts = [];
+      } catch (e) {
+        existingCarts = [];
+      }
+    }
+    
+    existingCarts.push(newCart);
+    window.localStorage.setItem("doppapp_saved_carts", JSON.stringify(existingCarts));
+    
+    setShowSavePrompt(false);
+    setSaveCartName("");
+    toast.success(locale === 'tr' ? `Sepetiniz "${saveCartName}" ismiyle başarıyla kaydedildi.` : `Cart saved as "${saveCartName}".`);
+  }
+
   if (order) {
     return (
       <TrackingExperience
@@ -122,7 +183,10 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
         order={order}
         totals={totals}
         stores={stores}
-        onBack={() => setOrder(null)}
+        onBack={() => {
+          setOrder(null);
+          setCart([]);
+        }}
       />
     );
   }
@@ -222,8 +286,8 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       </footer>
 
       {checkoutOpen && (
-        <div className="fixed inset-0 z-40 bg-black/35 p-4">
-          <form onSubmit={createOrder} className="mx-auto max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl">
+        <div className="fixed inset-0 z-40 bg-black/35 p-4 flex items-center justify-center">
+          <form onSubmit={createOrder} className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl relative">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-black">{t.checkout}</h3>
               <button type="button" onClick={() => setCheckoutOpen(false)} className="h-9 w-9 rounded-full bg-zinc-100">×</button>
@@ -272,7 +336,78 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                 </button>
               </div>
               <button disabled={!cart.length} className="w-full rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45 shadow-md hover:shadow-lg transition-shadow">{t.demoOrder}</button>
+
+              <div className="flex items-center justify-center gap-4 pt-2 text-sm font-bold text-zinc-600">
+                <button type="button" onClick={() => setShowSavePrompt(true)} className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
+                  <Save size={16} />
+                  {locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}
+                </button>
+                <span className="text-zinc-300">|</span>
+                <button type="button" onClick={openRestorePrompt} className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
+                  <FolderDown size={16} />
+                  {locale === 'tr' ? 'Geri Yükle' : 'Restore'}
+                </button>
+              </div>
             </div>
+
+            {showSavePrompt && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 p-4 backdrop-blur-sm rounded-lg">
+                <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl border border-zinc-200">
+                  <h4 className="text-lg font-black text-zinc-800 mb-2">
+                    {locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}
+                  </h4>
+                  <p className="text-sm text-zinc-500 mb-4">
+                    {locale === 'tr' ? 'Sepetiniz için bir isim belirleyin:' : 'Enter a name for your cart:'}
+                  </p>
+                  <input
+                    type="text"
+                    value={saveCartName}
+                    onChange={(e) => setSaveCartName(e.target.value)}
+                    placeholder={locale === 'tr' ? "Örn: Akşam Yemeği" : "e.g., Dinner"}
+                    className="w-full rounded-lg border border-black/10 p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setShowSavePrompt(false)} className="flex-1 rounded-lg bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors">
+                      {locale === 'tr' ? 'İptal' : 'Cancel'}
+                    </button>
+                    <button type="button" onClick={handleSaveCart} disabled={!saveCartName.trim()} className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-white disabled:opacity-50 transition-opacity">
+                      {locale === 'tr' ? 'Kaydet' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showRestorePrompt && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 p-4 backdrop-blur-sm rounded-lg">
+                <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl border border-zinc-200">
+                  <h4 className="text-lg font-black text-zinc-800 mb-2">
+                    {locale === 'tr' ? 'Sepeti Geri Yükle' : 'Restore Cart'}
+                  </h4>
+                  <p className="text-sm text-zinc-500 mb-4">
+                    {locale === 'tr' ? 'Geri yüklemek istediğiniz sepeti seçin:' : 'Select a cart to restore:'}
+                  </p>
+                  <select
+                    value={selectedCartIndex}
+                    onChange={(e) => setSelectedCartIndex(Number(e.target.value))}
+                    className="w-full rounded-lg border border-black/10 p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-white"
+                  >
+                    {savedCarts.map((c, idx) => (
+                      <option key={idx} value={idx}>{c.name} ({c.items.length} {locale === 'tr' ? 'ürün' : 'items'})</option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setShowRestorePrompt(false)} className="flex-1 rounded-lg bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors">
+                      {locale === 'tr' ? 'İptal' : 'Cancel'}
+                    </button>
+                    <button type="button" onClick={handleRestoreCart} className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-white transition-opacity">
+                      {locale === 'tr' ? 'Geri Yükle' : 'Restore'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       )}

@@ -54,7 +54,7 @@ export default async function SharePage({ searchParams }: { searchParams: Promis
       )}
       <Link 
         href="/"
-        className="px-8 py-4 rounded-xl bg-[var(--accent)] text-white font-bold hover:opacity-90 transition-opacity"
+        className="px-8 py-4 rounded-xl bg-[#fb4824] text-white font-bold hover:opacity-90 transition-opacity"
       >
         Uygulamaya Git
       </Link>
