@@ -14,7 +14,29 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DoppApp",
-  description: "Fake food delivery with live courier tracking.",
+  description: "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp",
+  openGraph: {
+    title: "DoppApp",
+    description: "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp",
+    url: "https://doppapp.com",
+    siteName: "DoppApp",
+    images: [
+      {
+        url: "https://doppapp.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "DoppApp",
+      },
+    ],
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DoppApp",
+    description: "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp",
+    images: ["https://doppapp.com/og-image.png"],
+  },
   icons: {
     icon: "/favicon.ico",
   },

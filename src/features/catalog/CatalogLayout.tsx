@@ -13,6 +13,7 @@ import { buildOrderTimeline, themeIcons, themes } from "@/features/catalog/appCo
 import { useCatalog } from "./CatalogContext";
 import { geocodeAddress, reverseGeocode } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
+import { LandingModal } from "./LandingModal";
 
 const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
 const TrackingExperience = dynamic(() => import("@/features/tracking/TrackingExperience"), { ssr: false });
@@ -66,6 +67,21 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     setDeliveryAddress(address);
     setAddressModalOpen(false);
   }
+
+  const handleLandingClose = (defaultLocation?: boolean) => {
+    if (defaultLocation && !deliveryAddress) {
+      saveDeliveryAddress({
+        id: uid("address"),
+        title: "Ev",
+        address: "Beşiktaş / İstanbul",
+        shortAddress: "Beşiktaş",
+        latitude: 41.037,
+        longitude: 28.985
+      });
+    } else if (!defaultLocation && !deliveryAddress) {
+      setAddressModalOpen(true);
+    }
+  };
 
   function createOrder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -303,6 +319,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
           onSave={saveDeliveryAddress}
         />
       )}
+      <LandingModal locale={locale} onClose={handleLandingClose} />
     </main>
   );
 }
@@ -327,6 +344,16 @@ function AddressModal({
   const [mapOpen, setMapOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isLocating, setIsLocating] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onCancel) {
+        onCancel();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
 
   function findMyLocation() {
     if (!("geolocation" in navigator)) {
@@ -451,8 +478,8 @@ function AddressModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4">
-      <form onSubmit={submit} className="w-full max-h-[94vh] max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4" onClick={onCancel}>
+      <form onSubmit={submit} className="w-full max-h-[94vh] max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-[var(--accent)]">{t.deliveryAddress}</p>

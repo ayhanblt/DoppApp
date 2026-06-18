@@ -167,6 +167,7 @@ export default function TrackingExperience({
           locale={locale}
           calories={totals.calories}
           totalPrice={totals.total}
+          cart={order?.items || []}
           onClose={() => setCelebrationOpen(false)}
         />
       )}

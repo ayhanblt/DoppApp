@@ -59,6 +59,12 @@ export type Product = {
   };
 };
 
+export type StoreReview = {
+  author: string;
+  rating: number;
+  comment: string;
+};
+
 export type Store = {
   id: string;
   type: StoreType;
@@ -74,6 +80,7 @@ export type Store = {
   badge?: Record<Locale, string>;
   rating: number;
   reviews: number;
+  reviews_data?: StoreReview[];
   eta: string;
   deliveryFee: number;
   coordinate: [number, number];

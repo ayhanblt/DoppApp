@@ -3,19 +3,35 @@
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { X } from "lucide-react";
-import { Locale } from "@/shared/lib/types";
+import { Locale, CartItem } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { formatMoney, formatNumber } from "@/shared/lib/format";
+import ReceiptShareModal from "./ReceiptShareModal";
+import { useCatalog } from "@/features/catalog/CatalogContext";
 
 type CelebrationPopupProps = {
   locale: Locale;
   calories: number;
   totalPrice: number;
+  cart: CartItem[];
   onClose: () => void;
 };
 
-export default function CelebrationPopup({ locale, calories, totalPrice, onClose }: CelebrationPopupProps) {
+export default function CelebrationPopup({ locale, calories, totalPrice, cart, onClose }: CelebrationPopupProps) {
   const t = dictionaries[locale];
+  const { stores } = useCatalog();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState("");
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !showShareModal) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, showShareModal]);
 
   useEffect(() => {
     const duration = 2000;
@@ -45,9 +61,32 @@ export default function CelebrationPopup({ locale, calories, totalPrice, onClose
     }());
   }, []);
 
+  const handleShareClick = () => {
+    // Generate data for the receipt API
+    const items = cart.map(item => {
+      const store = stores.find(s => s.id === item.storeId);
+      const product = store?.menu.find(p => p.id === item.itemId);
+      return {
+        name: product ? product.name[locale] : "Ürün",
+        qty: item.quantity,
+        image: product?.image
+      };
+    });
+    
+    const data = JSON.stringify({
+      locale,
+      total: formatMoney(totalPrice, locale),
+      items
+    });
+    
+    setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
+    setShowShareModal(true);
+  };
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-      <div className="relative rounded-2xl bg-white p-6 text-center shadow-2xl max-w-sm w-full">
+    <>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+        <div className="relative rounded-2xl bg-white p-6 text-center shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
@@ -80,13 +119,26 @@ export default function CelebrationPopup({ locale, calories, totalPrice, onClose
           )}
         </p>
 
-        <button
-          onClick={onClose}
-          className="w-full rounded-xl bg-[var(--accent)] py-3 font-bold text-white hover:opacity-90"
-        >
-          {t.close}
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleShareClick}
+            className="w-full rounded-xl bg-gradient-to-r from-[var(--accent)] to-orange-500 py-3 font-black text-white hover:opacity-90 shadow-md"
+          >
+            Siparişini Paylaş
+          </button>
+
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors"
+          >
+            {t.close}
+          </button>
+        </div>
       </div>
     </div>
+    {showShareModal && (
+      <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShowShareModal(false)} />
+    )}
+    </>
   );
 }

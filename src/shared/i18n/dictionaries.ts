@@ -117,7 +117,8 @@ export const dictionaries = {
     locationDenied: "Konum izni reddedildi. Sistem veya tarayıcı ayarlarını kontrol et.",
     locationUnavailable: "Cihaz konumu bulunamadı (Hata 2).",
     langEn: "EN",
-    langTr: "TR"
+    langTr: "TR",
+    reviews: "Yorum"
   },
   en: {
     appName: "DoppApp",
@@ -233,9 +234,10 @@ export const dictionaries = {
     free: "Free",
     approxLocationUsed: "Approximate location (IP) used.",
     locationDenied: "Location permission denied.",
-    locationUnavailable: "Device location unavailable.",
+    locationUnavailable: "Device location not found (Error 2).",
     langEn: "EN",
-    langTr: "TR"
+    langTr: "TR",
+    reviews: "Reviews"
   }
 };
 

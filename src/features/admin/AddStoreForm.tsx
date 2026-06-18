@@ -25,7 +25,7 @@ export function AddStoreForm({ locale, storeCategories, onAddStore }: AddStoreFo
     const store: Omit<Store, "id" | "menu"> = {
       type: newStoreType,
       name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
-      description: { tr: String(data.get("desc_tr")), en: String(data.get("desc_en")) },
+      description: { tr: data.get("desc_tr") ? String(data.get("desc_tr")) : "", en: data.get("desc_en") ? String(data.get("desc_en")) : "" },
       category_id: catId,
       logo: newStoreLogo || "https://placehold.co/100x100.webp?text=Logo",
       badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,

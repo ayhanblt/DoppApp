@@ -29,7 +29,7 @@ export function EditStoreModal({ locale, store, storeCategories, onClose, onSave
       ...store,
       type: storeType,
       name: { tr: String(data.get("name_tr")), en: String(data.get("name_en")) },
-      description: { tr: String(data.get("description_tr")), en: String(data.get("description_en")) },
+      description: { tr: data.get("desc_tr") ? String(data.get("desc_tr")) : "", en: data.get("desc_en") ? String(data.get("desc_en")) : "" },
       category_id: String(data.get("categoryId")),
       logo: String(data.get("logo") || "https://placehold.co/100x100.webp?text=Logo"),
       badge: data.get("badge_tr") ? { tr: String(data.get("badge_tr")), en: String(data.get("badge_en")) } : undefined,

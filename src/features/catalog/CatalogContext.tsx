@@ -54,7 +54,6 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     async function initStores() {
       const rawAddress = window.localStorage.getItem("deliveryAddress");
       if (!rawAddress) {
-        setAddressModalOpen(true);
         if (mounted) setStores(dbStores);
         return;
       }
@@ -64,7 +63,6 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
         storedAddress = JSON.parse(rawAddress) as Address;
       } catch {
         window.localStorage.removeItem("deliveryAddress");
-        setAddressModalOpen(true);
         if (mounted) setStores(dbStores);
         return;
       }
