@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -11,7 +11,10 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const { data, id } = await searchParams;
   if (!data && !id) return {};
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://doppapp.com';
+  const headersList = await headers();
+  const host = headersList.get('host') || 'doppapp.com';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
   let imageUrl = '';
 
   if (id) {
@@ -35,6 +38,31 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   };
 }
 
-export default function SharePage() {
-  redirect('/');
+export default async function SharePage({ searchParams }: { searchParams: Promise<{ data?: string, id?: string }> }) {
+  const { data, id } = await searchParams;
+  let imageUrl = '';
+  
+  if (id) {
+    imageUrl = `/api/receipt?id=${id}`;
+  } else if (data) {
+    imageUrl = `/api/receipt?data=${data}`;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 p-6">
+      <h1 className="text-2xl font-black mb-6 text-zinc-800">İşte Benim Siparişim!</h1>
+      {imageUrl && (
+        <div className="rounded-3xl overflow-hidden shadow-2xl mb-8 max-w-md w-full border border-black/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageUrl} alt="DoppApp Sepetim" className="w-full h-auto object-contain" />
+        </div>
+      )}
+      <a 
+        href="/"
+        className="px-8 py-4 rounded-xl bg-[var(--accent)] text-white font-bold hover:opacity-90 transition-opacity"
+      >
+        Uygulamaya Git
+      </a>
+    </div>
+  );
 }
