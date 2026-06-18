@@ -1,11 +1,6 @@
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import Link from 'next/link';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ data?: string, id?: string }> }): Promise<Metadata> {
   const { data, id } = await searchParams;
@@ -57,12 +52,12 @@ export default async function SharePage({ searchParams }: { searchParams: Promis
           <img src={imageUrl} alt="DoppApp Sepetim" className="w-full h-auto object-contain" />
         </div>
       )}
-      <a 
+      <Link 
         href="/"
         className="px-8 py-4 rounded-xl bg-[var(--accent)] text-white font-bold hover:opacity-90 transition-opacity"
       >
         Uygulamaya Git
-      </a>
+      </Link>
     </div>
   );
 }
