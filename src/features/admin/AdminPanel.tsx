@@ -8,6 +8,7 @@ import { EditProductsModal } from "@/features/admin/EditProductsModal";
 import { AddStoreForm } from "@/features/admin/AddStoreForm";
 import { AddItemForm } from "@/features/admin/AddItemForm";
 import { CategoryManager } from "@/features/admin/CategoryManager";
+import { ConfigManager } from "@/features/admin/ConfigManager";
 import { StoreList } from "@/features/admin/StoreList";
 import { AdminInput } from "@/features/admin/AdminInput";
 import { fetchStoresFromSupabase, saveStoreToSupabase, deleteStoreFromSupabase, fetchConfigFromSupabase, saveConfigToSupabase } from "@/features/catalog/data";
@@ -27,7 +28,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
   const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
   const [activeTab, setActiveTab] = useState<StoreType | "all">("all");
-  const [adminMode, setAdminMode] = useState<"stores" | "categories">("stores");
+  const [adminMode, setAdminMode] = useState<"stores" | "categories" | "config">("stores");
 
   const loadData = async () => {
     const [dbStores, dbConfig, dbStoreCats, dbProdCats] = await Promise.all([
@@ -178,6 +179,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
         <div className="mt-4 flex gap-2 border-b border-black/10 pb-4">
           <button className={`px-4 py-2 font-bold ${adminMode === 'stores' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('stores')}>Mağazalar & Ürünler</button>
           <button className={`px-4 py-2 font-bold ${adminMode === 'categories' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('categories')}>Kategori Yönetimi</button>
+          <button className={`px-4 py-2 font-bold ${adminMode === 'config' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('config')}>Teslimat Ayarları</button>
         </div>
 
         {adminMode === 'stores' ? (
@@ -199,12 +201,14 @@ export function AdminPanel({ locale }: { locale: Locale }) {
               onDeleteStore={deleteStore} 
             />
           </>
-        ) : (
+        ) : adminMode === 'categories' ? (
           <CategoryManager 
             storeCategories={storeCategories}
             productCategories={productCategories}
             onRefresh={loadData}
           />
+        ) : (
+          <ConfigManager config={config} onRefresh={loadData} />
         )}
 
         {editingStore && (

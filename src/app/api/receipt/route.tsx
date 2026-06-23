@@ -36,6 +36,21 @@ export async function GET(req: NextRequest) {
     const hasLira = totalStr.includes('₺');
     const totalWithoutLira = totalStr.replace('₺', '').trim();
 
+    const totalItems = data.items.length;
+    let canvasHeight = 900;
+    
+    if (totalItems === 1) {
+      canvasHeight = 950;
+    } else if (totalItems <= 5) {
+      const collageBoxHeight = totalItems <= 3 ? 400 : 480;
+      canvasHeight = 620 + collageBoxHeight + (totalItems * 85);
+    } else {
+      const rowHeight = totalItems <= 10 ? 85 : 75;
+      const visibleItems = Math.min(totalItems, 10);
+      const moreText = totalItems > 10 ? 80 : 0;
+      canvasHeight = 620 + (visibleItems * rowHeight) + moreText;
+    }
+
     return new ImageResponse(
       (
         <div
@@ -100,34 +115,96 @@ export async function GET(req: NextRequest) {
                     <path d="M2.31,14.27,0,15.87V13.45l2.31-1.6V9.58L0,11.17V8.75L2.31,7.16V0H5.49V5.11L9.73,2.16V4.58l-4.24,3V9.81l4.24-3V9.27l-4.24,3v7.23A5.09,5.09,0,0,0,10,14.18a7.08,7.08,0,0,0-.1-1.29l2.63-.84a10.51,10.51,0,0,1,.2,1.95c0,6.32-4.11,9.54-10.41,9.34Z" />
                   </svg>
                 )}
-                <b style={{ textShadow: '1px 1px 0 #fb4824, -1px -1px 0 #fb4824, 1px -1px 0 #fb4824, -1px 1px 0 #fb4824, 0 2px 0 #fb4824, 2px 0 0 #fb4824, -2px 0 0 #fb4824, 0 -2px 0 #fb4824' }}>{totalWithoutLira}</b>
+                <b style={{ display: 'flex', alignItems: 'flex-start', textShadow: '1px 1px 0 #fb4824, -1px -1px 0 #fb4824, 1px -1px 0 #fb4824, -1px 1px 0 #fb4824, 0 2px 0 #fb4824, 2px 0 0 #fb4824, -2px 0 0 #fb4824, 0 -2px 0 #fb4824' }}>
+                  {totalWithoutLira}
+                  <span style={{ fontSize: '50px', marginLeft: '4px', marginTop: '12px' }}>{data.locale === 'tr' ? ',00' : '.00'}</span>
+                </b>
               </div>
             </div>
 
-            {/* Items List Box */}
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, backgroundColor: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden', marginBottom: '30px' }}>
-              {data.items.slice(0, 5).map((item: { name: string, qty: number, image?: string }, idx: number) => {
-                return (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '24px', borderBottom: '2px solid #e5e7eb' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', backgroundColor: '#fee2e2', borderRadius: '8px', marginRight: '24px', fontWeight: 'bold', color: '#fb4824', fontSize: '20px' }}>
-                      {item.qty}
+            {/* Items Rendering Modes */}
+            {totalItems === 1 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '40px' }}>
+                {data.items[0].image && (
+                  <div style={{ display: 'flex', width: '360px', height: '360px', borderRadius: '48px', overflow: 'hidden', border: '12px solid #ffffff', marginBottom: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+                    <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[0].image)}&output=jpg&w=720&h=720`} width={360} height={360} style={{ objectFit: 'cover' }} />
+                  </div>
+                )}
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#374151', textAlign: 'center', padding: '0 40px' }}>
+                  {`${data.items[0].qty} x ${data.items[0].name}`}
+                </div>
+              </div>
+            ) : totalItems <= 5 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '40px' }}>
+                <div style={{ display: 'flex', width: '480px', height: totalItems <= 3 ? '400px' : '480px', position: 'relative', marginBottom: '60px', alignItems: 'center', justifyContent: 'center' }}>
+                  {data.items[0].image && (
+                    <div style={{ display: 'flex', width: '280px', height: '280px', borderRadius: '140px', overflow: 'hidden', border: '8px solid #ffffff', zIndex: 10, position: 'absolute', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[0].image)}&output=jpg&w=560&h=560`} width={280} height={280} style={{ objectFit: 'cover' }} />
                     </div>
-                    <span style={{ fontSize: '24px', fontWeight: '600', color: '#374151', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {item.name}
+                  )}
+                  {data.items[1]?.image && (
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 5, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 2 ? { bottom: 0, right: 20 } : totalItems === 3 ? { bottom: 0, left: 20 } : totalItems === 4 ? { bottom: 0, left: 0 } : { top: 0, left: 0 }) }}>
+                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[1].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    </div>
+                  )}
+                  {data.items[2]?.image && (
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 5, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 3 ? { top: 0, right: 20 } : totalItems === 4 ? { top: 0, left: 160 } : { bottom: 0, right: 0 }) }}>
+                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[2].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    </div>
+                  )}
+                  {data.items[3]?.image && (
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 4, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 4 ? { bottom: 0, right: 0 } : { top: 0, right: 0 }) }}>
+                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[3].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    </div>
+                  )}
+                  {data.items[4]?.image && (
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 4, position: 'absolute', bottom: 0, left: 0, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[4].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', backgroundColor: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden' }}>
+                  {data.items.map((item: { name: string, qty: number }, idx: number) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '20px 24px', borderBottom: idx === data.items.length - 1 ? 'none' : '2px solid #e5e7eb' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', backgroundColor: '#fee2e2', borderRadius: '8px', marginRight: '16px', fontWeight: 'bold', color: '#fb4824', fontSize: '18px' }}>
+                        {item.qty}
+                      </div>
+                      <span style={{ fontSize: '22px', fontWeight: '600', color: '#374151', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', backgroundColor: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden', marginBottom: '30px' }}>
+                {data.items.slice(0, 10).map((item: { name: string, qty: number, image?: string }, idx: number) => {
+                  const showImage = item.image && totalItems <= 10;
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '16px 24px', borderBottom: '2px solid #e5e7eb' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', backgroundColor: '#fee2e2', borderRadius: '8px', marginRight: '16px', fontWeight: 'bold', color: '#fb4824', fontSize: '20px' }}>
+                        {item.qty}
+                      </div>
+                      {showImage && (
+                        <div style={{ display: 'flex', width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', marginRight: '24px', backgroundColor: '#f9fafb' }}>
+                          <img src={`https://wsrv.nl/?url=${encodeURIComponent(item.image || '')}&output=jpg&w=96&h=96`} width={48} height={48} style={{ objectFit: 'cover' }} />
+                        </div>
+                      )}
+                      <span style={{ fontSize: '20px', fontWeight: '600', color: '#374151', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.name}
+                      </span>
+                    </div>
+                  );
+                })}
+                {data.items.length > 10 && (
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '24px', borderBottom: '2px solid #e5e7eb' }}>
+                    <span style={{ fontSize: '20px', fontWeight: '500', color: '#9ca3af', flex: 1, textAlign: 'center' }}>
+                      ... ve {data.items.length - 10} {data.locale === 'tr' ? 'ürün daha' : 'more items'}
                     </span>
                   </div>
-                );
-              })}
-              {data.items.length > 5 && (
-                <div style={{ display: 'flex', alignItems: 'center', padding: '24px', borderBottom: '2px solid #e5e7eb' }}>
-                  <span style={{ fontSize: '20px', fontWeight: '500', color: '#9ca3af', flex: 1, textAlign: 'center' }}>
-                    ... ve {data.items.length - 5} {data.locale === 'tr' ? 'ürün daha' : 'more items'}
-                  </span>
-                </div>
-              )}
-              {/* Empty space filler for the rest of the box */}
-              <div style={{ display: 'flex', flex: 1, backgroundColor: '#ffffff' }}></div>
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Footer */}
             <div style={{ display: 'flex', justifyContent: 'center', fontSize: '18px', fontWeight: 'bold', color: '#9ca3af' }}>
@@ -139,8 +216,8 @@ export async function GET(req: NextRequest) {
         </div>
       ),
       {
-        width: 800,
-        height: 800,
+        width: 900,
+        height: canvasHeight,
       }
     );
   } catch (e) {

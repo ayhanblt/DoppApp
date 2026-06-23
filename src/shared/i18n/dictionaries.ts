@@ -118,7 +118,51 @@ export const dictionaries = {
     locationUnavailable: "Cihaz konumu bulunamadı (Hata 2).",
     langEn: "EN",
     langTr: "TR",
-    reviews: "Yorum"
+    reviews: "Yorum",
+    
+    // Header & Categories
+    shop: "Alışveriş",
+    food: "Yemek",
+    market: "Market",
+    about: "Hakkında",
+    sendFeedback: "Geri Bildirim Gönder",
+    
+    // CatalogList
+    seeAll: "Tümünü Gör >",
+    seeAllItems: (count: number) => `Tümünü Gör (${count} Ürün)`,
+    
+    // Landing Modal
+    welcomeTitle: "DoppApp'e Hoş Geldin!",
+    welcomeDesc: "DoppApp, hayalindeki ürünlerle sepetler oluşturabileceğin, alışveriş ve sipariş süreçlerini simüle ederek kurye takibini deneyimleyebileceğin ve sipariş fişlerini arkadaşlarınla paylaşabileceğin eğlenceli bir e-ticaret simülasyonudur.",
+    pickLocation: "Konumunu Seç",
+    startNow: "Hemen Başla",
+    
+    // Feedback Modal
+    nameSurnameOptional: "Ad Soyad (Opsiyonel)",
+    emailLabel: "E-posta *",
+    titleLabel: "Başlık *",
+    feedbackType: "Bildirim Türü *",
+    selectOption: "Seçiniz",
+    typeRequest: "İstek",
+    typeProductRequest: "Ürün Ekleme Talebi",
+    typeComplaint: "Şikayet",
+    typeThanks: "Teşekkür",
+    messageLabel: "Mesajınız *",
+    send: "Gönder",
+    sending: "Gönderiliyor...",
+    feedbackSuccess: "Geri bildiriminiz gönderildi. Teşekkürler!",
+    feedbackError: "Bir hata oluştu. Lütfen tekrar deneyin.",
+
+    // About Page
+    aboutTitle: "DoppApp Hakkında",
+    aboutP1: "kullanıcıların hayalindeki sepetleri oluşturup sanki gerçek bir uygulamaymış gibi alışveriş, yemek ve market siparişlerini simüle edebildiği yenilikçi bir e-ticaret deneyim platformudur.",
+    aboutP2: "Uygulama içerisinde:",
+    aboutBullet1: "Farklı kategorilerde (Alışveriş, Yemek, Market) sanal mağazaları gezebilirsiniz.",
+    aboutBullet2: "İstediğiniz ürünleri sepetinize ekleyebilir, kurgusal bir sipariş oluşturabilirsiniz.",
+    aboutBullet3: "Siparişiniz onaylandıktan sonra kuryenizin size gelişini canlı bir harita üzerinden takip edebilirsiniz.",
+    aboutBullet4: "Son olarak, hayalinizdeki siparişin havalı bir sipariş fişini (receipt) oluşturup bunu arkadaşlarınızla paylaşabilirsiniz!",
+    aboutP3: "Bu uygulama, bir sipariş sürecinin baştan sona (ürün seçiminden kurye takibine kadar) nasıl tasarlandığını ve kusursuz bir kullanıcı deneyimini (UX) sergilemek amacıyla geliştirilmiştir.",
+    aboutHaveFun: "İyi eğlenceler dileriz!"
   },
   en: {
     appName: "DoppApp",
@@ -237,7 +281,51 @@ export const dictionaries = {
     locationUnavailable: "Device location not found (Error 2).",
     langEn: "EN",
     langTr: "TR",
-    reviews: "Reviews"
+    reviews: "Reviews",
+
+    // Header & Categories
+    shop: "Shop",
+    food: "Food",
+    market: "Market",
+    about: "About",
+    sendFeedback: "Send Feedback",
+    
+    // CatalogList
+    seeAll: "See All >",
+    seeAllItems: (count: number) => `See All (${count} Items)`,
+
+    // Landing Modal
+    welcomeTitle: "Welcome to DoppApp!",
+    welcomeDesc: "DoppApp is a fun e-commerce simulation where you can build dream carts, simulate shopping and delivery flows, track your courier, and share receipts with friends.",
+    pickLocation: "Choose Location",
+    startNow: "Start Now",
+    
+    // Feedback Modal
+    nameSurnameOptional: "Name Surname (Optional)",
+    emailLabel: "Email *",
+    titleLabel: "Title *",
+    feedbackType: "Feedback Type *",
+    selectOption: "Select",
+    typeRequest: "Request",
+    typeProductRequest: "Product Request",
+    typeComplaint: "Complaint",
+    typeThanks: "Thanks",
+    messageLabel: "Message *",
+    send: "Send",
+    sending: "Sending...",
+    feedbackSuccess: "Feedback sent. Thank you!",
+    feedbackError: "An error occurred. Please try again.",
+
+    // About Page
+    aboutTitle: "About DoppApp",
+    aboutP1: "is an innovative e-commerce experience platform where users can create their dream carts and simulate shopping, food, and grocery orders as if it were a real application.",
+    aboutP2: "Within the application:",
+    aboutBullet1: "You can browse virtual stores across different categories (Shop, Food, Market).",
+    aboutBullet2: "You can add any products to your cart and create a fictional order.",
+    aboutBullet3: "Once your order is confirmed, you can track your courier's arrival via a live map.",
+    aboutBullet4: "Finally, you can generate a cool receipt of your dream order and share it with your friends!",
+    aboutP3: "This application was developed to showcase how an end-to-end order process is designed and to present a flawless user experience (UX).",
+    aboutHaveFun: "Have fun!"
   }
 };
 

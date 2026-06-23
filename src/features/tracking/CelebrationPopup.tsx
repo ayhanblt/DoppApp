@@ -34,7 +34,7 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
   }, [onClose, showShareModal]);
 
   useEffect(() => {
-    const duration = 2000;
+    const duration = 1500;
     const end = Date.now() + duration;
 
     (function frame() {
@@ -72,13 +72,13 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
         image: product?.image
       };
     });
-    
+
     const data = JSON.stringify({
       locale,
       total: formatMoney(totalPrice, locale),
       items
     });
-    
+
     setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
     setShowShareModal(true);
   };
@@ -87,59 +87,59 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
     <>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
         <div className="relative rounded-2xl bg-white p-6 text-center shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="text-5xl mb-4 mt-2">🎉</div>
-
-        <h2 className="text-3xl font-black text-[var(--accent)] mb-2">{t.celebration}</h2>
-        <p className="text-zinc-600 mb-6">{t.orderDelivered}</p>
-
-        <div className="mb-6 space-y-2 rounded-xl bg-zinc-50 p-4 text-left">
-          <div className="flex justify-between text-sm">
-            <span className="text-zinc-600">{t.amount}</span>
-            <span className="font-bold">{formatMoney(totalPrice, locale)}</span>
-          </div>
-          {calories > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-zinc-600">{t.calories}</span>
-              <span className="font-bold">{formatNumber(calories, locale)} kcal</span>
-            </div>
-          )}
-        </div>
-
-        <p className="mb-6 text-center text-sm italic text-zinc-500">
-          {t.savingsSummary(
-            formatMoney(totalPrice, locale),
-            calories > 0 ? formatNumber(calories, locale) : ""
-          )}
-        </p>
-
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleShareClick}
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
-          >
-            Siparişini Paylaş
-            <Share2 size={18} />
-          </button>
-
           <button
             onClick={onClose}
-            className="w-full rounded-xl bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors"
+            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
           >
-            {t.close}
+            <X size={18} />
           </button>
+
+          <div className="text-5xl mb-4 mt-2">🎉</div>
+
+          <h2 className="text-3xl font-black text-[var(--accent)] mb-2">{t.celebration}</h2>
+          <p className="text-zinc-600 mb-6">{t.orderDelivered}</p>
+
+          <div className="mb-6 space-y-2 rounded-xl bg-zinc-50 p-4 text-left">
+            <div className="flex justify-between text-sm">
+              <span className="text-zinc-600">{t.amount}</span>
+              <span className="font-bold">{formatMoney(totalPrice, locale)}</span>
+            </div>
+            {calories > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-600">{t.calories}</span>
+                <span className="font-bold">{formatNumber(calories, locale)} kcal</span>
+              </div>
+            )}
+          </div>
+
+          <p className="mb-6 text-center text-sm italic text-zinc-500">
+            {t.savingsSummary(
+              formatMoney(totalPrice, locale),
+              calories > 0 ? formatNumber(calories, locale) : ""
+            )}
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleShareClick}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
+            >
+              Siparişini Paylaş
+              <Share2 size={18} />
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-full rounded-xl bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors"
+            >
+              {t.close}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-    {showShareModal && (
-      <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShowShareModal(false)} />
-    )}
+      {showShareModal && (
+        <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShowShareModal(false)} />
+      )}
     </>
   );
 }

@@ -138,7 +138,7 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
           </a>
           <button
             onClick={downloadImage}
-            className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-tr from-[#fd5949] to-[#d6249f] bg-opacity-10 text-[#d6249f] hover:opacity-80 transition-opacity"
+            className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-tr from-[#fd5949] to-[#d6249f] text-white shadow-sm hover:opacity-90 transition-opacity"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
             <span className="text-[10px] font-bold">Hikayeye Ekle</span>

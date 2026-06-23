@@ -9,11 +9,14 @@ import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { useCatalog } from "./CatalogContext";
 import { supabase } from "@/shared/api/supabase";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type ActiveItem = { store: Store; item: Product };
 
 export function CatalogList({ locale, storeType }: { locale: Locale; storeType: StoreType }) {
   const t = dictionaries[locale];
+  const router = useRouter();
   const { stores, setStores, query, setQuery, setCart, cart, setOrder } = useCatalog();
 
   const [activeItem, setActiveItem] = useState<ActiveItem | null>(null);
@@ -71,7 +74,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       setReviewText("");
     } catch (err) {
       console.error("Error submitting review:", err);
-      alert("Yorum gönderilirken bir hata oluştu.");
+      toast.error("Yorum gönderilirken bir hata oluştu.");
     } finally {
       setIsSubmittingReview(false);
     }
@@ -96,6 +99,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         setEnlargedImage(null);
         setIsSortModalOpen(false);
         setSelectedStoreForDetail(null);
+        setActiveItem(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -189,12 +193,12 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-4">
-      <div id="stores" className="mt-3 flex items-center justify-between gap-4">
+      <div id="stores" className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="shrink-0">
-          <h2 className="text-2xl font-black">{filtered.length} {storeType === "food" ? t.restaurants : "Mağaza"}</h2>
+          <h2 className="text-xl font-black">{filtered.length} {storeType === "food" ? t.restaurants : "Mağaza"}</h2>
           <p className="text-sm text-zinc-500">{t.chooseItems}</p>
         </div>
-        <div className="flex flex-1 items-center justify-end gap-2 overflow-x-auto no-scrollbar pl-2 py-1">
+        <div className="flex w-full sm:w-auto flex-1 items-center justify-start sm:justify-end gap-2 overflow-x-auto no-scrollbar py-1">
           {featuredLabels.map(label => (
             <button
               key={label}
@@ -217,20 +221,25 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         {filtered.map((store) => (
           <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm transition-shadow hover:shadow-md">
             <div className="flex border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5 items-start">
-              <div className="flex shrink-0 mr-3 mt-0.5">
+              <div className="hidden md:flex shrink-0 mr-3 mt-0.5">
                 <Image width={96} height={96} className="h-12 w-12 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col justify-center">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="truncate text-lg font-black leading-tight cursor-pointer hover:underline" onClick={() => setSelectedStoreForDetail(store)}>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-2">
+                  <h3 className="truncate text-lg font-black leading-tight cursor-pointer hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
                     {store.name[locale]}
                   </h3>
-                  {store.badge && (
-                    <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
-                      {store.badge[locale]}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {store.badge && (
+                      <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
+                        {store.badge[locale]}
+                      </span>
+                    )}
+                    <button className="shrink-0 text-xs font-bold text-[var(--accent)] hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
+                      {t.seeAllItems ? t.seeAllItems(store.menu.length) : t.seeAll}
+                    </button>
+                  </div>
                 </div>
 
                 {store.description && store.description[locale] && store.description[locale] !== "null" && store.description[locale].trim() !== "" && (
@@ -239,8 +248,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                   </p>
                 )}
 
-                <div className="mt-2 flex items-start justify-between gap-2">
-                  <p className="flex flex-wrap items-center gap-x-2 text-xs font-semibold text-zinc-600 cursor-pointer hover:opacity-80" onClick={() => setSelectedStoreForDetail(store)}>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="flex flex-wrap items-center gap-x-2 text-xs font-semibold text-zinc-600 cursor-pointer hover:opacity-80" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
                     <span>{store.store_categories ? store.store_categories[locale === "tr" ? "name_tr" : "name_en"] : store.category_id}</span>
                     <span>·</span>
                     <span className="text-amber-500">★ {Number(store.rating).toFixed(1)}</span>
@@ -249,13 +258,13 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                   </p>
 
                   <div className="flex flex-col items-end gap-1 shrink-0 text-xs font-bold text-zinc-700">
-                    <span className="flex items-center gap-1"><Clock size={14} className="text-[var(--accent)]" /> {store.eta} {t.min}</span>
+                    <span className="flex items-center gap-1"><Clock size={14} className="text-[var(--accent)]" /> {store.eta}</span>
                     {/* <span className="flex items-center gap-1"><Bike size={14} className="text-[var(--accent)]" /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : t.free}</span> */}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex flex-col px-5 pb-5 h-[500px] overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col px-5 pb-5">
               {(() => {
                 const storeMenu = selectedFeaturedLabel
                   ? store.menu.filter(item => (locale === 'tr' ? item.section_label_tr : item.section_label_en) === selectedFeaturedLabel)
@@ -264,55 +273,57 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                 const featuredItems = storeMenu.filter(item => locale === 'tr' ? item.section_label_tr : item.section_label_en);
                 const regularItems = storeMenu.filter(item => !(locale === 'tr' ? item.section_label_tr : item.section_label_en));
                 const allItems = [...featuredItems, ...regularItems];
+                const displayedItems = allItems.slice(0, 3);
 
                 return (
                   <div className="flex flex-col mt-2">
-                    {allItems.map((item) => {
-                      const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
-                      const isFeatured = !!label;
-                      const sectionColor = item.section_color || '#f97316';
+                    <div className="grid grid-cols-3 lg:grid-cols-1 gap-2 lg:gap-0">
+                      {displayedItems.map((item) => {
+                        const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
+                        const isFeatured = !!label;
+                        const sectionColor = item.section_color || '#f97316';
 
-                      return (
-                        <div key={item.id} className={`relative flex flex-col gap-2 py-4 border-b ${isFeatured ? 'px-3 -mx-3 rounded-xl border mb-1 mt-2 shadow-sm' : 'border-black/5'}`} style={isFeatured ? { backgroundColor: `${sectionColor}15`, borderColor: `${sectionColor}30` } : undefined}>
-                          {isFeatured && (
-                            <span className="absolute -top-2 right-2 rounded-full px-2.5 py-0.5 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm flex items-center gap-1" style={{ backgroundColor: sectionColor }}>
-                              <Star className="inline-flex" size={12} fill="white" strokeWidth={1} />
-                              <span className="pt-[1px]">{label}</span>
-                            </span>
-                          )}
-                          <div className={`grid grid-cols-[64px_1fr] gap-3 ${isFeatured ? 'mt-2' : ''}`}>
-                            <Image
-                              width={160}
-                              height={160}
-                              className="h-16 w-16 rounded-md object-cover cursor-pointer transition-transform hover:scale-105"
-                              src={item.image}
-                              alt={item.name[locale]}
-                              onClick={() => setEnlargedImage(item.image)}
-                            />
-                            <div className="min-w-0">
-                              <h4 className="line-clamp-1 cursor-pointer font-black hover:underline" onClick={() => openItem(store, item)}>{item.name[locale]}</h4>
-                              <div className="line-clamp-2 text-sm text-zinc-500">
-                                <ReactMarkdown
-                                  components={{
-                                    ul: ({ node, ...props }) => <ul className="list-disc pl-4" {...props} />,
-                                    ol: ({ node, ...props }) => <ol className="list-decimal pl-4" {...props} />,
-                                    p: ({ node, ...props }) => <span {...props} />,
-                                  }}
-                                >
-                                  {item.description[locale]}
-                                </ReactMarkdown>
+                        return (
+                          <div key={item.id} className={`relative flex flex-col justify-start lg:justify-between py-2 lg:py-4 lg:border-b ${isFeatured ? 'lg:px-3 lg:-mx-3 lg:rounded-xl lg:border lg:mb-1 lg:mt-2 lg:shadow-sm' : 'border-black/5'}`} style={isFeatured ? { backgroundColor: `${sectionColor}15`, borderColor: `${sectionColor}30` } : undefined}>
+                            {isFeatured && (
+                              <span className="hidden lg:flex absolute -top-2 right-2 rounded-full px-2.5 py-0.5 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm items-center gap-1" style={{ backgroundColor: sectionColor }}>
+                                <Star className="inline-flex" size={12} fill="white" strokeWidth={1} />
+                                <span className="pt-[1px]">{label}</span>
+                              </span>
+                            )}
+                            <div className={`flex flex-col lg:grid lg:grid-cols-[64px_1fr] gap-1.5 lg:gap-3 ${isFeatured ? 'lg:mt-2' : ''}`} onClick={() => openItem(store, item)}>
+                              <Image
+                                width={160}
+                                height={160}
+                                className="w-full aspect-square lg:h-16 lg:w-16 rounded-lg object-cover bg-zinc-50 cursor-pointer transition-transform hover:scale-105 border border-black/5"
+                                src={item.image}
+                                alt={item.name[locale]}
+                              />
+                              <div className="min-w-0 flex flex-col">
+                                <h4 className="line-clamp-2 lg:line-clamp-1 cursor-pointer font-bold lg:font-black text-xs lg:text-base hover:underline leading-tight">{item.name[locale]}</h4>
+                                <div className="hidden lg:block line-clamp-2 text-sm text-zinc-500 mt-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                  <ReactMarkdown
+                                    components={{
+                                      ul: ({ node, ...props }) => <ul className="list-disc pl-4" {...props} />,
+                                      ol: ({ node, ...props }) => <ol className="list-decimal pl-4" {...props} />,
+                                      p: ({ node, ...props }) => <span {...props} />,
+                                    }}
+                                  >
+                                    {item.description[locale]}
+                                  </ReactMarkdown>
+                                </div>
+                                {(item.calories || 0) > 0 && <p className="hidden lg:block mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</p>}
+                                {item.optionGroups && item.optionGroups.length > 0 ? <p className="hidden lg:block mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p> : <div className="hidden lg:block mt-1 h-4"></div>}
                               </div>
-                              {(item.calories || 0) > 0 && <p className="mt-1 text-sm font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</p>}
-                              {item.optionGroups && item.optionGroups.length > 0 ? <p className="mt-1 text-xs text-[var(--accent)]">{t.optionsAvailable} ›</p> : <div className="mt-1 h-4"></div>}
+                            </div>
+                            <div className="mt-1 flex items-center lg:items-end justify-between gap-1 lg:gap-2">
+                              <strong className="text-xs lg:text-base">{formatMoney(item.price, locale)}</strong>
+                              <button className="hidden lg:block rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-black text-white hover:opacity-90" onClick={() => openItem(store, item)}>{t.add}</button>
                             </div>
                           </div>
-                          <div className="mt-1 flex items-end justify-between gap-2">
-                            <strong>{formatMoney(item.price, locale)}</strong>
-                            <button className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-black text-white hover:opacity-90" onClick={() => openItem(store, item)}>{t.add}</button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })()}
@@ -322,8 +333,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       </div>
 
       {activeItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 md:p-8">
-          <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 md:p-8" onClick={() => setActiveItem(null)}>
+          <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[70vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row" onClick={e => e.stopPropagation()}>
 
             <div className="relative aspect-square shrink-0 bg-zinc-100 md:w-1/2">
               <Image

@@ -1,0 +1,76 @@
+import { Locale } from "@/shared/lib/types";
+import { dictionaries } from "@/shared/i18n/dictionaries";
+import Link from "next/link";
+import { ArrowLeft, MapPin, Search, Store, Send } from "lucide-react";
+
+export default async function AboutPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const t = dictionaries[locale];
+
+  return (
+    <div className="min-h-screen bg-[#fbf5f1]">
+      <header className="sticky top-0 z-50 bg-white border-b border-black/5 shadow-sm">
+        <div className="max-w-3xl mx-auto px-4 h-16 flex items-center gap-4">
+          <Link href={`/${locale}`} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors text-zinc-900">
+            <ArrowLeft size={20} />
+          </Link>
+          <span className="font-black text-lg text-zinc-900">{t.aboutTitle}</span>
+        </div>
+      </header>
+
+      <div className="p-6 lg:p-12">
+        <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden">
+          <div className="bg-[var(--accent)] p-8 text-white flex flex-col items-center justify-center text-center">
+            <Store size={48} className="mb-4 opacity-90" />
+            <h1 className="text-4xl font-black mb-2">{t.aboutTitle}</h1>
+            <p className="text-white/80 font-medium">DoppApp</p>
+          </div>
+          
+          <div className="p-8 lg:p-12 space-y-8 text-lg text-zinc-700 leading-relaxed">
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 mt-1">
+                <Store size={20} />
+              </div>
+              <p>
+                <strong>DoppApp</strong> {t.aboutP1}
+              </p>
+            </div>
+            
+            <p className="pl-14">
+              {t.aboutP2}
+            </p>
+            
+            <div className="bg-zinc-50 rounded-xl p-6 ml-0 lg:ml-14 border border-zinc-100">
+              <ul className="space-y-4">
+                <li className="flex items-center gap-3">
+                  <MapPin size={18} className="text-[var(--accent)]" /> 
+                  <span>{t.aboutBullet1}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Search size={18} className="text-[var(--accent)]" /> 
+                  <span>{t.aboutBullet2}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Send size={18} className="text-[var(--accent)]" /> 
+                  <span>{t.aboutBullet3}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Store size={18} className="text-[var(--accent)]" /> 
+                  <span>{t.aboutBullet4}</span>
+                </li>
+              </ul>
+            </div>
+            
+            <p className="pl-14">
+              {t.aboutP3}
+            </p>
+            
+            <div className="mt-8 p-6 bg-gradient-to-r from-[var(--accent)] to-orange-400 text-white rounded-xl font-bold text-center shadow-md">
+              {t.aboutHaveFun}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

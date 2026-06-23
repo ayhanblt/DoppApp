@@ -15,6 +15,7 @@ Uygulamanın genelinde **Geist Sans** ve monospace alanlarda **Geist Mono** font
 Uygulama, içeriği (beyaz kartları) ön plana çıkarmak için nötr ve ferah bir arkaplan kullanır.
 - **Genel Uygulama Arka Planı (App BG):** `#fafafa` (Çok açık nötr gri). Kartların havada yüzmesini sağlar. (Önceden kullanılan sıcak kremsi #fff7ef tamamen terkedilmiştir).
 - **Kart Arka Planları:** `#ffffff` (Saf beyaz).
+- **Ürün Görselleri Arka Planı:** Beyaz arkaplanlı ürün görsellerini UI ile bütünleştirmek için görsel konteynerlarında `bg-zinc-50` arkaplanı ve görselde `mix-blend-multiply` CSS özelliği kullanılmalıdır. `bg-white` gibi sert arkaplanlar tasarımın şıklığını bozduğu için bu kombinasyon tercih edilmelidir.
 - **Mağaza (Store) Başlıkları:** Saf beyaz listelerden ayrışması için çok hafif marka rengi tonlaması (`bg-[var(--accent)]/5`) kullanılır. Gradient (renk geçişi) kullanımı yasaktır.
 - **Sınırlar (Borders):**
   - Kart dış sınırları: `border-black/10` (Hafif ve net).
@@ -38,15 +39,20 @@ Projeye eklenen her `button` elementi otomatik olarak şu mikro-animasyon kurall
 ### 3.3. Modal ve Overlays (Popuplar)
 Açılır pencereler (Ürün Ekleme, Adres Seçimi) artık dikey ve basit kutular yerine **Geniş Split-Layout (Bölünmüş Düzen)** yapısını kullanır.
 
+**Modal Kuralları:**
+1. **Kapatma İşlemleri:** Tüm modallar (veri giriş formu içermeyenler) mutlaka dış (backdrop) tıklamasıyla `onClick={() => setModalOpen(false)}` ve klavyeden ESC tuşu ile kapanabilmelidir.
+2. **Mobilde Ekran Kaplamama:** Modallar mobilde tüm ekranı kaplamamalı, `max-h-[70vh]` gibi limitlerle sınırlandırılmalıdır.
+3. **Görsel Boyutları:** Modal görselleri mutlaka `aspect-square` (1:1 tam kare) olmalı, `object-cover` ile alanı doldurmalı ve köşelerden kesilmemesi için en az `p-4 md:p-8` boşluk (padding) bırakılmalıdır.
+
 **Örnek Ürün Detay Modalı Yapısı:**
 ```tsx
-<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 md:p-8">
+<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 md:p-8" onClick={() => setModalOpen(false)}>
   {/* Görselin kesilmemesi için min-h-[500px] hayatidir */}
-  <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row">
+  <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[70vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row" onClick={e => e.stopPropagation()}>
     
     {/* SOL: Tam Yükseklik Görsel (Image) */}
-    <div className="relative h-64 shrink-0 bg-zinc-100 md:h-auto md:w-1/2">
-       <Image fill src="..." alt="..." className="object-cover" />
+    <div className="relative aspect-square shrink-0 bg-zinc-50 md:w-1/2">
+       <Image fill src="..." alt="..." className="object-cover mix-blend-multiply" />
     </div>
 
     {/* SAĞ: Kaydırılabilir İçerik (Scrollable Content) */}

@@ -9,12 +9,15 @@ import toast from "react-hot-toast";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, Locale, Order, Store, ThemeName, CartItem } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
-import { getCartTotals, findProduct, getItemUnitPrice } from "@/features/order/cart";
-import { buildOrderTimeline, themeIcons, themes } from "@/features/catalog/appConfig";
+import { getCartTotals, findProduct, getItemUnitPrice, getCartDeliveryTimeMinutes } from "@/features/order/cart";
+import { buildOrderTimeline, themeIcons, themes, DEFAULT_DELIVERY_SPEEDS } from "@/features/catalog/appConfig";
 import { useCatalog } from "./CatalogContext";
-import { geocodeAddress, reverseGeocode } from "@/features/tracking/geo";
+import { geocodeAddress, reverseGeocode, coordinateDistanceKm, offsetCoordinate } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
 import { LandingModal } from "./LandingModal";
+
+import { HeaderMenu } from "./HeaderMenu";
+import { FeedbackModal } from "./FeedbackModal";
 
 const AddressPickerMap = dynamic(() => import("@/features/tracking/AddressPickerMap"), { ssr: false });
 const TrackingExperience = dynamic(() => import("@/features/tracking/TrackingExperience"), { ssr: false });
@@ -30,7 +33,8 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     checkoutOpen, setCheckoutOpen,
     infoOpen, setInfoOpen,
     order, setOrder,
-    stores, setStores
+    stores, setStores,
+    config
   } = useCatalog();
 
   const pathname = usePathname();
@@ -40,6 +44,14 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   let currentTheme: ThemeName = "sunset";
   if (pathname.includes("/shop")) currentTheme = "grape";
   else if (pathname.includes("/market")) currentTheme = "mint";
+  else {
+    const match = pathname.match(/\/store\/([^\/]+)/);
+    if (match) {
+      const store = stores.find(s => s.id === match[1]);
+      if (store?.type === "shop") currentTheme = "grape";
+      else if (store?.type === "market") currentTheme = "mint";
+    }
+  }
 
   const themeColor = themes[currentTheme];
   const totals = getCartTotals(stores, cart);
@@ -57,7 +69,8 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   const [saveCartName, setSaveCartName] = useState("");
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
-  const [savedCarts, setSavedCarts] = useState<{name: string, items: CartItem[]}[]>([]);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [savedCarts, setSavedCarts] = useState<{ name: string, items: CartItem[] }[]>([]);
   const [selectedCartIndex, setSelectedCartIndex] = useState(0);
 
   useEffect(() => {
@@ -99,7 +112,23 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     const now = Date.now();
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
 
-    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed);
+    // Hedef süreyi admin konfigürasyonundan rastgele olarak alıyoruz
+    const targetTimeMins = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
+    const targetTimeMs = targetTimeMins * 60 * 1000;
+    const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
+    
+    // Haritadaki uzaklığı her zaman TAVŞAN hızına göre belirliyoruz ki mesafeler çok kısa olmasın
+    const targetMovementMs = Math.max(0, targetTimeMs - 2000 - 8000); // eksi onay + hazırlık süresi
+    const distanceKm = targetMovementMs / speeds["rabbit"].kmMultiplierMs;
+
+    // GERÇEK süreyi ise kullanıcının seçtiği hıza (Tavşan/Kaplumbağa) göre yeniden hesaplıyoruz
+    const actualMovementMs = distanceKm * speeds[speed].kmMultiplierMs;
+    const actualTotalTimeMs = 2000 + 8000 + actualMovementMs;
+
+    // Belirlenen mesafeye göre kuryenin başlangıç koordinatını oluştur
+    const courierStartCoordinate = offsetCoordinate(addressCoordinate, distanceKm, 45);
+
+    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, distanceKm, actualTotalTimeMs, speeds);
 
     setOrder({
       id: uid("order"),
@@ -108,8 +137,8 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
       note: "",
       addressCoordinate,
-      storeCoordinate: firstStore.coordinate,
-      courierStartCoordinate: firstStore.coordinate,
+      storeCoordinate: courierStartCoordinate,
+      courierStartCoordinate: courierStartCoordinate,
       speed,
       status: "confirmed",
       placedAt: now,
@@ -156,7 +185,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       name: saveCartName,
       items: cart
     };
-    
+
     let existingCarts = [];
     const saved = window.localStorage.getItem("doppapp_saved_carts");
     if (saved) {
@@ -167,10 +196,10 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
         existingCarts = [];
       }
     }
-    
+
     existingCarts.push(newCart);
     window.localStorage.setItem("doppapp_saved_carts", JSON.stringify(existingCarts));
-    
+
     setShowSavePrompt(false);
     setSaveCartName("");
     toast.success(locale === 'tr' ? `Sepetiniz "${saveCartName}" ismiyle başarıyla kaydedildi.` : `Cart saved as "${saveCartName}".`);
@@ -215,12 +244,13 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               </button>
             </div>
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end gap-2">
               <button className="relative flex h-10 items-center gap-2 rounded-lg bg-white/18 px-3 font-black" onClick={() => setCheckoutOpen(true)} aria-label={t.cart}>
                 <ShoppingCart size={18} />
                 <span className="text-sm">{t.cart}</span>
                 {cart.length > 0 && <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-xs text-[var(--accent)]">{cart.length}</span>}
               </button>
+              <HeaderMenu locale={locale} onOpenInfo={() => setInfoOpen(true)} onOpenFeedback={() => setFeedbackOpen(true)} />
             </div>
           </div>
 
@@ -242,29 +272,19 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               </label>
             </div>
 
-            {/* Mobile: Row 4 - Categories & Info | Desktop: Left & Right Columns via contents */}
-            <div className={`order-2 flex items-center justify-between lg:contents transition-all duration-300 overflow-hidden ${isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-20 opacity-100 mt-3 lg:mt-0"}`}>
+            {/* Mobile: Row 4 - Categories | Desktop: Left Column via contents */}
+            <div className={`order-2 flex w-full lg:contents transition-all duration-300 overflow-hidden ${isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-20 opacity-100 mt-3 lg:mt-0"}`}>
               {/* Categories */}
-              <div className="flex gap-2 lg:order-1">
-                <Link href={`/${locale}/shop`} aria-label="shop" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["grape"] }}>
-                  {(() => { const Icon = themeIcons["grape"]; return <Icon size={18} className="text-white" />; })()}
+              <div className="flex w-full lg:w-auto gap-1.5 sm:gap-2 lg:order-1">
+                <Link href={`/${locale}/shop`} aria-label="shop" className="flex flex-1 lg:flex-none h-9 lg:h-10 lg:w-auto px-2 lg:px-4 items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/30 shadow-sm transition-transform hover:scale-105 active:scale-95" style={{ background: themes["grape"] }}>
+                  {(() => { const Icon = themeIcons["grape"]; return <><Icon size={16} className="text-white sm:w-[18px] sm:h-[18px]" /><span className="text-white text-[11px] sm:text-sm font-bold">{t.shop}</span></>; })()}
                 </Link>
-                <Link href={`/${locale}/food`} aria-label="food" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["sunset"] }}>
-                  {(() => { const Icon = themeIcons["sunset"]; return <Icon size={18} className="text-white" />; })()}
+                <Link href={`/${locale}/food`} aria-label="food" className="flex flex-1 lg:flex-none h-9 lg:h-10 lg:w-auto px-2 lg:px-4 items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/30 shadow-sm transition-transform hover:scale-105 active:scale-95" style={{ background: themes["sunset"] }}>
+                  {(() => { const Icon = themeIcons["sunset"]; return <><Icon size={16} className="text-white sm:w-[18px] sm:h-[18px]" /><span className="text-white text-[11px] sm:text-sm font-bold">{t.food}</span></>; })()}
                 </Link>
-                <Link href={`/${locale}/market`} aria-label="market" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 shadow-sm" style={{ background: themes["mint"] }}>
-                  {(() => { const Icon = themeIcons["mint"]; return <Icon size={18} className="text-white" />; })()}
+                <Link href={`/${locale}/market`} aria-label="market" className="flex flex-1 lg:flex-none h-9 lg:h-10 lg:w-auto px-2 lg:px-4 items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/30 shadow-sm transition-transform hover:scale-105 active:scale-95" style={{ background: themes["mint"] }}>
+                  {(() => { const Icon = themeIcons["mint"]; return <><Icon size={16} className="text-white sm:w-[18px] sm:h-[18px]" /><span className="text-white text-[11px] sm:text-sm font-bold">{t.market}</span></>; })()}
                 </Link>
-              </div>
-
-              {/* Language & Info */}
-              <div className="flex gap-2 lg:order-3 lg:justify-end">
-                <Link className="grid h-9 w-9 place-items-center rounded-full bg-white/18" href={pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`)} aria-label="language">
-                  <span className="font-bold text-xs">{locale === "tr" ? t.langEn : t.langTr}</span>
-                </Link>
-                <button className="grid h-9 w-9 place-items-center rounded-full bg-white/18" onClick={() => setInfoOpen(true)} aria-label={t.info}>
-                  <HelpCircle size={18} />
-                </button>
               </div>
             </div>
           </div>
@@ -455,6 +475,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
         />
       )}
       <LandingModal locale={locale} onClose={handleLandingClose} />
+      <FeedbackModal locale={locale} isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </main>
   );
 }
@@ -509,7 +530,7 @@ function AddressModal({
             setAddress(addressData.full);
             setMessage("");
           }
-        } catch (err) {}
+        } catch (err) { }
         setIsLocating(false);
       },
       (error) => {
@@ -569,7 +590,7 @@ function AddressModal({
       if (addressData) {
         setAddress(addressData.full);
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const [isSaving, setIsSaving] = useState(false);
@@ -588,18 +609,18 @@ function AddressModal({
         // Ancak kullanıcının yazdığı notu (örn: Kat 5) kaybetmemek için, 
         // eğer textarea adresi harita adresinden farklıysa, ikisini birleştiriyoruz.
         if (addressData.full !== address.trim()) {
-           // IP adresi gibi jenerik şeyleri ayıklamak zor, bu yüzden basitçe:
-           // Eğer address "Turkey" falan içeriyorsa muhtemelen eski IP adresidir, 
-           // ama biz yine de güvenli tarafta kalıp, harita adresini başa ekleyelim,
-           // kullanıcının yazdığını sona parantez/tire ile ekleyelim.
-           // Ya da handleMapChange ile zaten textarea güncelleneceği için, 
-           // kullanıcı pini sürükleyince adres otomatik dolacak. 
-           // Kullanıcı sonrasında "Kat 2" eklerse, addressData.full ile eşleşmeyecek.
-           // O yüzden submit anında *sadece shortAddress* çekmek daha güvenli!
-           // Çünkü handleMapChange zaten textarea'yı güncelliyor.
+          // IP adresi gibi jenerik şeyleri ayıklamak zor, bu yüzden basitçe:
+          // Eğer address "Turkey" falan içeriyorsa muhtemelen eski IP adresidir, 
+          // ama biz yine de güvenli tarafta kalıp, harita adresini başa ekleyelim,
+          // kullanıcının yazdığını sona parantez/tire ile ekleyelim.
+          // Ya da handleMapChange ile zaten textarea güncelleneceği için, 
+          // kullanıcı pini sürükleyince adres otomatik dolacak. 
+          // Kullanıcı sonrasında "Kat 2" eklerse, addressData.full ile eşleşmeyecek.
+          // O yüzden submit anında *sadece shortAddress* çekmek daha güvenli!
+          // Çünkü handleMapChange zaten textarea'yı güncelliyor.
         }
       }
-    } catch(err) {}
+    } catch (err) { }
 
     onSave({
       id: initialAddress?.id ?? uid("address"),

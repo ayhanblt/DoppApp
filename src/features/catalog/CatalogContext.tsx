@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { Address, CartItem, DeliverySpeed, Order, Store } from "@/shared/lib/types";
-import { fetchStoresFromSupabase, getStoresAroundAddressSync, getStoresOnRoadsAroundAddress } from "@/features/catalog/data";
+import type { Address, CartItem, DeliverySpeed, Order, Store, GlobalConfig } from "@/shared/lib/types";
+import { fetchStoresFromSupabase, getStoresAroundAddressSync, getStoresOnRoadsAroundAddress, fetchConfigFromSupabase } from "@/features/catalog/data";
 
 type CatalogContextType = {
   deliveryAddress: Address | null;
@@ -23,6 +23,7 @@ type CatalogContextType = {
   setOrder: (order: Order | null) => void;
   stores: Store[];
   setStores: React.Dispatch<React.SetStateAction<Store[]>>;
+  config: GlobalConfig | null;
 };
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
@@ -38,11 +39,15 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [dbStores, setDbStores] = useState<Store[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [config, setConfig] = useState<GlobalConfig | null>(null);
 
   useEffect(() => {
     let mounted = true;
     fetchStoresFromSupabase().then((res) => {
       if (mounted) setDbStores(res);
+    });
+    fetchConfigFromSupabase().then((res) => {
+      if (mounted) setConfig(res);
     });
     return () => { mounted = false; };
   }, []);
@@ -70,10 +75,10 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
       setDeliveryAddress(storedAddress);
       const center: [number, number] = [storedAddress.latitude, storedAddress.longitude];
 
-      if (mounted) setStores(getStoresAroundAddressSync(center, dbStores));
+      if (mounted) setStores(getStoresAroundAddressSync(center, dbStores, config));
 
       try {
-        const roadStores = await getStoresOnRoadsAroundAddress(center, dbStores);
+        const roadStores = await getStoresOnRoadsAroundAddress(center, dbStores, config);
         if (mounted) setStores(roadStores);
       } catch (err) {
         console.error("OSRM API Hatası:", err);
@@ -83,7 +88,7 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     initStores();
 
     return () => { mounted = false; };
-  }, [dbStores, deliveryAddress?.latitude, deliveryAddress?.longitude]);
+  }, [dbStores, config, deliveryAddress?.latitude, deliveryAddress?.longitude]);
 
   const value = {
     deliveryAddress,
@@ -103,7 +108,8 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     order,
     setOrder,
     stores,
-    setStores
+    setStores,
+    config
   };
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;

@@ -1,4 +1,10 @@
-import type { ThemeName } from "@/shared/lib/types";
+import type { ThemeName, DeliveryTimeConfig, DeliverySpeedsConfig } from "@/shared/lib/types";
+
+export const DEFAULT_DELIVERY_TIMES: DeliveryTimeConfig = {
+  shop: { min: 60, max: 180 },
+  market: { min: 60, max: 180 },
+  food: { min: 60, max: 120 },
+};
 
 // ─────────────────────────────────────────────
 //  Tema renkleri
@@ -44,25 +50,27 @@ export const DELIVERY_STEPS = {
 
 // ─────────────────────────────────────────────
 //  Hız bazında kurye hareket süresi (ms)
-//  Değiştirmek istersen sadece buraya dokun.
+//  1 km mesafe kaç ms sürer?
 // ─────────────────────────────────────────────
-export const DELIVERY_SPEEDS = {
+export const DEFAULT_DELIVERY_SPEEDS: DeliverySpeedsConfig = {
   rabbit: {
-    /** Toplam kurye hareket süresi (ms) — mesafeden bağımsız */
-    movementMs: 10000,
+    baseMs: 0,
+    kmMultiplierMs: 36000, // 0.6 dk/km = 36000 ms
   },
   turtle: {
-    movementMs: 18000,
+    baseMs: 0,
+    kmMultiplierMs: 66000, // 1.1 dk/km = 66000 ms
   },
-} as const;
+};
 
 // ─────────────────────────────────────────────
 //  Türetilmiş hesaplamalar
 // ─────────────────────────────────────────────
 
 /** Kurye hareket süresini hıza göre döner */
-export function getCourierMovementDuration(speed: "rabbit" | "turtle"): number {
-  return DELIVERY_SPEEDS[speed].movementMs;
+export function getCourierMovementDuration(speed: "rabbit" | "turtle", distanceKm: number = 0, speedsConfig?: DeliverySpeedsConfig): number {
+  const speeds = speedsConfig || DEFAULT_DELIVERY_SPEEDS;
+  return speeds[speed].baseMs + (distanceKm * speeds[speed].kmMultiplierMs);
 }
 
 /**
@@ -75,14 +83,17 @@ export function getCourierMovementDuration(speed: "rabbit" | "turtle"): number {
  */
 export function buildOrderTimeline(
   placedAt: number,
-  speed: "rabbit" | "turtle"
+  speed: "rabbit" | "turtle",
+  distanceKm: number = 0,
+  totalTimeMs?: number,
+  speedsConfig?: DeliverySpeedsConfig
 ): {
   handoffAt: number;
   deliveringAt: number;
   deliveredAt: number;
 } {
   const { confirmedDuration, preparingDuration, deliveringLeadMs } = DELIVERY_STEPS;
-  const movementMs = getCourierMovementDuration(speed);
+  const movementMs = totalTimeMs ? Math.max(0, totalTimeMs - confirmedDuration - preparingDuration) : getCourierMovementDuration(speed, distanceKm, speedsConfig);
 
   const handoffAt    = placedAt + confirmedDuration + preparingDuration;
   const deliveredAt  = handoffAt + movementMs;

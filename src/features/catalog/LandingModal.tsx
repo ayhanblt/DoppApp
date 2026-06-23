@@ -12,6 +12,7 @@ type LandingModalProps = {
 
 export function LandingModal({ locale, onClose }: LandingModalProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const t = dictionaries[locale];
 
   useEffect(() => {
     // Check if user has already seen this modal
@@ -47,8 +48,8 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
           <img src="/images/doppapp-logo-tek.svg" className="w-16 h-16 object-contain" alt="DoppApp Logo" />
         </div>
         
-        <h2 className="text-3xl font-black mb-3">DoppApp&apos;e Hoş Geldin!</h2>
-        <p className="text-zinc-600 mb-8 font-medium">Hayalindekileri sepetine ekle ve siparişini ver, paylaş.</p>
+        <h2 className="text-3xl font-black mb-3">{t.welcomeTitle}</h2>
+        <p className="text-zinc-600 mb-8 font-medium">{t.welcomeDesc}</p>
 
         <div className="flex flex-col md:flex-row w-full items-center justify-between gap-4 mt-2">
           <button
@@ -56,7 +57,7 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
             className="flex w-full md:flex-1 items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 py-3 font-bold text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
           >
             <MapPin size={18} />
-            Konumunu Seç
+            {t.pickLocation}
           </button>
           
           <button
@@ -64,7 +65,7 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
             className="flex w-full md:flex-1 items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white shadow-md transition-transform hover:scale-105 active:scale-95"
             style={{ backgroundColor: 'var(--accent)', filter: 'brightness(1.15)' }}
           >
-            Hemen Başla
+            {t.startNow}
             <Rocket size={18} />
           </button>
         </div>

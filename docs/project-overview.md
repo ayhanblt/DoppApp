@@ -26,8 +26,8 @@ Tüm veriler (mağazalar, ürünler, resimler) Supabase üzerinden yönetilir.
 2. **Sepet ve Özelleştirme:**
    Kullanıcı bir mağazaya girip ürünü seçer. Eğer ürünün opsiyonları varsa (Örn: "Pizzanın boyutu" veya "Tişörtün bedeni") zorunlu ve opsiyonel seçimleri yapar, adedi belirler ve sepete ekler.
 
-3. **Sipariş Takibi:**
-   Sipariş oluşturulduktan sonra müşteri Tracking sayfasına yönlendirilir. Burada sipariş durumları (Onaylandı, Hazırlanıyor, Kuryede, Teslim Edildi) zaman bazlı olarak güncellenirken, kuryenin haritadaki hareketi canlı izlenir.
+3. **Sipariş Takibi ve Paylaşımı:**
+   Sipariş oluşturulduktan sonra müşteri Tracking sayfasına yönlendirilir. Burada sipariş durumları (Onaylandı, Hazırlanıyor, Kuryede, Teslim Edildi) zaman bazlı olarak güncellenirken, kuryenin haritadaki hareketi canlı izlenir. Kullanıcılar sipariş başarılı olduğunda oluşan dijital fişi (receipt) HTML canvas üzerinden görselleştirip sosyal medyada veya mesajlaşma uygulamalarında paylaşabilirler.
 
 4. **Admin Yönetimi (`/admin`):**
    Uygulamanın bir de yerel yönetici paneli bulunur. Yöneticiler yeni mağazalar ekleyebilir, mevcut mağazaları düzenleyebilir, ürün ve opsiyon grupları oluşturabilirler. Tüm bu değişiklikler doğrudan Supabase veritabanına kalıcı olarak kaydedilir ve Storage üzerinde görseller tutulur.

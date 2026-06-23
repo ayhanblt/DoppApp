@@ -38,3 +38,44 @@ export function getCartTotals(stores: Store[], cart: CartItem[]) {
 
   return { subtotal, deliveryFee, total: subtotal + deliveryFee, calories };
 }
+
+import { DEFAULT_DELIVERY_TIMES } from "@/features/catalog/appConfig";
+import type { DeliveryTimeConfig } from "@/shared/lib/types";
+
+export function getCartDeliveryTimeMinutes(
+  stores: Store[], 
+  cart: CartItem[], 
+  deliveryTimes: DeliveryTimeConfig = DEFAULT_DELIVERY_TIMES
+): number {
+  if (cart.length === 0) return 0;
+
+  const itemTimes: number[] = [];
+
+  cart.forEach((cartItem) => {
+    const store = stores.find((s) => s.id === cartItem.storeId);
+    if (store) {
+      const type = store.type;
+      const config = deliveryTimes[type] || DEFAULT_DELIVERY_TIMES[type] || { min: 1, max: 3 };
+      
+      // Calculate a random time between min and max (inclusive) with 1 decimal precision
+      // e.g. between 1.0 and 3.0
+      const min = config.min;
+      const max = config.max;
+      const randomTime = min + Math.random() * (max - min);
+      const timeForType = Math.round(randomTime * 10) / 10;
+      
+      for (let i = 0; i < cartItem.quantity; i++) {
+        itemTimes.push(timeForType);
+      }
+    }
+  });
+
+  if (itemTimes.length === 0) return 0;
+
+  itemTimes.sort((a, b) => b - a);
+  const maxTime = itemTimes[0];
+  const remainingTimes = itemTimes.slice(1);
+  const sumRemaining = remainingTimes.reduce((sum, t) => sum + t, 0);
+
+  return maxTime + sumRemaining * 0.75;
+}

@@ -23,7 +23,22 @@ export type ProductCategory = {
   sort_order: number;
 };
 
-export type GlobalConfig = Record<string, never>;
+export type DeliveryTimeConfig = {
+  shop: { min: number; max: number };
+  market: { min: number; max: number };
+  food: { min: number; max: number };
+};
+
+export type DeliverySpeedsConfig = {
+  rabbit: { baseMs: number; kmMultiplierMs: number };
+  turtle: { baseMs: number; kmMultiplierMs: number };
+};
+
+export type GlobalConfig = {
+  delivery_times?: DeliveryTimeConfig;
+  delivery_speeds?: DeliverySpeedsConfig;
+  [key: string]: unknown;
+};
 
 export type MenuOption = {
   id: string;

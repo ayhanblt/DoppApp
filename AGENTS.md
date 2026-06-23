@@ -62,3 +62,8 @@ Projeye yeni bir özellik ekleneceğinde FSD prensiplerine sadık kalınmalıdı
 Sipariş statü geçişleri ve kurye hareket süreleri `DELIVERY_CONFIG` içinde yönetilir (`src/features/catalog/appConfig.ts` veya ilgili dosya).
 Kurye hızı hesaplaması: `baseMs + (distanceKm × kmMultiplierMs)`.
 Bu süreler güncellendiğinde animasyonlar otomatik olarak senkronize olur.
+Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutulmalı ve UI üzerinde ETA hesaplanırken bu saniyeler baz alınarak (örn: `Math.floor(min/60)` ve `Math.ceil(max/60)`) hesaplanmalıdır. Kesirli dakika değerleri (0.33 vb.) saklanması yasaktır.
+
+## UI/UX ve Modal Standartları (Ek Kurallar)
+- **Modal Kapatma İşlemleri:** Uygulama içindeki tüm modallar (Ürün detayı, Sıralama, vb.) mutlaka dış (backdrop) tıklamasıyla (`onClick={() => setModalOpen(false)}`) ve ESC tuşuyla kapanabilmelidir. (İstisna: Form içeren Feedback gibi modallarda veri kaybını önlemek için dışa tıklama kapalı bırakılabilir ancak ESC mutlaka çalışmalıdır).
+- **Ürün Görselleri:** Küçük ürün kartları veya modallardaki görseller mutlaka `aspect-square` (1:1 tam kare) ve `object-cover` olarak ayarlanmalıdır. `object-contain` kullanmak görsellerin kenarlarında boşluk bırakarak kesilmiş hissi yaratır. Mobilde yarım ekran kaplamaması için gerekli max-height/width sınırlandırmaları (`max-h-[70vh]` gibi) getirilmelidir. Modal görsellerinin kenarlara değmemesi için yeterli padding (`p-4 md:p-8`) verilmelidir.

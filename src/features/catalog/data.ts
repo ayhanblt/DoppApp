@@ -1,5 +1,6 @@
 import type { Store, GlobalConfig, StoreCategory, ProductCategory } from "@/shared/lib/types";
 import { coordinateDistanceKm, offsetCoordinate, snapCoordinateToRoad } from "@/features/tracking/geo";
+import { DEFAULT_DELIVERY_TIMES } from "@/features/catalog/appConfig";
 
 
 
@@ -179,32 +180,59 @@ function storeSeed(id: string) {
   return id.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
 }
 
-export function getStoresAroundAddressSync(center: [number, number], dbStores: Store[]) {
+function formatEta(min: number, max: number): string {
+  if (max < 1) return "Ortalama 1 dk";
+  let rMin = Math.floor(min);
+  let rMax = Math.ceil(max);
+  if (rMin < 1) rMin = 1;
+  if (rMax < 1) rMax = 1;
+
+  if (rMin === rMax) return `Ortalama ${rMax} dk`;
+  return `${rMin}-${rMax} dk`;
+}
+
+export function getStoresAroundAddressSync(center: [number, number], dbStores: Store[], config?: GlobalConfig | null) {
+  const deliveryTimes = config?.delivery_times || DEFAULT_DELIVERY_TIMES;
+
   return dbStores.map((store, index) => {
     const seed = storeSeed(store.id);
-    const distanceKm = 0.5 + ((seed * 37 + index * 53) % 450) / 100;
     const bearing = (seed * 29 + index * 47) % 360;
+
+    const typeConfig = deliveryTimes[store.type] || DEFAULT_DELIVERY_TIMES[store.type] || { min: 1, max: 3 };
+    const minTime = typeConfig.min;
+    const maxTime = typeConfig.max;
+    
+    // Distance matching the maxTime using rabbit speed
+    // 1 min = 60000ms. movementMs = (maxTime * 60000) - confirmed(30000) - preparing(60000)
+    // Actually, we don't need distance to perfectly match here, but we can make distanceKm proportional.
+    // Let's just use (maxTime / 1.5) as rough distance
+    const distanceKm = Math.max(0.5, (maxTime / 60) / 1.5 + (seed % 10) / 20);
 
     return {
       ...store,
-      coordinate: offsetCoordinate(center, distanceKm, bearing)
+      coordinate: offsetCoordinate(center, distanceKm, bearing),
+      eta: formatEta(minTime / 60, maxTime / 60)
     };
   });
 }
 
-export async function getStoresOnRoadsAroundAddress(center: [number, number], dbStores: Store[]) {
-  const candidates = getStoresAroundAddressSync(center, dbStores);
+export async function getStoresOnRoadsAroundAddress(center: [number, number], dbStores: Store[], config?: GlobalConfig | null) {
+  const candidates = getStoresAroundAddressSync(center, dbStores, config);
+  const deliveryTimes = config?.delivery_times || DEFAULT_DELIVERY_TIMES;
+
   const snapped = await Promise.all(
     candidates.map(async (store) => {
       const roadCoordinate = await snapCoordinateToRoad(store.coordinate).catch(() => null);
       if (!roadCoordinate) return store;
 
-      const distanceKm = coordinateDistanceKm(center, roadCoordinate);
-      if (distanceKm < 0.5 || distanceKm > 5) return store;
+      const typeConfig = deliveryTimes[store.type] || DEFAULT_DELIVERY_TIMES[store.type] || { min: 1, max: 3 };
+      const minTime = typeConfig.min;
+      const maxTime = typeConfig.max;
 
       return {
         ...store,
-        coordinate: roadCoordinate
+        coordinate: roadCoordinate,
+        eta: formatEta(minTime, maxTime)
       };
     })
   );

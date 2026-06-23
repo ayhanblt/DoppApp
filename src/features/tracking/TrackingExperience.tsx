@@ -8,7 +8,7 @@ import { formatMoney, formatNumber } from "@/shared/lib/format";
 import { findProduct } from "@/features/order/cart";
 import { getCartTotals } from "@/features/order/cart";
 import { getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
-import { ArrowLeft, Info, Gift, X, Share2 } from "lucide-react";
+import { ArrowLeft, Info, Gift, X, Share2, Rocket } from "lucide-react";
 import ReceiptShareModal from "./ReceiptShareModal";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
@@ -35,6 +35,7 @@ export default function TrackingExperience({
   const [savingsModalOpen, setSavingsModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState("");
+  const [fastForward, setFastForward] = useState(false);
 
   const handleShareClick = () => {
     const items = order.items.map(item => {
@@ -46,13 +47,13 @@ export default function TrackingExperience({
         image: product?.image
       };
     });
-    
+
     const data = JSON.stringify({
       locale,
       total: formatMoney(totals.total, locale),
       items
     });
-    
+
     setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
     setShareModalOpen(true);
   };
@@ -66,11 +67,19 @@ export default function TrackingExperience({
   }, [order.courierStartCoordinate, order.addressCoordinate]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 250);
+    let offset = 0;
+    const duration = order.deliveredAt - order.placedAt;
+    const timer = window.setInterval(() => {
+      if (fastForward) {
+        // Add 5% of total duration every 100ms so it finishes in 2 seconds
+        offset += duration * 0.05;
+      }
+      setNow(Date.now() + offset);
+    }, 100);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [fastForward, order.deliveredAt, order.placedAt]);
 
-  const status = now < order.placedAt + 2000
+  const status = now < order.placedAt + 2000 // Confirmed duration
     ? "confirmed"
     : now < order.handoffAt
       ? "preparing"
@@ -102,6 +111,11 @@ export default function TrackingExperience({
       : order.courierStartCoordinate
     : undefined;
 
+  const timeLeftMs = Math.max(0, order.deliveredAt - now);
+  const minsLeft = Math.floor(timeLeftMs / 60000);
+  const secsLeft = Math.floor((timeLeftMs % 60000) / 1000);
+  const timeLeftFormatted = `${minsLeft}:${secsLeft.toString().padStart(2, '0')}`;
+
   return (
     <main className="min-h-screen bg-[#fff7ef] p-4 text-zinc-950">
       <section className="mx-auto max-w-7xl py-6 pb-24">
@@ -122,6 +136,22 @@ export default function TrackingExperience({
               <h1 className="text-2xl font-black">{t.liveTracking}</h1>
               <p className="text-sm text-zinc-500">{order.addressText}</p>
             </div>
+
+            {(status === "preparing" || status === "handoff" || status === "delivering") && !fastForward && (
+              <div className="flex items-stretch gap-2 w-full sm:w-auto mt-2 sm:mt-0 h-[44px]">
+                <div className="flex flex-col items-center justify-center rounded-lg border border-orange-200 bg-orange-50 px-2 sm:px-3 h-full min-w-[90px]">
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 leading-tight text-center">Teslim Edilmesine<br />Kalan Süre:</span>
+                  <span className="font-mono text-sm font-bold leading-none text-orange-600 mt-0.5">{timeLeftFormatted}</span>
+                </div>
+                <button
+                  onClick={() => setFastForward(true)}
+                  className="flex h-full flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 sm:px-4 font-bold text-white shadow-sm transition-colors hover:bg-emerald-700 whitespace-nowrap"
+                >
+                  <Rocket size={16} className="shrink-0" />
+                  <span className="text-sm">Hemen Teslim Et</span>
+                </button>
+              </div>
+            )}
           </div>
           <div className="mt-5">
             <TrackingMap
@@ -158,7 +188,7 @@ export default function TrackingExperience({
               <X size={18} />
             </button>
             <h3 className="mb-4 text-xl font-black">{t.orderSummary}</h3>
-            
+
             <div className="mb-4 space-y-2 rounded-xl bg-zinc-50 p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-600">{t.amount}</span>
@@ -200,7 +230,7 @@ export default function TrackingExperience({
         <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShareModalOpen(false)} />
       )}
 
-      {status === "delivered" && !celebrationOpen && (
+      {status === "delivered" && celebrationShown && !celebrationOpen && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-zinc-200 flex justify-center z-40">
           <button
             onClick={handleShareClick}
