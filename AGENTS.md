@@ -11,59 +11,47 @@ Bu doküman, projede kod yazacak tüm AI kodlama asistanlarının uyması gereke
 ## Projenin Amacı ve Özellikleri
 - Supabase tabanlı PostgreSQL veritabanı ve Storage kullanan çoklu kategorili (Shop, Food, Market) e-ticaret/kurye takip simülasyonu.
 - Çoklu dil (i18n) desteğine sahiptir (Tr/En).
-
-## V2 Kategori Hiyerarşisi (Önemli Veritabanı Kuralları)
-- **`store_categories`**: Mağazaların ait olduğu ana kategorilerdir. `parent_id` ile kendi içerisinde ağaç (Tree) yapısı kurar. (Örn: `electronics` -> `computer_accessories`).
-- **`product_categories`**: Doğrudan bir `store_category`'ye bağlı ürün alt kategorileridir (Örn: Burger kategorisindeki İçecekler). `store_cat_id` ile bağlanır.
-- **`stores`**: `category_id` (FK) ile `store_categories` tablosuna bağlanır. Eski JSON `category` alanı kullanımdan kaldırılmıştır.
-- **`products`**: `product_category_id` (FK) ile `product_categories` tablosuna bağlanır. Mağazaların ürün gruplarına özel başlık verebilmesi için opsiyonel `section_label_tr/en` kullanır. Arayüzde başlık olarak `COALESCE(section_label, product_category.name)` mantığı esastır.
+- **Çift Platform (Cross-Platform):** Web tarafı `src/` klasöründe Next.js 15 ile, Mobil uygulama tarafı ise `mobile/` klasöründe React Native, Expo Router ve NativeWind v4 kullanılarak geliştirilmektedir. Web özellikleri ile Mobil özellikleri birbirinin aynasıdır.
 
 ## Klasör Yapısı (Feature-Sliced Design - FSD)
-Projeye yeni bir özellik ekleneceğinde FSD prensiplerine sadık kalınmalıdır:
-- **`app/`**: Sadece rota (URL) tanımlamaları ve layoutlar bulunur. İş mantığı burada yazılmaz.
-- **`features/`**: Domain bazlı iş mantığı (Örn: `catalog`, `admin`, `order`, `tracking`). Her feature sadece kendi scope'undan sorumludur.
-- **`shared/`**: Uygulama genelinde paylaşılan her şey (`types.ts`, `dictionaries.ts`, helper fonksiyonları).
+Projeye yeni bir özellik ekleneceğinde her iki platform için de FSD prensiplerine sadık kalınmalıdır:
+- **`app/` (Web) veya `mobile/app/` (Mobil):** Sadece rota (URL) tanımlamaları ve layoutlar bulunur. İş mantığı burada yazılmaz.
+- **`features/` (Web) veya `mobile/src/features/` (Mobil):** Domain bazlı iş mantığı (Örn: `catalog`, `admin`, `order`, `tracking`). Her feature sadece kendi scope'undan sorumludur.
+- **`shared/` (Web) veya `mobile/src/shared/` (Mobil):** Uygulama genelinde paylaşılan her şey (`types.ts`, `dictionaries.ts`, helper fonksiyonları, api clientleri).
 
-## Kod Yazma Standartları
-- **Tip Güvenliği:** `any` kullanımı kesinlikle yasaktır. Her zaman `src/shared/lib/types.ts` içerisindeki veya yeni tanımlanmış kesin TypeScript tiplerini kullanın.
-- **React Hook'ları:** Mümkün olduğunca custom hook'lar oluşturarak bileşen içindeki state karmaşasını engelleyin.
-- **Bileşen Boyutu:** Bir bileşen 200 satırı aşıyorsa, onu daha küçük mantıksal alt bileşenlere bölmeye çalışın.
-
-## State Yönetimi
-- Projede Redux, MobX, Zustand gibi harici state yönetim kütüphaneleri KULLANILMAYACAKTIR.
-- Global arayüz state işlemleri için `CatalogContext.tsx` yapısını koruyun veya benzer native React Context'leri kullanın.
-
-## Error Handling ve Validation
-- Hata yönetimi için fırlatılacak hatalar mutlaka yakalanmalı (`try/catch`) ve UI katmanında kullanıcıya dostane bir dille (i18n üzerinden) gösterilmelidir.
-- Veri validasyonları için ileride `zod` eklenecektir, şimdilik manuel tip kontrollerini sıkı tutun.
+## Kod Yazma Standartları ve State Yönetimi
+- **Tip Güvenliği:** `any` kullanımı kesinlikle yasaktır. Her zaman `shared/lib/types.ts` içerisindeki kesin TypeScript tiplerini kullanın.
+- **State Yönetimi:** Redux, MobX, Zustand gibi harici state yönetim kütüphaneleri KULLANILMAYACAKTIR. Global arayüz state işlemleri için `CatalogContext.tsx` yapısını koruyun.
 
 ## Naming Convention (İsimlendirme)
 - **Dosyalar:** React bileşenleri `PascalCase` (Örn: `TrackingMap.tsx`), yardımcı fonksiyonlar ve hook'lar `camelCase` (Örn: `useImageCache.ts`, `geo.ts`).
-- **Değişkenler:** Anlaşılır ve uzun isimler kullanın. `arr`, `obj`, `data` gibi jenerik isimlerden kaçının. (Örn: `filteredStores` kullanın).
+- **Değişkenler:** Anlaşılır ve uzun isimler kullanın. `arr`, `obj`, `data` gibi jenerik isimlerden kaçının.
 
-## Form ve UI Standartları (Çok Önemli)
-- **Çok Dilli Formlar (Language Tabs):** Admin panelindeki formlarda (Ekleme/Düzenleme) her dil için alt alta `name_tr`, `name_en` gibi inputlar kullanmak YERİNE, `AdminLangTabs` bileşenini kullanın. Tasarım `sm:col-span-2 space-y-4` sınıfı ile tam genişlikte (full-width) olmalıdır. Formlar gereksiz yere uzamamalıdır.
-- **Zengin Metin (Rich Text / Markdown):** Ürün açıklamaları ve uzun metinlerde standart `AdminInput` yerine çok satırlı `AdminTextarea` kullanın. Bu alanlara Markdown formatında (örn: madde imleri için `-`) veri girilebilir.
-- **Frontend Gösterimi:** Markdown içeren veriler (açıklamalar vb.) listeleme ve detay ekranlarında mutlaka `react-markdown` kütüphanesi kullanılarak parse edilmelidir. Sadece düz metin olarak (`<p>{desc}</p>`) basılmamalıdır.
+## Cross-Platform UI Kuralları (Önemli!)
+- **Web UI:** Standart HTML etiketleri (`<nav>`, `<button>`) ve standart TailwindCSS kullanın. Hamburger Menü, Dropdown, Adres haritası (Modal içi) web'de Next.js bileşenleriyle oluşturulmuştur. Varsayılan açılış sayfası `/shop` rotasıdır. Arama çubuğu (Search Bar) Web Header'ında sabittir.
+- **Mobile UI:** Yalnızca Native bileşenler (`<View>`, `<Text>`, `<TouchableOpacity>`) kullanın. NativeWind v4 ile Tailwind class'larını kullanın.
+  - Mobil uygulamada çentik (Notch/Dynamic Island) altına tam oturması için `react-native-safe-area-context` kullanın (React Native'in kendi `SafeAreaView`'unu DEĞİL!).
+  - Web'deki Hamburger Menünün karşılığı olarak Mobilde **Drawer Navigation** (`expo-router/drawer`) kullanın.
+  - Konum/Adres seçici harita ekranını Mobilde `react-native-maps` ile oluşturup Native `Modal` içinde barındırın. **ÖNEMLİ:** Kullanıcının henüz seçili bir adresi yoksa harita çökmemsi için varsayılan koordinat Beşiktaş / İstanbul (`lat: 41.0422, lng: 29.0060`) olarak ayarlanmalıdır. Seçili adres cihazda `AsyncStorage` ile kalıcı hale getirilmelidir.
+  - Adres açıklamasından koordinat bulma (Geocoding) işlemi için harita uyumluluğu sebebiyle **Nominatim (OpenStreetMap)** API'sini kullanın.
+  - Fiş (Receipt) üretimi ve paylaşımı gibi Web tarafında Next.js `next/og` ile çizilen dinamik görseller, Mobil tarafta doğrudan Web API'ye data parametresi gönderilerek `Image` ile gösterilmeli; Supabase `shared_receipts` tablosuna yazılıp kısa link ile Native `Share` kütüphanesi üzerinden paylaşılmalıdır.
+  - CSS Değişkenleri (`var(--accent)`) Native Modal sınırlarını geçemediğinden, `tailwind.config.js` içinde `theme.colors` alanını statik HEX kodları ile (`#fb4824` vb.) ayarlayın.
 
-## Test Yazma Kuralları
-- Test framework'ü olarak **Vitest + React Testing Library (RTL)** kullanılmaktadır.
-- Yeni bir fonksiyon veya karmaşık UI bileşeni eklerken mutlaka `*.test.ts` veya `*.test.tsx` dosyasını oluşturun.
-- Birim testler "Arrange-Act-Assert" şablonunda yazılmalı ve "Happy Path" dışında sınır/hata (Boundary/Error) durumlarını kapsamalıdır.
+## Form ve Veri Gösterimi
+- Admin paneli (Web Only) çok dilli formlar (`AdminLangTabs`) ve Markdown textarea kullanır.
+- Hem Web hem Mobilde Markdown verilerini parse ederek zengin içerikli şekilde gösterin (`react-markdown` veya benzeri paketler).
+
+## V2 Kategori Hiyerarşisi (Supabase Veritabanı Kuralları)
+- **`store_categories`** (Ana Kategoriler - Tree Yapısı)
+- **`product_categories`** (Mağaza bazlı alt kategoriler)
+- **`stores`** (`category_id` FK)
+- **`products`** (`product_category_id` FK). Opsiyonel `section_label_tr/en` kullanır (Arayüzde başlık olarak `COALESCE(section_label, product_category.name)` esastır).
+Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutulur.
 
 ## Review Checklist (Kod Yazdıktan Sonra Kontrol Edilecekler)
 - [ ] Yeni metin eklendiyse `dictionaries.ts` dosyasına hem Türkçe hem İngilizce çevirisi yapıldı mı?
-- [ ] Bileşene özgü CSS ihtiyacı varsa Tailwind class'ları kullanıldı mı? (Custom CSS/SCSS yazmayın).
-- [ ] Harita tabanlı (`leaflet`) bir kütüphane eklendiyse SSR hatalarını önlemek için `dynamic(..., { ssr: false })` kullanıldı mı?
-- [ ] `tsc --noEmit` çalıştırıldığında tip hatası alınıyor mu?
-- [ ] Eklenen iş mantığı (business logic) için bir test senaryosu düşünüldü mü?
-
-## Delivery Timeline Configuration
-Sipariş statü geçişleri ve kurye hareket süreleri `DELIVERY_CONFIG` içinde yönetilir (`src/features/catalog/appConfig.ts` veya ilgili dosya).
-Kurye hızı hesaplaması: `baseMs + (distanceKm × kmMultiplierMs)`.
-Bu süreler güncellendiğinde animasyonlar otomatik olarak senkronize olur.
-Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutulmalı ve UI üzerinde ETA hesaplanırken bu saniyeler baz alınarak (örn: `Math.floor(min/60)` ve `Math.ceil(max/60)`) hesaplanmalıdır. Kesirli dakika değerleri (0.33 vb.) saklanması yasaktır.
-
-## UI/UX ve Modal Standartları (Ek Kurallar)
-- **Modal Kapatma İşlemleri:** Uygulama içindeki tüm modallar (Ürün detayı, Sıralama, vb.) mutlaka dış (backdrop) tıklamasıyla (`onClick={() => setModalOpen(false)}`) ve ESC tuşuyla kapanabilmelidir. (İstisna: Form içeren Feedback gibi modallarda veri kaybını önlemek için dışa tıklama kapalı bırakılabilir ancak ESC mutlaka çalışmalıdır).
-- **Ürün Görselleri:** Küçük ürün kartları veya modallardaki görseller mutlaka `aspect-square` (1:1 tam kare) ve `object-cover` olarak ayarlanmalıdır. `object-contain` kullanmak görsellerin kenarlarında boşluk bırakarak kesilmiş hissi yaratır. Mobilde yarım ekran kaplamaması için gerekli max-height/width sınırlandırmaları (`max-h-[70vh]` gibi) getirilmelidir. Modal görsellerinin kenarlara değmemesi için yeterli padding (`p-4 md:p-8`) verilmelidir.
+- [ ] Bileşene özgü CSS ihtiyacı varsa (Web) Tailwind class'ları, (Mobil) NativeWind class'ları kullanıldı mı?
+- [ ] Mobil tarafta çalışırken `lucide-react` yerine `lucide-react-native` import edildi mi?
+- [ ] Modal kapatma işlemleri dış alana (backdrop) tıklama ve ESC tuşu ile desteklendi mi?
+- [ ] Görseller kare formatta (`aspect-square object-cover`) ayarlandı mı?
+- [ ] Web ve Mobil eşzamanlı olarak FSD yapısına sadık kaldı mı?

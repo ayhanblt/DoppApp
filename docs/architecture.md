@@ -1,57 +1,54 @@
 # Architecture
 
 ## Genel Mimari Yaklaşım
-DoppApp, **Next.js 15 (App Router)** üzerinde çalışan, tamamen **Client-Side Heavy** (istemci ağırlıklı) bir React uygulamasıdır. 
-Şu an için bir gerçek backend olarak Supabase (PostgreSQL ve Storage) kullanılmaktadır. Veri kalıcılığı Supabase üzerinden sağlanır.
-Mimari, gelecekte React Native mobile taşınabilirlik düşünülerek modüler bir yaklaşımla kurgulanmıştır.
+DoppApp, artık **çift platformlu (Cross-Platform)** bir mimari yapıya sahiptir:
+1. **Web Frontend (`src/`):** **Next.js 15 (App Router)** üzerinde çalışan, istemci ağırlıklı (Client-Side Heavy) bir React web uygulamasıdır.
+2. **Mobile App (`mobile/`):** **React Native ve Expo Router** kullanan, mobil iOS ve Android platformları için geliştirilmiş kardeş uygulamadır.
 
-Bileşen mimarisinde kodun temizliği ve tekrar kullanılabilirliği için **Feature-Sliced Design (FSD)** metodolojisine doğru bir geçiş benimsenmiştir. Bu yapı, projeyi katmanlara (layers) ve domainlere (slices) bölerek kontrolü artırır.
+Her iki platform da ortak bir veri kaynağı olarak **Supabase (PostgreSQL ve Storage)** kullanmaktadır. Veri kalıcılığı ve resim yüklemeleri Supabase üzerinden sağlanır. Mimari, hem web hem de mobil tarafında benzer mantıkların koşulabilmesi için paralel bir yapıda kurgulanmıştır.
+
+Bileşen mimarisinde kodun temizliği ve tekrar kullanılabilirliği için **Feature-Sliced Design (FSD)** metodolojisi benimsenmiştir. Bu yapı, projeyi katmanlara (layers) ve domainlere (slices) bölerek kontrolü artırır. Mobil uygulama da bu FSD yaklaşımını kendi `mobile/src/` klasörü içinde kopyalar.
 
 ## Katmanlar (Layers) ve Veri Akışı
 
-1. **Routing Katmanı (`app/`):** Sadece URL rotalarını, layoutları ve dil (i18n) ayarlarını yönetir. İş mantığı barındırmaz, sadece alt bileşenleri çağırır.
-2. **Features Katmanı (`features/`):** İş mantığının (Business Logic) kalbidir. Sipariş hesaplamaları, katalog filtrelemeleri, admin işlemleri ve harita takibi burada domain bazlı klasörlenir.
-3. **Shared Katmanı (`shared/`):** Tüm projenin kullandığı ortak tipler (`types.ts`), formatlama fonksiyonları, ve çoklu dil sözlükleri (`dictionaries.ts`) burada yer alır.
+1. **Routing Katmanı (`app/` ve `mobile/app/`):** Sadece URL rotalarını, layoutları (Drawer, Stack, Tabs) ve dil (i18n) ayarlarını yönetir. İş mantığı barındırmaz, sadece alt bileşenleri çağırır.
+   - Web: `/shop`, `/food`, `/market` ve `/store/[id]` rotaları mevcuttur.
+   - Mobile: `mobile/app/(drawer)` altında Drawer navigation, `/store/[id]` rotası ile mağaza detayı, `/cart`, `/checkout` ve `/tracking` bağımsız yığın (stack) ekranları yer alır.
+2. **Features Katmanı (`features/` ve `mobile/src/features/`):** İş mantığının (Business Logic) kalbidir. Sipariş hesaplamaları, katalog filtrelemeleri, admin işlemleri, yorum gönderme ve harita takibi burada domain bazlı klasörlenir.
+3. **Shared Katmanı (`shared/` ve `mobile/src/shared/`):** Tüm projenin kullandığı ortak tipler (`types.ts`), formatlama fonksiyonları (`format.ts`), Supabase bağlantı istemcileri (`supabase.ts`), Markdown render edici (`MarkdownText.tsx`) ve çoklu dil sözlükleri (`dictionaries.ts`) burada yer alır.
 
 **Veri Akışı:**
-Veri Supabase API üzerinden asenkron çekilir ve `CatalogContext.tsx` aracılığıyla global state'e alınır. Tüm sayfalar (`/shop`, `/food`, `/market`) bu context'i dinler. State güncellemeleri (örneğin sepete ürün ekleme) yine bu Context veya feature bazlı custom hook'lar üzerinden yönetilir.
+Veri Supabase API üzerinden asenkron çekilir ve `CatalogContext.tsx` aracılığıyla global state'e alınır. Tüm sayfalar bu context'i dinler. State güncellemeleri (örneğin sepete ürün ekleme veya Supabase üzerinde mağaza yorumlarını güncelleme) yine bu Context veya feature bazlı custom hook'lar üzerinden yönetilir. Mobilde de aynı bağlam mimarisi (`CatalogContext.tsx`) korunmuştur.
 
-## Mevcut Klasör Yapısı (Current)
-
-```text
-src/
-├── app/                  # Next.js App Router (Sayfalar ve Rotalar)
-│   ├── [locale]/         # i18n rotaları
-│   └── api/              # Image upload vb. küçük uç noktalar
-├── features/             # Business Logic & Modüller
-│   ├── admin/            # Admin paneli bileşenleri
-│   ├── catalog/          # Mağaza listeleme, Context ve Layout
-│   ├── order/            # Sepet hesaplamaları (cart.ts)
-│   └── tracking/         # Harita ve Kurye takibi
-└── shared/               # Ortak tipler ve araçlar
-    ├── i18n/
-    └── lib/
-```
-
-## İdeal Klasör Yapısı (Önerilen FSD Yaklaşımı)
-
-İlerleyen aşamalarda projeyi daha net bir Feature-Sliced Design (FSD) standardına getirmek için yapı aşağıdaki formata evrilmelidir:
+## Mevcut Klasör Yapısı (Çift Platform)
 
 ```text
-src/
-├── app/                    # Sadece App Router ve Global Providers
-├── pages/                  # Sayfa bileşenlerinin kendisi (Composition layer)
-├── widgets/                # Birden fazla feature'ı birleştiren bloklar (Örn: Header, CartFooter)
-├── features/               # Kullanıcı aksiyonları (Örn: AddToCart, FilterStores, AdminEditStore)
-├── entities/               # İş nesneleri ve onlara ait UI/Logik (Örn: StoreCard, ProductItem, OrderTimeline)
-└── shared/                 # Her yerde kullanılan, iş mantığı içermeyen kodlar
-    ├── ui/                 # Reusable UI componentleri (Button, Modal, Input)
-    ├── lib/                # Yardımcı fonksiyonlar (formatMoney, uid)
-    ├── api/                # Base API client (gelecekte)
-    └── config/             # i18n, sabitler (constants)
+DoppApp/
+├── src/                      # Next.js Web Uygulaması (Ana FSD Yapısı)
+│   ├── app/                  # Next.js App Router (Sayfalar ve Rotalar)
+│   ├── features/             # Business Logic & Modüller
+│   │   ├── catalog/          # Listeleme, HeaderMenu, Adres Seçici
+│   │   ├── admin/            # Web tabanlı yönetim paneli
+│   │   ├── order/            # Checkout ve Sepet
+│   │   └── tracking/         # Harita takibi
+│   └── shared/               # Ortak tipler ve fonksiyonlar
+│
+└── mobile/                   # React Native (Expo) Mobil Uygulaması
+    ├── app/                  # Expo Router (Drawer, Ekranlar)
+    │   ├── (drawer)/         # Yan Menü Layoutu (Giriş, Hakkında)
+    │   ├── store/[id].tsx    # Mağaza Detay Sayfası & Yorum Entegrasyonu
+    │   ├── cart.tsx          # Sepet Ekranı & Sepet Kaydet/Yükle UI
+    │   ├── checkout.tsx      # Ödeme & Sipariş Hazırlığı
+    │   └── tracking.tsx      # Canlı Kurye Takip Ekranı
+    ├── src/                  # Mobil tarafa özel FSD Yapısı
+    │   ├── features/         # Web'deki logic'in mobile uyarlanmış UI karşılıkları
+    │   └── shared/           # Web'den taşınan tipler, i18n, ui (MarkdownText)
+    ├── assets/               # Mobil resimler, logolar ve fontlar
+    └── tailwind.config.js    # NativeWind v4 konfigürasyonu
 ```
 
-**Neden Böyle Olmalı?**
-- **Ayrıştırma (Decoupling):** Şu an UI bileşenleri ve iş mantığı `features` altında iç içe girmiş durumda. Entities ve Features katmanlarına bölmek, örneğin bir `StoreCard` bileşenini (Entity) sepete ekleme mantığından (Feature) ayırmayı sağlar.
-- **Yeniden Kullanılabilirlik (Reusability):** Tüm genel geçer UI bileşenleri `shared/ui` altına toplanarak farklı projelerde veya sayfalarda direkt kullanılabilir hale gelir.
-- **Ölçeklenebilirlik:** Projeye yeni bir domain (örneğin "Kullanıcı Profili" veya "Ödeme Sistemleri") eklendiğinde nereye konacağı FSD sayesinde nettir.
+## UI & Styling Stratejisi
+- **Web:** Standart Tailwind CSS kullanılır. HTML etiketleri (`<nav>`, `<div>`, vs.) ile zengin modern web deneyimi sunulur.
+- **Mobile:** **NativeWind v4** ile Tailwind class'ları React Native bileşenlerine ( `<View>`, `<Text>`) derlenir. Mobil tarafta Modal yönetimi için `react-native-safe-area-context` ve `Modal` bileşenleri kullanılırken, harita için `react-native-maps` paketinden yararlanılır. CSS değişkenleri (`var(--accent)`) Native Modal sınırlarını geçemediğinden, mobil `tailwind.config.js` içinde kritik renkler sabit (hardcoded) olarak tanımlanmıştır.
+- **Yerel Kalıcılık:** Web'deki `localStorage` sepet kaydetme ve dil seçimi işlemleri mobilde `@react-native-async-storage/async-storage` aracılığıyla kalıcı hale getirilmiştir.
+

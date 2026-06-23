@@ -1,71 +1,29 @@
-# DoppApp Premium Design System
+# Design Principles & Aesthetics
 
-Bu doküman, DoppApp projesinin güncellenmiş "Senior UI / Premium" tasarım sistemini, renk paletini, tipografisini ve kullanılan görsel yapıları standartlaştırmak için oluşturulmuştur. Bundan sonra eklenecek tüm yeni özellikler ve bileşenler bu "Design System" kurallarını baz almalıdır.
+## Tasarım Felsefesi (Premium & Canlı)
+DoppApp, kullanıcılara "premium" bir deneyim yaşatmayı hedefler. Sıkıcı, düz formlar veya basit listelemeler (MVP hissiyatı) yerine akıcı animasyonlar ve şık bileşenler kullanılmalıdır.
+- **Micro-Animations:** Tıklanan bir butonun hafifçe küçülüp büyümesi (scale effects), Modal açılışlarının ekranın ortasından veya altından yumuşakça süzülmesi (slide/fade effects), hover durumlarında ikon ve metinlerin nazik renk geçişleri yapması (transition-colors) zorunludur.
+- **Glassmorphism:** Yapılabiliyorsa (özellikle arka plan bulanıklığını destekleyen native/web bileşenlerinde) üst üste binen menüler veya modal arka planları için yarı saydam (blur/backdrop-filter) etkileri kullanılmalıdır. Web'de `backdrop-blur-md` class'ları bolca yer almalıdır.
+- **Zengin Renk Paleti:** Klasik düz kırmızı/yeşil yerine, özenle seçilmiş HSL veya özel HEX renkleri (Örn: `accent: #fb4824` - Canlı Turuncu, `background: #fff7ef` - Sıcak Krem) global CSS değişkenleri (`global.css`) veya `tailwind.config.js` üzerinden yönetilmelidir.
 
----
+## Responsive (Duyarlı) & Çift Platform Uyumlu UI
+Tasarım hem büyük ekranlı web tarayıcılarında (max-w-4xl wrapper ile ortalanmış şekilde), hem mobil web tarayıcılarında, hem de iOS/Android Native cihazlarda harika görünmelidir.
 
-## 1. Tipografi ve Etkileşim (Typography & Interaction)
+- **Web:** Desktop için Tailwind CSS breakpoint'leri (`md:`, `lg:`) kullanılarak grid yapısı, mobil için ise esnek flexbox yapısı uygulanır. Hamburger Menu (HeaderMenu) üst kısımda bulunur ve Dropdown (aşağı açılır) şekilde info, dil gibi menüleri gösterir. Arama çubuğu (Search) Header'a entegredir. Adres seçici bir Web Modal olarak açılır.
+- **Mobile (React Native):** NativeWind v4 kullanılarak mobil cihazlara özgü `<View>`, `<Text>` ve `react-native-safe-area-context` ile çalışılır. Çentik (Notch/Dynamic Island) altına tam oturması sağlanır. Yan menü (Drawer navigation) web'deki hamburger menünün karşılığı olarak ekranın kenarından kayarak gelir. Adres seçici, mobilin doğasına uygun bir şekilde tam ekran veya `react-native-maps` içeren büyük bir Native Modal olarak çıkarılır.
 
-Uygulamanın genelinde **Geist Sans** ve monospace alanlarda **Geist Mono** fontları kullanılmıştır.
-- **Premium Seçim Rengi (Text Selection):** Kullanıcı bir metni seçtiğinde varsayılan mavi yerine marka rengi (Turuncu/Grape/Mint) arka plan, beyaz metin kullanılır (`::selection`).
-- **Scrollbar:** Tüm sayfalarda klasik kalın scrollbar yerine, iOS/Mac tarzı yarı saydam ve köşeleri yuvarlatılmış premium kaydırma çubuğu kullanılır.
+## NativeWind v4 & Mobil Stil Kuralları (Önemli!)
+Mobil tarafta tasarım yaparken NativeWind v4 ile ilgili aşağıdaki sınırlamalara ve kurallara kesinlikle uyulmalıdır:
+1. **Dinamik Sınıf Sınırlamaları:** Sınıf adlarının dinamik olarak birleştirilmesi (Örn: `className={`text-${color}`}`) NativeWind v4 runtime derleyicisinde stil çözümlenememesi veya çökmelere yol açabilir. Sınıf adları her zaman statik dizgiler halinde olmalı veya tüm koşullar inline üçlü işleçler ile (`condition ? 'text-orange-500' : 'text-zinc-500'`) açıkça yazılmalıdır.
+2. **CSS Değişkenleri:** CSS değişkenleri (`var(--accent)`) Native Modal sınırlarını geçemediğinden, `tailwind.config.js` içinde `theme.colors` alanı statik HEX kodları ile (`#fb4824` vb.) ayarlanmalıdır.
+3. **Gölge ve Opaklık Sınıfları:** `shadow` veya `opacity` gibi efektler dinamik NativeWind sınıflarıyla birleştiğinde `react-native-css-interop` tarafında "Couldn't find a navigation context" gibi dolaylı Expo Router hatalarına sebep olabilmektedir. Bu gibi kritik arayüzlerde (Örn: Tab Bar, Butonlar) inline stiller (`style={{ opacity: active ? 1 : 0.5 }}`) tercih edilmelidir.
 
-## 2. Renk Paleti ve Arka Planlar (Colors & Backgrounds)
+## Görsel Formatları ve Modal Davranışları
+- Tüm küçük ikonik görseller ve listeleme görselleri (Product Image, Store Logo) mutlaka "Aspect Square (1:1)" formatında, "Object Cover" özelliğiyle tam kareye oturtulmalıdır. `object-contain` kullanılması yasaktır. Mobilde de `aspect-square object-cover` class'ı uygulanır.
+- Tüm Modal arayüzlerinde (Ürün detayı, Sıralama, Adres vs.) kapanma aksiyonu net ve açık olmalıdır: Hem dış alana (backdrop) tıklayarak, hem Web'de ESC tuşuna basarak hem de Modal içindeki `X` (kapat) ikonuna tıklayarak kapanabilmelidir. (Web'de AddressModal dış tıklamaları için `e.stopPropagation()` kullanılmıştır, Mobilde de `Modal` özellikleri uygun yapılandırılmalıdır.)
 
-Uygulama, içeriği (beyaz kartları) ön plana çıkarmak için nötr ve ferah bir arkaplan kullanır.
-- **Genel Uygulama Arka Planı (App BG):** `#fafafa` (Çok açık nötr gri). Kartların havada yüzmesini sağlar. (Önceden kullanılan sıcak kremsi #fff7ef tamamen terkedilmiştir).
-- **Kart Arka Planları:** `#ffffff` (Saf beyaz).
-- **Ürün Görselleri Arka Planı:** Beyaz arkaplanlı ürün görsellerini UI ile bütünleştirmek için görsel konteynerlarında `bg-zinc-50` arkaplanı ve görselde `mix-blend-multiply` CSS özelliği kullanılmalıdır. `bg-white` gibi sert arkaplanlar tasarımın şıklığını bozduğu için bu kombinasyon tercih edilmelidir.
-- **Mağaza (Store) Başlıkları:** Saf beyaz listelerden ayrışması için çok hafif marka rengi tonlaması (`bg-[var(--accent)]/5`) kullanılır. Gradient (renk geçişi) kullanımı yasaktır.
-- **Sınırlar (Borders):**
-  - Kart dış sınırları: `border-black/10` (Hafif ve net).
-  - Hover durumundaki sınırlar: `hover:border-[var(--accent)]/40` (Kullanıcı fareyi gezdirdiğinde markayı hissettirir).
-  - İç ayırıcılar (Dividers): `divide-y divide-black/5` kullanılarak ürünler arası çizgi çekilir. Kutu-içinde-kutu (Box-within-a-box) mantığı kullanılmaz.
+## Metin ve İkonografi
+- Google Fonts (örneğin Inter veya Roboto) kullanılarak tipografik hiyerarşi (Başlıklar çok belirgin siyah `font-black`, alt başlıklar grimsi `text-zinc-500`) yaratılır.
+- İkonlar için Web'de `lucide-react`, React Native'de `lucide-react-native` kullanılır. İkon renklerinin gri tonlarından (`text-zinc-400` veya statik `#52525b`) ziyade, hover veya aktif durumda `accent` rengine dönmesi tasarımsal olarak beklenir.
+- Web'de ve Mobilde markdown içeren veriler düz metin değil, "Rich Text" olarak render edilmelidir. Mobilde bu işlem için harici ağır paketler yerine, hafif ve güvenli `MarkdownText.tsx` yardımcı bileşeni kullanılır.
 
-## 3. Bileşen Yapıları (Component Patterns)
-
-### 3.1. Yumuşak Gölgeler ve Köşeler (Soft UI)
-- **Köşe Yuvarlama (Radius):** Modern ve samimi bir his için global olarak `16px` (1rem) yani Tailwind'in `rounded-2xl` hissiyatı standartlaştırılmıştır.
-- **Gölgelendirme (Shadows):** Klasik siyah lekeler yerine çok katmanlı, dumanlı gölgeler `globals.css` içerisine tanımlanmıştır. (Örn: `0 8px 30px rgba(0,0,0,0.05)`).
-- **Hover Gölgeleri:** Tıklanabilir büyük kartlar üzerine gelindiğinde `hover:shadow-md` ile kullanıcıya tepki verir.
-
-### 3.2. Butonlar (Buttons) ve Mikro-Animasyonlar
-Projeye eklenen her `button` elementi otomatik olarak şu mikro-animasyon kurallarına tabiidir:
-1. `cursor: pointer` aktiftir.
-2. `transition: all 0.2s` geçişi vardır.
-3. Fare ile üzerine gelindiğinde (Hover): `filter: brightness(1.05)` ile çok zarifçe parlar.
-4. Tıklandığında (Active): `transform: scale(0.96)` ile buton hafifçe içe göçer ve gerçekçi bir basma hissi verir.
-
-### 3.3. Modal ve Overlays (Popuplar)
-Açılır pencereler (Ürün Ekleme, Adres Seçimi) artık dikey ve basit kutular yerine **Geniş Split-Layout (Bölünmüş Düzen)** yapısını kullanır.
-
-**Modal Kuralları:**
-1. **Kapatma İşlemleri:** Tüm modallar (veri giriş formu içermeyenler) mutlaka dış (backdrop) tıklamasıyla `onClick={() => setModalOpen(false)}` ve klavyeden ESC tuşu ile kapanabilmelidir.
-2. **Mobilde Ekran Kaplamama:** Modallar mobilde tüm ekranı kaplamamalı, `max-h-[70vh]` gibi limitlerle sınırlandırılmalıdır.
-3. **Görsel Boyutları:** Modal görselleri mutlaka `aspect-square` (1:1 tam kare) olmalı, `object-cover` ile alanı doldurmalı ve köşelerden kesilmemesi için en az `p-4 md:p-8` boşluk (padding) bırakılmalıdır.
-
-**Örnek Ürün Detay Modalı Yapısı:**
-```tsx
-<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 md:p-8" onClick={() => setModalOpen(false)}>
-  {/* Görselin kesilmemesi için min-h-[500px] hayatidir */}
-  <div className="flex w-full min-h-[50vh] md:min-h-[500px] max-h-[70vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row" onClick={e => e.stopPropagation()}>
-    
-    {/* SOL: Tam Yükseklik Görsel (Image) */}
-    <div className="relative aspect-square shrink-0 bg-zinc-50 md:w-1/2">
-       <Image fill src="..." alt="..." className="object-cover mix-blend-multiply" />
-    </div>
-
-    {/* SAĞ: Kaydırılabilir İçerik (Scrollable Content) */}
-    <div className="relative flex flex-1 flex-col overflow-auto p-5 md:p-8">
-       {/* Başlık, Açıklama, Opsiyonlar, Buton */}
-    </div>
-    
-  </div>
-</div>
-```
-
-## 4. Uzun Metinler (Truncation / Line Clamping)
-Ürün listelerinde (Grid veya List view) yüksekliklerin eşitsizliğini (UI kırılmalarını) önlemek için metinler sabitlenir:
-- **Ürün Başlığı:** `line-clamp-1`
-- **Ürün Açıklaması:** `line-clamp-2`
-- Orijinal uzun metin tıklanarak açılan Split-Modal içerisindeki `whitespace-pre-wrap` etiketine sahip alanda tam olarak gösterilir. HTML `title` tooltip'leri ucuz bir hissiyat yarattığı için kullanılmaz.

@@ -1,0 +1,328 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCatalog } from '@/features/catalog/CatalogContext';
+import { dictionaries } from '@/shared/i18n/dictionaries';
+import { formatMoney, formatNumber, uid } from '@/shared/lib/format';
+import { Locale, Product, Store, CartSelection } from '@/shared/lib/types';
+import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus } from 'lucide-react-native';
+import { supabase } from '@/shared/api/supabase';
+import { ProductModal } from '@/features/catalog/ProductModal';
+import { MarkdownText } from '@/shared/ui/MarkdownText';
+import { themes } from '@/features/catalog/appConfig';
+
+export default function StoreDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { stores, setStores, locale, setCart } = useCatalog();
+  const t = dictionaries[locale];
+
+  const store = useMemo(() => stores.find((s) => s.id === id), [stores, id]);
+
+  const [activeItem, setActiveItem] = useState<{ store: Store; item: Product } | null>(null);
+  const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
+
+  const [reviewName, setReviewName] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  if (!store) {
+    return (
+      <SafeAreaView className="flex-1 bg-background justify-center items-center">
+        <ActivityIndicator size="large" color="#fb4824" />
+        <Text className="mt-4 text-zinc-500">{locale === "tr" ? "Mağaza bulunamadı veya yükleniyor..." : "Store not found or loading..."}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  const getCategoryName = (item: Product, loc: Locale) => {
+    if (loc === 'tr' && item.section_label_tr) return item.section_label_tr;
+    if (loc === 'en' && item.section_label_en) return item.section_label_en;
+    if (item.product_categories) {
+      return loc === 'tr' ? item.product_categories.name_tr : item.product_categories.name_en;
+    }
+    return "";
+  };
+
+  const featuredLabels = Array.from(new Set(
+    store.menu.map(item => getCategoryName(item, locale)).filter(Boolean) as string[]
+  )).sort();
+
+  const storeMenu = selectedFeaturedLabel
+    ? store.menu.filter(item => getCategoryName(item, locale) === selectedFeaturedLabel)
+    : store.menu;
+
+  const featuredItems = storeMenu.filter(item => locale === 'tr' ? item.section_label_tr : item.section_label_en);
+  const regularItems = storeMenu.filter(item => !(locale === 'tr' ? item.section_label_tr : item.section_label_en));
+  const displayedItems = [...featuredItems, ...regularItems];
+
+  const handleAddCart = (quantity: number, selections: CartSelection) => {
+    if (!activeItem) return;
+    setCart((current) => [
+      ...current,
+      {
+        id: uid("cart"),
+        storeId: activeItem.store.id,
+        itemId: activeItem.item.id,
+        quantity,
+        selections
+      }
+    ]);
+    setActiveItem(null);
+  };
+
+  const submitReview = async () => {
+    if (!store || !reviewName.trim() || !reviewText.trim()) return;
+    setIsSubmittingReview(true);
+
+    const newReview = {
+      author: reviewName.trim(),
+      rating: reviewRating,
+      comment: reviewText.trim(),
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    const oldReviews = store.reviews_data || [];
+    const updatedReviews = [newReview, ...oldReviews];
+    const newRating = ((Number(store.rating || 5) * oldReviews.length) + reviewRating) / (oldReviews.length + 1) || reviewRating;
+
+    try {
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          reviews_data: updatedReviews,
+          reviews: updatedReviews.length,
+          rating: newRating
+        })
+        .eq('id', store.id);
+
+      if (error) throw error;
+
+      const updatedStore: Store = {
+        ...store,
+        reviews_data: updatedReviews,
+        reviews: updatedReviews.length,
+        rating: newRating
+      };
+
+      setStores(prev => prev.map(s => s.id === updatedStore.id ? updatedStore : s));
+      Alert.alert(locale === "tr" ? "Başarılı" : "Success", locale === "tr" ? "Yorumunuz kaydedildi." : "Review submitted successfully.");
+
+      setReviewName("");
+      setReviewRating(5);
+      setReviewText("");
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      Alert.alert(locale === "tr" ? "Hata" : "Error", locale === "tr" ? "Yorum gönderilirken bir hata oluştu." : "Error submitting review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-[#fbf5f1]" edges={['top', 'left', 'right']}>
+      {/* HEADER BAR */}
+      <View className="px-4 py-3 bg-white border-b border-black/5 flex-row items-center justify-between">
+        <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+          <ArrowLeft size={20} color="#09090b" />
+          <Text className="ml-2 font-bold text-zinc-900">{t.backToApp}</Text>
+        </TouchableOpacity>
+        <Text className="text-sm font-black text-accent uppercase">{store.store_categories?.[locale === "tr" ? "name_tr" : "name_en"] || ""}</Text>
+      </View>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+        {/* STORE INFO CARD */}
+        <View className="bg-white p-5 border-b border-black/5">
+          <View className="flex-row items-start gap-4">
+            <Image
+              source={{ uri: store.logo || "https://placehold.co/100x100.webp?text=Logo" }}
+              className="h-16 w-16 md:h-20 md:w-20 rounded-full border border-black/10 object-cover shadow-sm bg-zinc-50"
+            />
+            <View className="flex-1">
+              <View className="flex-row flex-wrap items-center gap-2">
+                <Text className="text-xl font-black text-zinc-900 leading-tight">{store.name[locale]}</Text>
+                {store.badge && (
+                  <View className="rounded bg-accent/10 px-1.5 py-0.5">
+                    <Text className="text-[10px] font-black uppercase text-accent">{store.badge[locale]}</Text>
+                  </View>
+                )}
+              </View>
+              <View className="mt-2 flex-row flex-wrap items-center gap-2">
+                <View className="flex-row items-center gap-0.5">
+                  <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                  <Text className="text-xs font-bold text-amber-500">{Number(store.rating).toFixed(1)}</Text>
+                </View>
+                <Text className="text-xs text-zinc-400">·</Text>
+                <Text className="text-xs text-zinc-500 font-medium">{formatNumber(store.reviews, locale)} {t.reviews}</Text>
+                <Text className="text-xs text-zinc-400">·</Text>
+                <View className="flex-row items-center gap-1">
+                  <Clock size={12} color="#fb4824" />
+                  <Text className="text-xs font-bold text-zinc-700">{store.eta}</Text>
+                </View>
+              </View>
+              {store.description && store.description[locale] !== "null" && store.description[locale]?.trim() !== "" && (
+                <Text className="mt-3 text-xs text-zinc-500 leading-relaxed">{store.description[locale]}</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* CATEGORY SELECTOR (HORIZONTAL SCROLL) */}
+        <View className="bg-white border-b border-black/5 py-3">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 flex-row">
+            <TouchableOpacity
+              onPress={() => setSelectedFeaturedLabel(null)}
+              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedFeaturedLabel ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10"}`}
+            >
+              <Text className={`text-xs font-bold ${!selectedFeaturedLabel ? "text-white" : "text-zinc-600"}`}>
+                {locale === "tr" ? "Tüm Ürünler" : "All Products"}
+              </Text>
+            </TouchableOpacity>
+            {featuredLabels.map(label => (
+              <TouchableOpacity
+                key={label}
+                onPress={() => setSelectedFeaturedLabel(label)}
+                className={`rounded-lg px-4 py-2 border mr-2 ${selectedFeaturedLabel === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10"}`}
+              >
+                <Text className={`text-xs font-bold ${selectedFeaturedLabel === label ? "text-white" : "text-zinc-600"}`}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* PRODUCT LIST */}
+        <View className="p-4">
+          <Text className="text-lg font-black text-zinc-900 mb-4">{selectedFeaturedLabel || (locale === "tr" ? "Tüm Ürünler" : "All Products")}</Text>
+          <View className="gap-3">
+            {displayedItems.map((item) => {
+              const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
+              const isFeatured = !!label;
+              const sectionColor = item.section_color || '#f97316';
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => setActiveItem({ store, item })}
+                  className="bg-white rounded-2xl border border-black/5 p-4 shadow-sm flex-row"
+                  style={isFeatured ? { backgroundColor: `${sectionColor}08`, borderColor: `${sectionColor}20` } : undefined}
+                >
+                  <View className="flex-1 mr-4">
+                    {isFeatured && (
+                      <View className="self-start rounded-full px-2 py-0.5 mb-2" style={{ backgroundColor: sectionColor }}>
+                        <Text className="text-[9px] font-black uppercase text-white">★ {label}</Text>
+                      </View>
+                    )}
+                    <Text className="text-base font-black text-zinc-900 leading-tight" numberOfLines={1}>{item.name[locale]}</Text>
+                    <MarkdownText content={item.description[locale]} style={{ marginTop: 6 }} />
+                    {(item.calories || 0) > 0 && (
+                      <Text className="mt-2 text-xs font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</Text>
+                    )}
+                    <Text className="text-base font-black text-accent mt-3">{formatMoney(item.price, locale)}</Text>
+                  </View>
+                  <Image
+                    source={{ uri: item.image }}
+                    className="w-24 h-24 rounded-xl border border-black/5 bg-zinc-50 object-cover"
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* REVIEWS & RATINGS */}
+        <View className="bg-white p-5 border-t border-b border-black/5 mt-4">
+          <Text className="text-lg font-black text-zinc-900 mb-4 flex-row items-center gap-2">
+            <MessageSquare size={18} color="#fb4824" /> {t.reviews}
+          </Text>
+
+          {store.reviews_data && store.reviews_data.length > 0 ? (
+            <View className="gap-4">
+              {store.reviews_data.map((review, idx) => (
+                <View key={idx} className="flex-row gap-3 border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
+                  <View className="h-10 w-10 shrink-0 rounded-full bg-accent items-center justify-center shadow-sm">
+                    <Text className="text-white font-black text-lg">{review.author.charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <View className="flex-row items-center justify-between mb-1">
+                      <Text className="font-bold text-sm text-zinc-900">
+                        {review.author.split(' ').map(w => w.charAt(0).toUpperCase() + '*'.repeat(Math.max(0, w.length - 1))).join(' ')}
+                      </Text>
+                      <View className="flex-row">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} size={11} color={i < review.rating ? "#f59e0b" : "#e4e4e7"} fill={i < review.rating ? "#f59e0b" : "none"} />
+                        ))}
+                      </View>
+                    </View>
+                    <Text className="text-sm text-zinc-600 leading-normal">{review.comment}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text className="text-sm text-zinc-400 italic py-4">{locale === "tr" ? "Henüz yorum yapılmamış." : "No reviews yet."}</Text>
+          )}
+
+          {/* ADD REVIEW FORM */}
+          <View className="mt-8 border-t border-zinc-100 pt-6">
+            <Text className="font-black text-base mb-4">{locale === "tr" ? "Yorum Yap" : "Add Review"}</Text>
+            <View className="gap-3">
+              <TextInput
+                placeholder={locale === "tr" ? "Ad Soyad" : "Full Name"}
+                value={reviewName}
+                onChangeText={setReviewName}
+                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50"
+              />
+              <View className="flex-row items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                <Text className="font-bold text-zinc-700 text-sm">{locale === "tr" ? "Puan:" : "Rating:"}</Text>
+                <View className="flex-row">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => setReviewRating(star)}
+                      className="px-1"
+                    >
+                      <Text className={`text-2xl ${star <= reviewRating ? 'text-amber-500' : 'text-zinc-300'}`}>★</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              <TextInput
+                placeholder={locale === "tr" ? "Yorumunuz..." : "Your Review..."}
+                value={reviewText}
+                onChangeText={setReviewText}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50 h-20"
+              />
+              <TouchableOpacity
+                onPress={submitReview}
+                disabled={isSubmittingReview || !reviewName.trim() || !reviewText.trim()}
+                className="rounded-xl bg-accent py-3.5 items-center justify-center shadow-sm disabled:opacity-50"
+              >
+                <Text className="text-white font-black text-base">
+                  {isSubmittingReview ? (locale === "tr" ? "Gönderiliyor..." : "Submitting...") : (locale === "tr" ? "Yorumu Gönder" : "Submit Review")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {activeItem && (
+        <ProductModal
+          locale={locale}
+          store={activeItem.store}
+          item={activeItem.item}
+          visible={!!activeItem}
+          onClose={() => setActiveItem(null)}
+          onAdd={handleAddCart}
+        />
+      )}
+    </SafeAreaView>
+  );
+}

@@ -1,33 +1,28 @@
 # Project Overview
 
-## Projenin Amacı
-DoppApp, kullanıcıların hayali mağazalar, restoranlar ve marketler üzerinden sipariş deneyimini baştan uca yaşayabilecekleri, çoklu dil (Türkçe/İngilizce) destekli bir e-ticaret/yemek sipariş simülasyonudur. Projenin ana hedefi, gerçek bir ödeme veya teslimat altyapısı kurmadan sipariş verme, sepet yönetimi ve kurye takip simülasyonlarını pürüzsüz bir arayüz ile sunmaktır. Bu proje aynı zamanda ileriye dönük bir React Native dönüşümü veya gerçek bir backend entegrasyonu için "hazır bir ön yüz ve state iskeleti" görevi görmektedir.
+## Nedir?
+DoppApp, **Shop (Alışveriş)**, **Food (Yemek)** ve **Market (Süpermarket)** olmak üzere 3 temel kategori altında farklı türden mağazaların sipariş ve kurye takip süreçlerini simüle eden, çift platformlu (Web + Mobil) interaktif bir deneme (sandbox) uygulamasıdır. 
+Gerçek bir e-ticaret uygulaması gibi davranır ancak ödeme alınmaz; amaç baştan sona sipariş verme, kurye hızını ayarlama (Rabbit/Turtle) ve harita üzerinde gerçek zamanlı takip deneyimini yaşatmaktır.
 
-## Kullanıcı Hedefi
-Son kullanıcılar, gerçek bir e-ticaret uygulamasında bulabilecekleri şu özellikleri deneyimler:
-1. İstenen kategoriye (Mağaza, Yemek, Market) göre ürün listeleme.
-2. Ürün seçeneklerini (beden, ekstra malzemeler, opsiyonlar) belirleyip sepete ekleme.
-3. Sepet tutarını görüntüleme ve simüle edilmiş bir ödeme ekranından geçme.
-4. Leaflet tabanlı interaktif bir harita üzerinde siparişin kurye tarafından teslim edilmesini canlı olarak takip etme.
+## Temel Akış (Core Flow)
+1. **Giriş ve Landing:** Kullanıcı siteye ilk girdiğinde (Web veya Mobil) "DoppApp" animasyonlu bir Landing Modal ekranı (veya tam sayfa yüklenme ekranı) ile karşılaşır. "Start Now" butonuna basarak ana akışa dahil olur.
+2. **Kategori Seçimi (Shop/Food/Market):** Ana sayfa varsayılan olarak **Shop** sekmesinden başlar. Kullanıcı sekme menüsü (veya mobil tab menüsü) üzerinden Food ve Market arasında geçiş yapabilir.
+3. **Adres ve Konum Belirleme:** Kullanıcı, üst menüde (veya Web'de Navbar'da) yer alan Adres Seçici üzerinden kendisine bir teslimat adresi tanımlar. "Haritadan Seç" veya "Konumumu Bul" özellikleri (Web'de AddressModal, Mobilde react-native-maps içeren bir overlay Modal) ile nokta atışı koordinat ayarlanır. **Eğer henüz bir konum seçilmemişse, harita varsayılan olarak Beşiktaş / İstanbul (lat: 41.0422, lng: 29.0060) koordinatlarından başlar.** Seçilen bu koordinata göre, çevredeki mağazaların pozisyonları dinamik olarak Supabase üzerinden çekilen veriler etrafında harmanlanır.
+4. **Alışveriş ve Sepet:** İlgili mağaza tipi seçildiğinde mağazalar listelenir. Kullanıcı bir mağazaya girip ürünlerini sepete ekler (Zorunlu ve Seçmeli opsiyonlar desteklenir). Uygulamada gelişmiş bir Arama Çubuğu (Search Bar) sayesinde anlık filtreleme yapılabilir.
+5. **Ödeme (Checkout):** Sepetteki ürünlerle birlikte "Checkout" ekranına gidilir. Burada kullanıcıdan kurye teslimat hızı (Rabbit = Hızlı, Turtle = Yavaş) seçmesi istenir. 
+6. **Harita Takibi (Tracking):** Sipariş verildiği an, gerçek zamanlı simülasyon başlar. OSRM verileriyle hesaplanmış harita rotası üzerinde bir kurye ikonu (Kurye aracı) mağazadan kullanıcı adresine doğru seçilen hıza oranla (Rabbit = 60km/h, Turtle = 20km/h vb.) animasyonlu şekilde ilerler.
 
-## Business Mantığı
-Sistem Supabase (BaaS) mimarisi ile gerçek bir PostgreSQL veritabanı altyapısına geçmiştir. 
-Tüm veriler (mağazalar, ürünler, resimler) Supabase üzerinden yönetilir. 
-İş mantığı şu prensiplere dayanır:
-- **Mağaza Çeşitliliği:** Sistem; *Shop* (elektronik, giyim), *Food* (restoranlar) ve *Market* (bakkal vb.) olmak üzere üç temel mağaza tipini destekler.
-- **Dinamik Teslimat Algoritması:** Teslimat süreleri, kullanıcının seçtiği teslimat adresi ile mağazanın konumu arasındaki gerçekçi harita mesafesine (OpenStreetMap üzerinden) ve seçilen kurye hızına ("rabbit" veya "turtle") göre milisaniye cinsinden hesaplanır.
-- **Kurye Simülasyonu:** Müşteri siparişi verdikten sonra kuryenin anlık lokasyonu, mağazadan adrese doğru doğrusal bir interpolasyonla (linear interpolation) saniye saniye simüle edilir ve haritada gösterilir.
+## Platform Özeti
+- **Web (`src/`):** Arama Çubuğu, Adres Seçimi, Hamburger Menü (Dropdown ile Info, Dil Değişimi, Hakkında, Geri Bildirim) özellikleri Next.js ile masaüstü/mobil web uyumlu şekilde FSD kurallarına göre tasarlanmıştır.
+- **Mobile (`mobile/`):** Expo ve React Native tabanlı uygulama. Web ile eşgüdümlü olarak Expo Router alt yapısını kullanır. Üst menü (Drawer) üzerinden Info, Hakkında ve Dil Değişimi sağlanır. Haritalar `react-native-maps` ile native olarak optimize edilmiştir.
 
-## Ana Kullanım Senaryoları (Use Cases)
+## Çoklu Dil (i18n)
+Uygulama tam kapsamlı Türkçe (Tr) ve İngilizce (En) desteğine sahiptir. Sadece arayüz metinleri değil, Supabase'den gelen veriler (kategori adları, mağaza ve ürün açıklamaları) de kullanıcının seçtiği dile göre dinamik olarak basılır (`name_tr`, `name_en` vb.).
 
-1. **Kategori Gezintisi:**
-   Kullanıcı `/tr/shop`, `/tr/food` veya `/tr/market` rotalarına giderek sadece o kategoriye ait mağazaları listeler.
-
-2. **Sepet ve Özelleştirme:**
-   Kullanıcı bir mağazaya girip ürünü seçer. Eğer ürünün opsiyonları varsa (Örn: "Pizzanın boyutu" veya "Tişörtün bedeni") zorunlu ve opsiyonel seçimleri yapar, adedi belirler ve sepete ekler.
-
-3. **Sipariş Takibi ve Paylaşımı:**
-   Sipariş oluşturulduktan sonra müşteri Tracking sayfasına yönlendirilir. Burada sipariş durumları (Onaylandı, Hazırlanıyor, Kuryede, Teslim Edildi) zaman bazlı olarak güncellenirken, kuryenin haritadaki hareketi canlı izlenir. Kullanıcılar sipariş başarılı olduğunda oluşan dijital fişi (receipt) HTML canvas üzerinden görselleştirip sosyal medyada veya mesajlaşma uygulamalarında paylaşabilirler.
-
-4. **Admin Yönetimi (`/admin`):**
-   Uygulamanın bir de yerel yönetici paneli bulunur. Yöneticiler yeni mağazalar ekleyebilir, mevcut mağazaları düzenleyebilir, ürün ve opsiyon grupları oluşturabilirler. Tüm bu değişiklikler doğrudan Supabase veritabanına kalıcı olarak kaydedilir ve Storage üzerinde görseller tutulur.
+## Admin Paneli (Web Only)
+Uygulamanın `/admin` rotasında web tabanlı bir yönetim paneli yer alır.
+Bu panelden:
+- Yeni Mağaza, Kategori, Ürün ve Ürün Opsiyonları (Seçenek Grupları) eklenebilir.
+- Çok dilli giriş desteği mevcuttur (Sekmeli arayüz ile Türkçe ve İngilizce formlar).
+- Zengin metin (Markdown) ile açıklama yazılabilir.
+- Restoranların kendi içlerindeki ürün gruplarına özel isim (Section Label) ataması yapılabilir (Örn: "Soğuk İçecekler").
