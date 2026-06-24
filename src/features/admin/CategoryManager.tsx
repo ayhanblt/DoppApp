@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { StoreCategory, ProductCategory, StoreType } from "@/shared/lib/types";
-import { addStoreCategory, deleteStoreCategory, addProductCategory, deleteProductCategory, updateStoreCategory, updateProductCategory } from "@/features/catalog/data";
+import { addStoreCategoryAction, deleteStoreCategoryAction, addProductCategoryAction, deleteProductCategoryAction, updateStoreCategoryAction, updateProductCategoryAction } from "@/features/admin/actions";
 import { GripVertical, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 
 interface CategoryManagerProps {
@@ -31,7 +31,7 @@ export function CategoryManager({ storeCategories, productCategories, onRefresh 
       
       const targetCat = storeCategories.find(c => c.id === targetId);
       if (targetCat || targetId === "root") {
-        await updateStoreCategory(draggedId, { parent_id: targetId === "root" ? null : targetId });
+        await updateStoreCategoryAction(draggedId, { parent_id: targetId === "root" ? null : targetId });
         await onRefresh();
       }
     }
@@ -39,13 +39,13 @@ export function CategoryManager({ storeCategories, productCategories, onRefresh 
 
   const handleDeleteStoreCat = async (id: string) => {
     if (!confirm("Bu kategoriyi silmek istiyor musunuz? Alt kategoriler ve mağazalar etkilenebilir.")) return;
-    const ok = await deleteStoreCategory(id);
+    const ok = await deleteStoreCategoryAction(id);
     if (!ok) alert("Hata! Kategoriye bağlı mağaza, ürün veya alt kategori bulunuyor.");
     else await onRefresh();
   };
 
   const handleEditStoreCat = async (id: string, name_tr: string, name_en: string) => {
-    await updateStoreCategory(id, { name_tr, name_en });
+    await updateStoreCategoryAction(id, { name_tr, name_en });
     await onRefresh();
   };
 
@@ -63,20 +63,20 @@ export function CategoryManager({ storeCategories, productCategories, onRefresh 
       return;
     }
 
-    await addStoreCategory({ id, type: activeTab, name_tr, name_en, parent_id, sort_order: storeCategories.length });
+    await addStoreCategoryAction({ id, type: activeTab, name_tr, name_en, parent_id, sort_order: storeCategories.length } as StoreCategory);
     await onRefresh();
     (e.target as HTMLFormElement).reset();
   };
 
   const handleDeleteProductCat = async (id: string) => {
     if (!confirm("Bu ürün kategorisini silmek istiyor musunuz?")) return;
-    const ok = await deleteProductCategory(id);
+    const ok = await deleteProductCategoryAction(id);
     if (!ok) alert("Hata! Bu kategoriye bağlı ürünler bulunuyor.");
     else await onRefresh();
   };
 
   const handleEditProductCat = async (id: string, name_tr: string, name_en: string) => {
-    await updateProductCategory(id, { name_tr, name_en });
+    await updateProductCategoryAction(id, { name_tr, name_en });
     await onRefresh();
   };
 
@@ -93,7 +93,7 @@ export function CategoryManager({ storeCategories, productCategories, onRefresh 
       return;
     }
 
-    await addProductCategory({ id, store_cat_id: storeCatId, name_tr, name_en, sort_order: productCategories.length });
+    await addProductCategoryAction({ id, store_cat_id: storeCatId, name_tr, name_en, sort_order: productCategories.length } as ProductCategory);
     await onRefresh();
     (e.target as HTMLFormElement).reset();
   };

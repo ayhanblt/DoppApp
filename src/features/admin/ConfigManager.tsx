@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveConfigToSupabase } from "@/features/catalog/data";
+import { updateConfigAction } from "@/features/admin/actions";
 import type { GlobalConfig, DeliveryTimeConfig } from "@/shared/lib/types";
 import { Save } from "lucide-react";
 import { DEFAULT_DELIVERY_TIMES, DEFAULT_DELIVERY_SPEEDS } from "@/features/catalog/appConfig";
@@ -28,7 +28,7 @@ export function ConfigManager({ config, onRefresh }: { config: GlobalConfig | nu
       delivery_speeds: speeds
     };
 
-    const success = await saveConfigToSupabase(newConfig);
+    const success = await updateConfigAction(newConfig);
     if (success) {
       setMessage("Ayarlar başarıyla kaydedildi!");
       onRefresh();

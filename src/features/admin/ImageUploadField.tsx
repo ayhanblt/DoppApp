@@ -5,7 +5,7 @@ import { ImagePlus, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale } from "@/shared/lib/types";
-import { uploadMenuImage } from "@/features/admin/uploadMenuImage";
+import { uploadMenuImageAction } from "@/features/admin/actions";
 import { useImageCache } from "@/features/admin/useImageCache";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
@@ -27,7 +27,10 @@ export function ImageUploadField({ locale, value, onChange }: ImageUploadFieldPr
     setUploading(true);
     setError("");
     try {
-      const result = await uploadMenuImage(file);
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await uploadMenuImageAction(formData);
+      if (!result) throw new Error("upload_failed");
       onChange(result.url);
       addEntry({ url: result.url, filename: result.filename, uploadedAt: Date.now() });
     } catch {

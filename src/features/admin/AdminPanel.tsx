@@ -11,7 +11,7 @@ import { CategoryManager } from "@/features/admin/CategoryManager";
 import { ConfigManager } from "@/features/admin/ConfigManager";
 import { StoreList } from "@/features/admin/StoreList";
 import { AdminInput } from "@/features/admin/AdminInput";
-import { fetchStoresFromSupabase, saveStoreToSupabase, deleteStoreFromSupabase, fetchConfigFromSupabase, saveConfigToSupabase } from "@/features/catalog/data";
+import { saveStoreToSupabaseAction, deleteStoreFromSupabaseAction, loginAdmin, logoutAdmin, checkAdminAuth } from "./actions";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { uid } from "@/shared/lib/format";
 import type { StoreCategory, ProductCategory, Locale, MenuOptionGroup, Store, StoreType, GlobalConfig, Product } from "@/shared/lib/types";
@@ -32,8 +32,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
 
   const loadData = async () => {
     const [dbStores, dbConfig, dbStoreCats, dbProdCats] = await Promise.all([
-      fetchStoresFromSupabase(),
-      fetchConfigFromSupabase(),
+      import('@/features/catalog/data').then(m => m.fetchStoresFromSupabase()),
+      import('@/features/catalog/data').then(m => m.fetchConfigFromSupabase()),
       import('@/features/catalog/data').then(m => m.fetchStoreCategories()),
       import('@/features/catalog/data').then(m => m.fetchProductCategories())
     ]);
@@ -53,15 +53,18 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [editingItemsStore, setEditingItemsStore] = useState<Store | null>(null);
 
   useEffect(() => {
-    setIsAuthenticated(window.localStorage.getItem("adminAuth") === "true");
-    setAuthReady(true);
+    checkAdminAuth().then((isAuth) => {
+      setIsAuthenticated(isAuth);
+      setAuthReady(true);
+    });
   }, []);
 
-  function login(event: React.FormEvent<HTMLFormElement>) {
+  async function login(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    if (data.get("username") === "admin" && data.get("password") === "1234") {
-      window.localStorage.setItem("adminAuth", "true");
+    const password = data.get("password") as string;
+    const success = await loginAdmin(password);
+    if (success) {
       setIsAuthenticated(true);
       setLoginError("");
       return;
@@ -69,8 +72,8 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     setLoginError(t.invalidLogin);
   }
 
-  function logout() {
-    window.localStorage.removeItem("adminAuth");
+  async function logout() {
+    await logoutAdmin();
     setIsAuthenticated(false);
   }
 
@@ -79,7 +82,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
       store.id === updated.id ? updated : store
     ).sort((a, b) => a.name.tr.localeCompare(b.name.tr));
     setStores(nextStores);
-    const success = await saveStoreToSupabase(updated);
+    const success = await saveStoreToSupabaseAction(updated);
     if (!success) {
       alert("Veritabanına kaydedilirken bir hata oluştu! Lütfen konsolu (F12) kontrol edin.");
       // Revert state if failed
@@ -102,14 +105,14 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     const nextStores = [...stores, fullStore].sort((a, b) => a.name.tr.localeCompare(b.name.tr));
     setStores(nextStores);
     setSelectedStore(fullStore.id);
-    await saveStoreToSupabase(fullStore);
+    await saveStoreToSupabaseAction(fullStore);
     setMessage(t.addedToDb);
   }
 
   async function deleteStore(id: string, name: string) {
     if (!confirm(`"${name}" mağazasını tamamen silmek istediğinize emin misiniz?`)) return;
     setStores(stores.filter(s => s.id !== id));
-    await deleteStoreFromSupabase(id);
+    await deleteStoreFromSupabaseAction(id);
     setMessage("Mağaza başarıyla silindi.");
   }
 
@@ -128,7 +131,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
     });
     setStores(nextStores);
     const targetStore = nextStores.find(s => s.id === storeId);
-    if (targetStore) await saveStoreToSupabase(targetStore);
+    if (targetStore) await saveStoreToSupabaseAction(targetStore);
     setMessage(t.itemAddedToDb);
   }
 
@@ -143,8 +146,15 @@ export function AdminPanel({ locale }: { locale: Locale }) {
           <p className="text-sm font-bold text-orange-600">{t.admin}</p>
           <h1 className="mt-1 text-3xl font-black">{t.adminLogin}</h1>
           <div className="mt-5 grid gap-3">
-            <AdminInput name="username" label={t.username} required />
-            <AdminInput name="password" label={t.password} type="password" required />
+            <div>
+              <label className="block text-sm font-medium mb-1">Şifre / Password</label>
+              <input 
+                name="password" 
+                type="password" 
+                className="w-full px-4 py-2 border rounded-xl"
+                placeholder="******"
+              />
+            </div>
             {loginError && <p className="rounded-lg bg-red-50 p-3 text-sm font-bold text-red-700">{loginError}</p>}
             <button className="rounded-lg bg-orange-600 py-3 font-black text-white">{t.login}</button>
             <Link className="text-center text-sm font-bold text-zinc-500" href={`/${locale}`}>
