@@ -11,7 +11,8 @@
       "supportsTablet": true
     },
     "android": {
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "DoppApp.Preview"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -20,6 +21,12 @@
       "expo-router",
       "expo-status-bar",
       "expo-splash-screen"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "753ccb6e-f651-4996-8d17-9e9b15e3151d"
+      }
+    }
   }
 }
