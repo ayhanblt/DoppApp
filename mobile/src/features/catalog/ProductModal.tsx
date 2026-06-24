@@ -106,9 +106,11 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
                           >
                             <Text className="font-bold text-zinc-700">{option.label[locale]}</Text>
                             <View className="flex-row items-center gap-2">
-                              <Text className="text-sm font-bold text-zinc-500">
-                                {option.priceDelta === 0 ? "" : `+${formatMoney(option.priceDelta, locale)}`}
-                              </Text>
+                              {option.priceDelta !== 0 && (
+                                <Text className="text-sm font-bold text-zinc-500" numberOfLines={1}>
+                                  {option.priceDelta > 0 ? "+ " : "- "}{formatMoney(Math.abs(option.priceDelta), locale)}
+                                </Text>
+                              )}
                               <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
                                 isSelected ? "border-accent bg-accent" : "border-zinc-300"
                               }`}>

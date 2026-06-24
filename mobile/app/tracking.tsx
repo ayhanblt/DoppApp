@@ -157,7 +157,7 @@ export default function TrackingScreen() {
           
           <Marker
             coordinate={{ latitude: order.storeCoordinate[0], longitude: order.storeCoordinate[1] }}
-            title={locale === 'tr' ? "Restoran" : "Restaurant"}
+            title={t.restaurants}
             pinColor="blue"
           />
 

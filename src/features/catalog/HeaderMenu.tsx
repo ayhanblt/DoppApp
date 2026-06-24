@@ -57,13 +57,7 @@ export function HeaderMenu({ locale, onOpenInfo, onOpenFeedback }: HeaderMenuPro
             {locale === "tr" ? t.langEn : t.langTr}
           </Link>
 
-          <button
-            onClick={() => { setIsOpen(false); onOpenInfo(); }}
-            className="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
-          >
-            <Info size={18} className="text-zinc-400" />
-            {t.info}
-          </button>
+
 
           <Link
             href={`/${locale}/about`}

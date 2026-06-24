@@ -131,7 +131,6 @@ export const dictionaries = {
     shop: "Alışveriş",
     food: "Yemek",
     market: "Market",
-    about: "Hakkında",
     sendFeedback: "Geri Bildirim Gönder",
 
     // CatalogList
@@ -159,7 +158,7 @@ export const dictionaries = {
     sending: "Gönderiliyor...",
     feedbackSuccess: "Geri bildiriminiz gönderildi. Teşekkürler!",
     feedbackError: "Bir hata oluştu. Lütfen tekrar deneyin.",
-    welcomeTagline: "Favorilerini keşfet, sepetin oluştur ve paylaş!",
+    welcomeTagline: "Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
 
     // Address Modal extras
     chooseLocationOnMap: "Haritadan Seçildi",
@@ -174,7 +173,43 @@ export const dictionaries = {
     aboutBullet3: "Siparişiniz onaylandıktan sonra kuryenizin size gelişini canlı bir harita üzerinden takip edebilirsiniz.",
     aboutBullet4: "Son olarak, hayalinizdeki siparişin havalı bir sipariş fişini (receipt) oluşturup bunu arkadaşlarınızla paylaşabilirsiniz!",
     aboutP3: "Bu uygulama, bir sipariş sürecinin baştan sona (ürün seçiminden kurye takibine kadar) nasıl tasarlandığını ve kusursuz bir kullanıcı deneyimini (UX) sergilemek amacıyla geliştirilmiştir.",
-    aboutHaveFun: "İyi eğlenceler dileriz!"
+    aboutHaveFun: "İyi eğlenceler dileriz!",
+
+    // New translations for inline text
+    restoreCart: "Sepeti Geri Yükle",
+    selectCartToRestore: "Geri yüklemek istediğiniz sepeti seçin:",
+    saveCart: "Sepeti Kaydet",
+    enterCartName: "Sepetiniz için bir isim belirleyin:",
+    egDinner: "Örn: Akşam Yemeği",
+    cancel: "İptal",
+    save: "Kaydet",
+    restore: "Geri Yükle",
+    success: "Başarılı",
+    error: "Hata",
+    infoAlert: "Bilgi",
+    deliveryDetails: "Teslimat Bilgileri",
+    infoDesc1: "Gerçekmiş gibi hissettiren sahte restoran deneyimi — menüler, sipariş akışı ve seçimler tamamen simüle edilir.",
+    infoDesc2: "Sepet ve sipariş süreci gerçek ödeme olmadan çalışır, sadece deneyim ve etkileşim odaklıdır.",
+    infoDesc3: "Dopamin odaklı etkileşimlerle açlık hissini bastırır, kalori almadan tatmin hissi sunar.",
+    catalog: "Katalog",
+    about: "Hakkında",
+    noSavedCart: "Daha önce kaydedilmiş sepet bulunmamaktadır.",
+    errorReadingCarts: "Sepetler okunurken hata oluştu.",
+    cartRestored: (name: string) => `"${name}" isimli sepetiniz geri yüklendi!`,
+    cartSaved: (name: string) => `Sepetiniz "${name}" ismiyle başarıyla kaydedildi.`,
+    storeNotFound: "Mağaza bulunamadı veya yükleniyor...",
+    reviewSubmitted: "Yorumunuz kaydedildi.",
+    reviewError: "Yorum gönderilirken bir hata oluştu.",
+    allProducts: "Tüm Ürünler",
+    noReviewsYet: "Henüz yorum yapılmamış.",
+    addReview: "Yorum Yap",
+    fullName: "Ad Soyad",
+    ratingLabel: "Puan:",
+    yourReview: "Yorumunuz...",
+    submitting: "Gönderiliyor...",
+    submitReview: "Yorumu Gönder",
+    dreamOrder: "Hayalimdeki Sipariş",
+    totalSpent: "TOPLAM HARCAMA"
   },
   en: {
     appName: "DoppApp",
@@ -306,7 +341,6 @@ export const dictionaries = {
     shop: "Shop",
     food: "Food",
     market: "Market",
-    about: "About",
     sendFeedback: "Send Feedback",
 
     // CatalogList
@@ -349,7 +383,43 @@ export const dictionaries = {
     aboutBullet4: "Finally, you can generate a cool receipt of your dream order and share it with your friends!",
     aboutP3: "This application was developed to showcase how an end-to-end order process is designed and to present a flawless user experience (UX).",
     aboutHaveFun: "Have fun!",
-    welcomeTagline: "Discover your favorites, create your cart and share!"
+    welcomeTagline: "Add your dream products to cart, create your order and share!",
+
+    // New translations for inline text
+    restoreCart: "Restore Cart",
+    selectCartToRestore: "Select a cart to restore:",
+    saveCart: "Save Cart",
+    enterCartName: "Enter a name for your cart:",
+    egDinner: "e.g., Dinner",
+    cancel: "Cancel",
+    save: "Save",
+    restore: "Restore",
+    success: "Success",
+    error: "Error",
+    infoAlert: "Info",
+    deliveryDetails: "Delivery Details",
+    infoDesc1: "A fake restaurant experience that feels real — menus, ordering flow, and choices are fully simulated.",
+    infoDesc2: "Cart and ordering work without any real payment — purely for experience and interaction.",
+    infoDesc3: "Dopamine-driven interactions that reduce cravings and simulate satisfaction without calories.",
+    catalog: "Catalog",
+    about: "About",
+    noSavedCart: "No saved cart found.",
+    errorReadingCarts: "Error reading saved carts.",
+    cartRestored: (name: string) => `Cart "${name}" restored!`,
+    cartSaved: (name: string) => `Cart saved as "${name}".`,
+    storeNotFound: "Store not found or loading...",
+    reviewSubmitted: "Review submitted successfully.",
+    reviewError: "Error submitting review.",
+    allProducts: "All Products",
+    noReviewsYet: "No reviews yet.",
+    addReview: "Add Review",
+    fullName: "Full Name",
+    ratingLabel: "Rating:",
+    yourReview: "Your Review...",
+    submitting: "Submitting...",
+    submitReview: "Submit Review",
+    dreamOrder: "My Dream Order",
+    totalSpent: "TOTAL SPENT"
   }
 };
 

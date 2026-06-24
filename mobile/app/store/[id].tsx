@@ -31,7 +31,7 @@ export default function StoreDetailScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color="#fb4824" />
-        <Text className="mt-4 text-zinc-500">{locale === "tr" ? "Mağaza bulunamadı veya yükleniyor..." : "Store not found or loading..."}</Text>
+        <Text className="mt-4 text-zinc-500">{t.storeNotFound}</Text>
       </SafeAreaView>
     );
   }
@@ -107,14 +107,14 @@ export default function StoreDetailScreen() {
       };
 
       setStores(prev => prev.map(s => s.id === updatedStore.id ? updatedStore : s));
-      Alert.alert(locale === "tr" ? "Başarılı" : "Success", locale === "tr" ? "Yorumunuz kaydedildi." : "Review submitted successfully.");
+      Alert.alert(t.success, t.reviewSubmitted);
 
       setReviewName("");
       setReviewRating(5);
       setReviewText("");
     } catch (err) {
       console.error("Error submitting review:", err);
-      Alert.alert(locale === "tr" ? "Hata" : "Error", locale === "tr" ? "Yorum gönderilirken bir hata oluştu." : "Error submitting review.");
+      Alert.alert(t.error, t.reviewError);
     } finally {
       setIsSubmittingReview(false);
     }
@@ -176,7 +176,7 @@ export default function StoreDetailScreen() {
               className={`rounded-lg px-4 py-2 border mr-2 ${!selectedFeaturedLabel ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
             >
               <Text className={`text-xs font-bold ${!selectedFeaturedLabel ? "text-white" : "text-zinc-600"}`}>
-                {locale === "tr" ? "Tüm Ürünler" : "All Products"}
+                {t.allProducts}
               </Text>
             </Pressable>
             {featuredLabels.map(label => (
@@ -195,7 +195,7 @@ export default function StoreDetailScreen() {
 
         {/* PRODUCT LIST */}
         <View className="p-4">
-          <Text className="text-lg font-black text-zinc-900 mb-4">{selectedFeaturedLabel || (locale === "tr" ? "Tüm Ürünler" : "All Products")}</Text>
+          <Text className="text-lg font-black text-zinc-900 mb-4">{selectedFeaturedLabel || t.allProducts}</Text>
           <View className="gap-3">
             {displayedItems.map((item) => {
               const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
@@ -262,21 +262,21 @@ export default function StoreDetailScreen() {
               ))}
             </View>
           ) : (
-            <Text className="text-sm text-zinc-400 italic py-4">{locale === "tr" ? "Henüz yorum yapılmamış." : "No reviews yet."}</Text>
+            <Text className="text-sm text-zinc-400 italic py-4">{t.noReviewsYet}</Text>
           )}
 
           {/* ADD REVIEW FORM */}
           <View className="mt-8 border-t border-zinc-100 pt-6">
-            <Text className="font-black text-base mb-4">{locale === "tr" ? "Yorum Yap" : "Add Review"}</Text>
+            <Text className="font-black text-base mb-4">{t.addReview}</Text>
             <View className="gap-3">
               <TextInput
-                placeholder={locale === "tr" ? "Ad Soyad" : "Full Name"}
+                placeholder={t.fullName}
                 value={reviewName}
                 onChangeText={setReviewName}
                 className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50"
               />
               <View className="flex-row items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
-                <Text className="font-bold text-zinc-700 text-sm">{locale === "tr" ? "Puan:" : "Rating:"}</Text>
+                <Text className="font-bold text-zinc-700 text-sm">{t.rating}</Text>
                 <View className="flex-row">
                   {[1, 2, 3, 4, 5].map(star => (
                     <Pressable
@@ -290,7 +290,7 @@ export default function StoreDetailScreen() {
                 </View>
               </View>
               <TextInput
-                placeholder={locale === "tr" ? "Yorumunuz..." : "Your Review..."}
+                placeholder={t.yourReview}
                 value={reviewText}
                 onChangeText={setReviewText}
                 multiline
@@ -304,7 +304,7 @@ export default function StoreDetailScreen() {
                 className={`rounded-xl py-3.5 items-center justify-center ${isSubmittingReview || !reviewName.trim() || !reviewText.trim() ? "bg-accent/50 shadow-none" : "bg-accent shadow-sm"}`}
               >
                 <Text className="text-white font-black text-base">
-                  {isSubmittingReview ? (locale === "tr" ? "Gönderiliyor..." : "Submitting...") : (locale === "tr" ? "Yorumu Gönder" : "Submit Review")}
+                  {isSubmittingReview ? t.submitting : t.submitReview}
                 </Text>
               </Pressable>
             </View>

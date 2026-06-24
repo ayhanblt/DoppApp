@@ -21,7 +21,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ locale = "tr" }) => {
       onRequestClose={() => setInfoOpen(false)}
     >
       <View className="flex-1 bg-black/50 justify-end">
-        <Pressable style={{ flex: 1 }} onPress={() => setInfoOpen(false)} activeOpacity={1} />
+        <Pressable style={{ flex: 1 }} onPress={() => setInfoOpen(false)}  />
 
         <View className="bg-white rounded-t-3xl max-h-[80%] shadow-2xl p-6">
           <View className="flex-row items-center justify-between border-b border-zinc-100 pb-4 mb-4">
@@ -40,27 +40,21 @@ export const InfoModal: React.FC<InfoModalProps> = ({ locale = "tr" }) => {
               <View className="flex-row items-start gap-3">
                 <Text className="text-lg">🍽️</Text>
                 <Text className="flex-1 text-sm text-zinc-600 leading-normal">
-                  {locale === "tr"
-                    ? "Gerçekmiş gibi hissettiren sahte restoran deneyimi — menüler, sipariş akışı ve seçimler tamamen simüle edilir."
-                    : "A fake restaurant experience that feels real — menus, ordering flow, and choices are fully simulated."}
+                  {t.infoDesc1}
                 </Text>
               </View>
 
               <View className="flex-row items-start gap-3">
                 <Text className="text-lg">🛒</Text>
                 <Text className="flex-1 text-sm text-zinc-600 leading-normal">
-                  {locale === "tr"
-                    ? "Sepet ve sipariş süreci gerçek ödeme olmadan çalışır, sadece deneyim ve etkileşim odaklıdır."
-                    : "Cart and ordering work without any real payment — purely for experience and interaction."}
+                  {t.infoDesc2}
                 </Text>
               </View>
 
               <View className="flex-row items-start gap-3">
                 <Text className="text-lg">🔥</Text>
                 <Text className="flex-1 text-sm text-zinc-600 leading-normal">
-                  {locale === "tr"
-                    ? "Dopamin odaklı etkileşimlerle açlık hissini bastırır, kalori almadan tatmin hissi sunar."
-                    : "Dopamine-driven interactions that reduce cravings and simulate satisfaction without calories."}
+                  {t.infoDesc3}
                 </Text>
               </View>
             </View>

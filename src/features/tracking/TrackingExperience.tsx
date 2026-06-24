@@ -140,7 +140,7 @@ export default function TrackingExperience({
             {(status === "preparing" || status === "handoff" || status === "delivering") && !fastForward && (
               <div className="flex items-stretch gap-2 w-full sm:w-auto mt-2 sm:mt-0 h-[44px]">
                 <div className="flex flex-col items-center justify-center rounded-lg border border-orange-200 bg-orange-50 px-2 sm:px-3 h-full min-w-[90px]">
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 leading-tight text-center">Teslim Edilmesine<br />Kalan Süre:</span>
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 leading-tight text-center">{t.timeRemainingToDeliver}</span>
                   <span className="font-mono text-sm font-bold leading-none text-orange-600 mt-0.5">{timeLeftFormatted}</span>
                 </div>
                 <button
@@ -148,7 +148,7 @@ export default function TrackingExperience({
                   className="flex h-full flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 sm:px-4 font-bold text-white shadow-sm transition-colors hover:bg-emerald-700 whitespace-nowrap"
                 >
                   <Rocket size={16} className="shrink-0" />
-                  <span className="text-sm">Hemen Teslim Et</span>
+                  <span className="text-sm">{t.deliverNow}</span>
                 </button>
               </div>
             )}
@@ -236,7 +236,7 @@ export default function TrackingExperience({
             onClick={handleShareClick}
             className="w-full max-w-md flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
           >
-            Siparişi Paylaş
+            {t.shareOrder}
             <Share2 size={18} />
           </button>
         </div>

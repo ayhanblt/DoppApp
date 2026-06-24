@@ -37,7 +37,7 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/50 items-center justify-center p-4">
-        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
+        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose}  />
         
         <Animated.View style={[animatedStyle]} className="bg-white rounded-3xl p-6 w-full max-w-sm items-center shadow-2xl">
           <Pressable onPress={onClose} className="absolute top-4 right-4 bg-zinc-100 p-2 rounded-full z-10">

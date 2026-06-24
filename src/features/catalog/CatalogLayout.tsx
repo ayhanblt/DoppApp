@@ -157,13 +157,13 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
           setSelectedCartIndex(0);
           setShowRestorePrompt(true);
         } else {
-          toast.error(locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+          toast.error(t.noSavedCart);
         }
       } catch (e) {
-        toast.error(locale === 'tr' ? "Sepetler okunurken hata oluştu." : "Error reading saved carts.");
+        toast.error(t.errorReadingCarts);
       }
     } else {
-      toast.error(locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+      toast.error(t.noSavedCart);
     }
   }
 
@@ -172,7 +172,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     if (cartToRestore && cartToRestore.items) {
       setCart(cartToRestore.items);
       setShowRestorePrompt(false);
-      toast.success(locale === 'tr' ? `"${cartToRestore.name}" isimli sepetiniz geri yüklendi!` : `Cart "${cartToRestore.name}" restored!`);
+      toast.success(t.cartRestored(cartToRestore.name));
     }
   }
 
@@ -199,7 +199,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
 
     setShowSavePrompt(false);
     setSaveCartName("");
-    toast.success(locale === 'tr' ? `Sepetiniz "${saveCartName}" ismiyle başarıyla kaydedildi.` : `Cart saved as "${saveCartName}".`);
+    toast.success(t.cartSaved(saveCartName));
   }
 
   if (order) {
@@ -270,7 +270,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
             </div>
 
             {/* Mobile: Row 4 - Categories | Desktop: Left Column via contents */}
-            <div className={`order-2 flex w-full lg:contents transition-all duration-300 overflow-hidden ${isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-20 opacity-100 mt-3 lg:mt-0"}`}>
+            <div className="order-2 flex w-full lg:contents mt-3 lg:mt-0">
               {/* Categories */}
               <div className="flex w-full lg:w-auto gap-1.5 sm:gap-2 lg:order-1">
                 <Link href={`/${locale}/shop`} aria-label="shop" className="flex flex-1 lg:flex-none h-9 lg:h-10 lg:w-auto px-2 lg:px-4 items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/30 shadow-sm transition-transform hover:scale-105 active:scale-95" style={{ background: themes["grape"] }}>
@@ -341,7 +341,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                   className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg border-2 p-3 transition-colors ${speed === "rabbit" ? "border-orange-500 bg-orange-50 text-orange-700" : "border-black/10 text-zinc-500 hover:bg-zinc-50"}`}
                 >
                   <Rabbit size={24} />
-                  <span className="text-sm font-bold">{locale === 'tr' ? 'Tavşan Hızı' : 'Rabbit Speed'}</span>
+                  <span className="text-sm font-bold">{t.rabbit}</span>
                 </button>
                 <button
                   type="button"
@@ -349,7 +349,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                   className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg border-2 p-3 transition-colors ${speed === "turtle" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-black/10 text-zinc-500 hover:bg-zinc-50"}`}
                 >
                   <Turtle size={24} />
-                  <span className="text-sm font-bold">{locale === 'tr' ? 'Kaplumbağa' : 'Turtle Speed'}</span>
+                  <span className="text-sm font-bold">{t.turtle}</span>
                 </button>
               </div>
               <button disabled={!cart.length} className="w-full rounded-lg bg-[var(--accent)] py-4 font-black text-white disabled:opacity-45 shadow-md hover:shadow-lg transition-shadow">{t.demoOrder}</button>
@@ -357,12 +357,12 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               <div className="flex items-center justify-center gap-4 pt-2 text-sm font-bold text-zinc-600">
                 <button type="button" onClick={() => setShowSavePrompt(true)} className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
                   <Save size={16} />
-                  {locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}
+                  {t.saveCart}
                 </button>
                 <span className="text-zinc-300">|</span>
                 <button type="button" onClick={openRestorePrompt} className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
                   <FolderDown size={16} />
-                  {locale === 'tr' ? 'Geri Yükle' : 'Restore'}
+                  {t.restore}
                 </button>
               </div>
             </div>
@@ -371,25 +371,25 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 p-4 backdrop-blur-sm rounded-lg">
                 <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl border border-zinc-200">
                   <h4 className="text-lg font-black text-zinc-800 mb-2">
-                    {locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}
+                    {t.saveCart}
                   </h4>
                   <p className="text-sm text-zinc-500 mb-4">
-                    {locale === 'tr' ? 'Sepetiniz için bir isim belirleyin:' : 'Enter a name for your cart:'}
+                    {t.enterCartName}
                   </p>
                   <input
                     type="text"
                     value={saveCartName}
                     onChange={(e) => setSaveCartName(e.target.value)}
-                    placeholder={locale === 'tr' ? "Örn: Akşam Yemeği" : "e.g., Dinner"}
+                    placeholder={t.egDinner}
                     className="w-full rounded-lg border border-black/10 p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     autoFocus
                   />
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setShowSavePrompt(false)} className="flex-1 rounded-lg bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors">
-                      {locale === 'tr' ? 'İptal' : 'Cancel'}
+                      {t.cancel}
                     </button>
                     <button type="button" onClick={handleSaveCart} disabled={!saveCartName.trim()} className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-white disabled:opacity-50 transition-opacity">
-                      {locale === 'tr' ? 'Kaydet' : 'Save'}
+                      {t.save}
                     </button>
                   </div>
                 </div>
@@ -400,10 +400,10 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 p-4 backdrop-blur-sm rounded-lg">
                 <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl border border-zinc-200">
                   <h4 className="text-lg font-black text-zinc-800 mb-2">
-                    {locale === 'tr' ? 'Sepeti Geri Yükle' : 'Restore Cart'}
+                    {t.restoreCart}
                   </h4>
                   <p className="text-sm text-zinc-500 mb-4">
-                    {locale === 'tr' ? 'Geri yüklemek istediğiniz sepeti seçin:' : 'Select a cart to restore:'}
+                    {t.selectCartToRestore}
                   </p>
                   <select
                     value={selectedCartIndex}
@@ -411,15 +411,15 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                     className="w-full rounded-lg border border-black/10 p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-white"
                   >
                     {savedCarts.map((c, idx) => (
-                      <option key={idx} value={idx}>{c.name} ({c.items.length} {locale === 'tr' ? 'ürün' : 'items'})</option>
+                      <option key={idx} value={idx}>{c.name} ({c.items.length} {t.itemsCount})</option>
                     ))}
                   </select>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setShowRestorePrompt(false)} className="flex-1 rounded-lg bg-zinc-100 py-3 font-bold text-zinc-700 hover:bg-zinc-200 transition-colors">
-                      {locale === 'tr' ? 'İptal' : 'Cancel'}
+                      {t.cancel}
                     </button>
                     <button type="button" onClick={handleRestoreCart} className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-white transition-opacity">
-                      {locale === 'tr' ? 'Geri Yükle' : 'Restore'}
+                      {t.restore}
                     </button>
                   </div>
                 </div>

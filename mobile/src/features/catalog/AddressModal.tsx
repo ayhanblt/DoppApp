@@ -120,7 +120,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
         className="flex-1"
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <Pressable style={{ flex: 1 }} onPress={onClose} activeOpacity={1} />
+          <Pressable style={{ flex: 1 }} onPress={onClose}  />
           
           <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden shadow-2xl flex-col">
             <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">

@@ -30,13 +30,13 @@ export default function CartScreen() {
           setSelectedCartIndex(0);
           setShowRestorePrompt(true);
         } else {
-          Alert.alert(locale === 'tr' ? "Bilgi" : "Info", locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+          Alert.alert(t.infoAlert, t.noSavedCart);
         }
       } catch (e) {
-        Alert.alert(locale === 'tr' ? "Hata" : "Error", locale === 'tr' ? "Sepetler okunurken hata oluştu." : "Error reading saved carts.");
+        Alert.alert(t.error, t.errorReadingCarts);
       }
     } else {
-      Alert.alert(locale === 'tr' ? "Bilgi" : "Info", locale === 'tr' ? "Daha önce kaydedilmiş sepet bulunmamaktadır." : "No saved cart found.");
+      Alert.alert(t.infoAlert, t.noSavedCart);
     }
   };
 
@@ -46,7 +46,7 @@ export default function CartScreen() {
     if (cartToRestore && cartToRestore.items) {
       setCart(cartToRestore.items);
       setShowRestorePrompt(false);
-      Alert.alert(locale === 'tr' ? "Başarılı" : "Success", locale === 'tr' ? `"${cartToRestore.name}" sepetiniz geri yüklendi!` : `Cart "${cartToRestore.name}" restored!`);
+      Alert.alert(t.success, t.cartRestored(cartToRestore.name));
     }
   };
 
@@ -73,7 +73,7 @@ export default function CartScreen() {
 
     setShowSavePrompt(false);
     setSaveCartName("");
-    Alert.alert(locale === 'tr' ? "Başarılı" : "Success", locale === 'tr' ? `Sepetiniz "${saveCartName}" ismiyle başarıyla kaydedildi.` : `Cart saved as "${saveCartName}".`);
+    Alert.alert(t.success, t.cartSaved(saveCartName));
   };
 
   const getCartTotal = () => {
@@ -178,15 +178,15 @@ export default function CartScreen() {
 
         <View className="bg-white p-4 rounded-xl mt-4 shadow-sm border border-black/5">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-zinc-500">Ara Toplam</Text>
+            <Text className="text-zinc-500">{t.subtotal}</Text>
             <Text className="font-bold">{formatMoney(total, locale)}</Text>
           </View>
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-zinc-500">Teslimat Ücreti</Text>
-            <Text className="font-bold text-emerald-600">Ücretsiz</Text>
+            <Text className="text-zinc-500">{t.deliveryFee}</Text>
+            <Text className="font-bold text-emerald-600">{t.free}</Text>
           </View>
           <View className="border-t border-black/5 pt-4 flex-row items-center justify-between">
-            <Text className="font-black text-lg">Toplam</Text>
+            <Text className="font-black text-lg">{t.total}</Text>
             <Text className="font-black text-2xl text-accent">{formatMoney(total, locale)}</Text>
           </View>
         </View>
@@ -198,7 +198,7 @@ export default function CartScreen() {
             className="flex-row items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-black/10 shadow-sm"
           >
             <Save size={16} color="#fb4824" />
-            <Text className="text-xs font-black text-zinc-700">{locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}</Text>
+            <Text className="text-xs font-black text-zinc-700">{t.saveCart}</Text>
           </Pressable>
           <Text className="text-zinc-300">|</Text>
           <Pressable
@@ -206,7 +206,7 @@ export default function CartScreen() {
             className="flex-row items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-black/10 shadow-sm"
           >
             <FolderDown size={16} color="#fb4824" />
-            <Text className="text-xs font-black text-zinc-700">{locale === 'tr' ? 'Geri Yükle' : 'Restore'}</Text>
+            <Text className="text-xs font-black text-zinc-700">{t.restore}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -231,15 +231,15 @@ export default function CartScreen() {
         <View className="flex-1 justify-center items-center bg-black/40 p-4">
           <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
             <Text className="text-lg font-black text-zinc-800 mb-2">
-              {locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}
+              {t.saveCart}
             </Text>
             <Text className="text-xs text-zinc-500 mb-4">
-              {locale === 'tr' ? 'Sepetiniz için bir isim belirleyin:' : 'Enter a name for your cart:'}
+              {t.enterCartName}
             </Text>
             <TextInput
               value={saveCartName}
               onChangeText={setSaveCartName}
-              placeholder={locale === 'tr' ? "Örn: Akşam Yemeği" : "e.g., Dinner"}
+              placeholder={t.egDinner}
               placeholderTextColor="#a1a1aa"
               className="w-full rounded-xl border border-zinc-200 p-3 mb-4 text-sm text-zinc-950 bg-zinc-50 font-bold"
               autoFocus
@@ -249,14 +249,14 @@ export default function CartScreen() {
                 onPress={() => setShowSavePrompt(false)}
                 className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
               >
-                <Text className="font-bold text-zinc-700">{locale === 'tr' ? 'İptal' : 'Cancel'}</Text>
+                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
               </Pressable>
               <Pressable
                 onPress={handleSaveCart}
                 disabled={!saveCartName.trim()}
                 className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
               >
-                <Text className="font-bold text-white">{locale === 'tr' ? 'Kaydet' : 'Save'}</Text>
+                <Text className="font-bold text-white">{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -273,10 +273,10 @@ export default function CartScreen() {
         <View className="flex-1 justify-center items-center bg-black/40 p-4">
           <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
             <Text className="text-lg font-black text-zinc-800 mb-2">
-              {locale === 'tr' ? 'Sepeti Geri Yükle' : 'Restore Cart'}
+              {t.restoreCart}
             </Text>
             <Text className="text-xs text-zinc-500 mb-4">
-              {locale === 'tr' ? 'Geri yüklemek istediğiniz sepeti seçin:' : 'Select a cart to restore:'}
+              {t.selectCartToRestore}
             </Text>
             
             <ScrollView className="max-h-40 border border-zinc-200 rounded-xl mb-4 bg-zinc-50">
@@ -287,7 +287,7 @@ export default function CartScreen() {
                   className={`p-3 border-b border-zinc-100 flex-row justify-between items-center ${selectedCartIndex === idx ? 'bg-accent/10' : ''}`}
                 >
                   <Text className={`text-sm ${selectedCartIndex === idx ? 'font-bold text-accent' : 'text-zinc-700'}`}>{c.name}</Text>
-                  <Text className="text-xs text-zinc-400">({c.items.length} {locale === 'tr' ? 'ürün' : 'items'})</Text>
+                  <Text className="text-xs text-zinc-400">({c.items.length} {t.itemCount})</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -297,14 +297,14 @@ export default function CartScreen() {
                 onPress={() => setShowRestorePrompt(false)}
                 className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
               >
-                <Text className="font-bold text-zinc-700">{locale === 'tr' ? 'İptal' : 'Cancel'}</Text>
+                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
               </Pressable>
               <Pressable
                 onPress={handleRestoreCart}
                 disabled={selectedCartIndex === null}
                 className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
               >
-                <Text className="font-bold text-white">{locale === 'tr' ? 'Geri Yükle' : 'Restore'}</Text>
+                <Text className="font-bold text-white">{t.restore}</Text>
               </Pressable>
             </View>
           </View>

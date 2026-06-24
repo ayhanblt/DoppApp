@@ -35,15 +35,7 @@ function CustomDrawerContent(props: any) {
           }}
           labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
         />
-        <DrawerItem
-          label={t.info}
-          icon={({ color, size }) => <Info color={color} size={size} />}
-          onPress={() => {
-            setInfoOpen(true);
-            props.navigation.closeDrawer();
-          }}
-          labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
-        />
+
         <DrawerItem
           label={t.sendFeedback}
           icon={({ color, size }) => <MessageSquare color={color} size={size} />}
@@ -59,6 +51,9 @@ function CustomDrawerContent(props: any) {
 }
 
 export default function DrawerLayout() {
+  const { locale } = useCatalog();
+  const t = dictionaries[locale];
+
   return (
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -77,14 +72,14 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          drawerLabel: "Katalog",
-          drawerIcon: ({ color, size }) => <Image source={require('../../assets/icon.png')} style={{ width: size, height: size, tintColor: color }} resizeMode="contain" />
+          drawerLabel: t.catalog,
+          drawerIcon: ({ color, size }) => <Image source={require('../../assets/icon.png')} style={{ width: size * 0.9, height: size * 0.9, tintColor: color }} resizeMode="contain" />
         }}
       />
       <Drawer.Screen
         name="about"
         options={{
-          drawerLabel: "Hakkımızda",
+          drawerLabel: t.about,
           drawerIcon: ({ color, size }) => <Info color={color} size={size} />
         }}
       />

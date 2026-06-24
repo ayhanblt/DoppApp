@@ -60,7 +60,7 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/70 items-center justify-center p-4">
-        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
+        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose}  />
         
         <View className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl flex-col z-10">
           <View className="flex-row items-center justify-between mb-4">

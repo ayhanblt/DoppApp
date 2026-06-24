@@ -55,7 +55,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
       onRequestClose={() => setFeedbackOpen(false)}
     >
       <View className="flex-1 bg-black/50 justify-end">
-        <Pressable style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)} activeOpacity={1} />
+        <Pressable style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)}  />
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View className="bg-white rounded-t-3xl max-h-[90%] shadow-2xl">

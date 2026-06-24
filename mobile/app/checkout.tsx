@@ -25,7 +25,7 @@ export default function CheckoutScreen() {
 
   const handleCheckout = () => {
     if (!deliveryAddress) {
-      Alert.alert(locale === 'tr' ? "Hata" : "Error", t.addressRequired);
+      Alert.alert(t.error, t.addressRequired);
       return;
     }
     
@@ -98,7 +98,7 @@ export default function CheckoutScreen() {
         </View>
 
         <View className="bg-white p-4 rounded-xl shadow-sm border border-black/5 mb-4">
-          <Text className="font-bold mb-4">{locale === 'tr' ? 'Teslimat Bilgileri' : 'Delivery Details'}</Text>
+          <Text className="font-bold mb-4">{t.deliveryDetails}</Text>
           
           <TextInput
             className="w-full rounded-lg border border-black/10 p-3 mb-3 bg-zinc-50 font-bold"

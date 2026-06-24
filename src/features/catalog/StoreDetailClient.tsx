@@ -423,7 +423,12 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
                         return (
                           <button key={option.id} className={`flex items-center justify-between rounded-lg border p-3 text-left transition-colors ${selected ? "border-[var(--accent)] bg-[var(--accent)]/10" : "border-black/10 hover:border-black/20"}`} onClick={() => toggleSelection(group.id, option.id, group.multiple)}>
                             <span className="font-bold">{option.label[locale]}</span>
-                            <span className="text-sm text-zinc-500">{option.priceDelta === 0 ? "0" : formatMoney(option.priceDelta, locale)} {selected && "✓"}</span>
+                            <div className="flex items-center gap-2 text-sm text-zinc-500 whitespace-nowrap">
+                              {option.priceDelta !== 0 && (
+                                <span>{option.priceDelta > 0 ? "+ " : "- "}{formatMoney(Math.abs(option.priceDelta), locale)}</span>
+                              )}
+                              {selected && <span className="text-[var(--accent)] font-bold">✓</span>}
+                            </div>
                           </button>
                         );
                       })}
