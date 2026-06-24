@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Pressable, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CatalogList } from '@/features/catalog/CatalogList';
 import { LandingModal } from '@/features/catalog/LandingModal';
 import { FeedbackModal } from '@/features/catalog/FeedbackModal';
@@ -15,6 +15,7 @@ import { AddressModal } from '@/features/catalog/AddressModal';
 import { themes } from '@/features/catalog/appConfig';
 
 export default function CatalogScreen() {
+  const insets = useSafeAreaInsets();
   const [storeType, setStoreType] = useState<"shop" | "food" | "market">("shop");
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const { cart, stores, setDeliveryAddress, locale } = useCatalog();
@@ -82,11 +83,11 @@ export default function CatalogScreen() {
       <View
         style={{
           paddingHorizontal: 16,
-          paddingBottom: 8,
+          paddingBottom: 16,
           backgroundColor: themes[storeType === 'shop' ? 'grape' : storeType === 'food' ? 'sunset' : 'mint']
         }}
       >
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           {/* Shop Tab */}
           <Pressable
             style={[
@@ -98,22 +99,24 @@ export default function CatalogScreen() {
                 paddingVertical: 8,
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderWidth: 1,
               },
               storeType === 'shop'
                 ? {
-                  backgroundColor: 'white',
+                  backgroundColor: themes.grape,
+                  borderColor: themes.grape,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.15,
                   shadowRadius: 1.5,
                   elevation: 2
                 }
-                : { backgroundColor: 'rgba(255,255,255,0.2)' }
+                : { backgroundColor: '#fae8ff', borderColor: '#f5d0fe' } // fuchsia-100, fuchsia-200
             ]}
             onPress={() => setStoreType('shop')}
           >
-            <ShoppingBag size={16} color={storeType === 'shop' ? themes.grape : 'white'} />
-            <Text className="font-bold text-xs" style={{ color: storeType === 'shop' ? themes.grape : 'white' }}>{t.shop}</Text>
+            <ShoppingBag size={16} color={storeType === 'shop' ? 'white' : themes.grape} />
+            <Text className="font-bold text-xs" style={{ color: storeType === 'shop' ? 'white' : themes.grape }}>{t.shop}</Text>
           </Pressable>
 
           {/* Food Tab */}
@@ -127,22 +130,24 @@ export default function CatalogScreen() {
                 paddingVertical: 8,
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderWidth: 1,
               },
               storeType === 'food'
                 ? {
-                  backgroundColor: 'white',
+                  backgroundColor: themes.sunset,
+                  borderColor: themes.sunset,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.15,
                   shadowRadius: 1.5,
                   elevation: 2
                 }
-                : { backgroundColor: 'rgba(255,255,255,0.2)' }
+                : { backgroundColor: '#ffedd5', borderColor: '#fed7aa' } // orange-100, orange-200
             ]}
             onPress={() => setStoreType('food')}
           >
-            <Utensils size={16} color={storeType === 'food' ? themes.sunset : 'white'} />
-            <Text className="font-bold text-xs" style={{ color: storeType === 'food' ? themes.sunset : 'white' }}>{t.food}</Text>
+            <Utensils size={16} color={storeType === 'food' ? 'white' : themes.sunset} />
+            <Text className="font-bold text-xs" style={{ color: storeType === 'food' ? 'white' : themes.sunset }}>{t.food}</Text>
           </Pressable>
 
           {/* Market Tab */}
@@ -156,22 +161,24 @@ export default function CatalogScreen() {
                 paddingVertical: 8,
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderWidth: 1,
               },
               storeType === 'market'
                 ? {
-                  backgroundColor: 'white',
+                  backgroundColor: themes.mint,
+                  borderColor: themes.mint,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.15,
                   shadowRadius: 1.5,
                   elevation: 2
                 }
-                : { backgroundColor: 'rgba(255,255,255,0.2)' }
+                : { backgroundColor: '#d1fae5', borderColor: '#a7f3d0' } // emerald-100, emerald-200
             ]}
             onPress={() => setStoreType('market')}
           >
-            <Store size={16} color={storeType === 'market' ? themes.mint : 'white'} />
-            <Text className="font-bold text-xs" style={{ color: storeType === 'market' ? themes.mint : 'white' }}>{t.market}</Text>
+            <Store size={16} color={storeType === 'market' ? 'white' : themes.mint} />
+            <Text className="font-bold text-xs" style={{ color: storeType === 'market' ? 'white' : themes.mint }}>{t.market}</Text>
           </Pressable>
         </View>
       </View>
@@ -179,7 +186,7 @@ export default function CatalogScreen() {
       <CatalogList locale={locale} storeType={storeType} />
 
       {cart.length > 0 && (
-        <View className="absolute bottom-8 left-4 right-4">
+        <View className="absolute left-4 right-4" style={{ bottom: Math.max(insets.bottom + 16, 32) }}>
           <Pressable
             onPress={() => router.push('/cart')}
             style={{ backgroundColor: themes[storeType === 'shop' ? 'grape' : storeType === 'food' ? 'sunset' : 'mint'] }}

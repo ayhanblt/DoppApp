@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TextInput, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Modal, Pressable, Platform, KeyboardAvoidingView, ScrollView, TextInput, StyleSheet, Keyboard, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, MapPin, Navigation } from 'lucide-react-native';
-import MapView, { Marker, Region } from 'react-native-maps';
+import { X, Home, Navigation } from 'lucide-react-native';
+import { WebView } from 'react-native-webview';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 
 interface AddressModalProps {
@@ -19,35 +20,43 @@ const DEFAULT_COORD = { lat: 41.0422, lng: 29.0060 }; // Beşiktaş, İstanbul, 
 export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, locale = "tr" }) => {
   const t = dictionaries[locale];
   const { deliveryAddress, setDeliveryAddress } = useCatalog();
-  const [region, setRegion] = useState<Region>({
-    latitude: deliveryAddress?.latitude || DEFAULT_COORD.lat,
-    longitude: deliveryAddress?.longitude || DEFAULT_COORD.lng,
+  const webViewRef = useRef<WebView>(null);
+  const [initialMapCoord, setInitialMapCoord] = useState(deliveryAddress ? { lat: deliveryAddress.latitude, lng: deliveryAddress.longitude } : DEFAULT_COORD);
+  const [isLocating, setIsLocating] = useState(false);
+  
+  const [region, setRegion] = useState({
+    latitude: initialMapCoord.lat,
+    longitude: initialMapCoord.lng,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
 
   const [title, setTitle] = useState(deliveryAddress?.title || '');
   const [addressDesc, setAddressDesc] = useState(deliveryAddress?.address || '');
-  const [isLocating, setIsLocating] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (visible) {
       if (deliveryAddress) {
-        setRegion({
-          latitude: deliveryAddress.latitude,
-          longitude: deliveryAddress.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        });
+        const coord = { lat: deliveryAddress.latitude, lng: deliveryAddress.longitude };
+        setRegion({ latitude: coord.lat, longitude: coord.lng, latitudeDelta: 0.05, longitudeDelta: 0.05 });
+        setInitialMapCoord(coord);
+        webViewRef.current?.injectJavaScript(`if(window.map) map.setView([${coord.lat}, ${coord.lng}], 15); true;`);
         setTitle(deliveryAddress.title);
         setAddressDesc(deliveryAddress.address);
       } else {
-        setRegion({
-          latitude: DEFAULT_COORD.lat,
-          longitude: DEFAULT_COORD.lng,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        });
+        setRegion({ latitude: DEFAULT_COORD.lat, longitude: DEFAULT_COORD.lng, latitudeDelta: 0.05, longitudeDelta: 0.05 });
+        setInitialMapCoord(DEFAULT_COORD);
+        webViewRef.current?.injectJavaScript(`if(window.map) map.setView([${DEFAULT_COORD.lat}, ${DEFAULT_COORD.lng}], 15); true;`);
         setTitle('');
         setAddressDesc('');
       }
@@ -57,15 +66,22 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
   const geocodeAddress = async () => {
     if (!addressDesc.trim()) return;
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressDesc)}`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressDesc)}`, {
+        headers: {
+          'User-Agent': 'DoppApp/1.0'
+        }
+      });
       const data = await response.json();
       if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
         setRegion({
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon),
+          latitude: lat,
+          longitude: lng,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         });
+        webViewRef.current?.injectJavaScript(`if(window.map) map.setView([${lat}, ${lng}], 15); true;`);
       }
     } catch (e) {
       console.error("Geocoding failed", e);
@@ -82,12 +98,15 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
       }
 
       const location = await Location.getCurrentPositionAsync({});
+      const lat = location.coords.latitude;
+      const lng = location.coords.longitude;
       setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: lat,
+        longitude: lng,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
+      webViewRef.current?.injectJavaScript(`if(window.map) map.setView([${lat}, ${lng}], 15); true;`);
     } catch (e) {
       console.error(e);
     } finally {
@@ -108,47 +127,103 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
     onClose();
   };
 
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <View className="flex-1 bg-black/50 justify-end">
-          <Pressable style={{ flex: 1 }} onPress={onClose}  />
+  const content = (
+    <View className="flex-1 justify-end bg-black/50">
+      <Pressable className="absolute inset-0" onPress={onClose} />
+      
+      <SafeAreaView edges={['bottom']} className="bg-white rounded-t-3xl overflow-hidden max-h-[90%] w-full flex-1">
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1 w-full"
+        >
+          {/* Header */}
+          <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">
+            <Text className="text-lg font-black text-zinc-900">{t.deliveryAddress}</Text>
+            <Pressable onPress={onClose} className="bg-zinc-100 p-2 rounded-full">
+              <X size={20} color="#52525b" />
+            </Pressable>
+          </View>
           
-          <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden shadow-2xl flex-col">
-            <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">
-              <Text className="text-lg font-black text-zinc-900">{t.deliveryAddress}</Text>
-              <Pressable onPress={onClose} className="bg-zinc-100 p-2 rounded-full">
-                <X size={20} color="#52525b" />
-              </Pressable>
-            </View>
-            
-            <View className="flex-[0.6] relative">
-              <MapView
-                style={{ flex: 1 }}
-                region={region}
-                onRegionChangeComplete={(r) => setRegion(r)}
-              />
-              <View className="absolute top-1/2 left-1/2 -ml-4 -mt-8 pointer-events-none">
-                <MapPin size={32} color="#fb4824" fill="#fb4824" />
-              </View>
-              <Pressable 
-                className={`absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-lg ${isLocating ? 'opacity-50' : 'opacity-100'}`}
-                onPress={handleLocate}
-                disabled={isLocating}
-              >
-                <Navigation size={24} color="#fb4824" />
-              </Pressable>
-            </View>
+          {/* Map - Klavye açıkken 100px, kapalıyken 250px */}
+          <View className="relative shrink-0 w-full" style={{ height: isKeyboardVisible ? 100 : 250 }}>
+            <WebView
+              ref={webViewRef}
+              style={{ width: '100%', height: '100%' }}
+              source={{ html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+                  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                  <style>
+                    body { padding: 0; margin: 0; }
+                    html, body, #map { height: 100%; width: 100%; }
+                    .leaflet-control-attribution { display: none; }
+                  </style>
+                </head>
+                <body>
+                  <div id="map"></div>
+                  <script>
+                    window.map = L.map('map', {
+                      zoomControl: false,
+                      attributionControl: false
+                    }).setView([${initialMapCoord.lat}, ${initialMapCoord.lng}], 15);
+                    
+                    L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                      maxZoom: 19,
+                    }).addTo(window.map);
 
-            <ScrollView className="flex-[0.4] p-6 bg-white border-t border-zinc-100">
+                    window.map.on('moveend', function() {
+                      var center = window.map.getCenter();
+                      window.ReactNativeWebView.postMessage(JSON.stringify({ lat: center.lat, lng: center.lng }));
+                    });
+                  </script>
+                </body>
+                </html>
+              ` }}
+              onMessage={(event) => {
+                try {
+                  const data = JSON.parse(event.nativeEvent.data);
+                  if (data.lat && data.lng) {
+                    setRegion(prev => ({ ...prev, latitude: data.lat, longitude: data.lng }));
+                  }
+                } catch (e) {}
+              }}
+              scrollEnabled={false}
+              bounces={false}
+            />
+            
+            {/* Sadece harita büyükken markerı normal boyutunda göster, küçükken gizle (ya da çok küçük göster) */}
+            {!isKeyboardVisible && (
+              <>
+                <View className="absolute top-1/2 left-1/2 -ml-5 -mt-10 pointer-events-none items-center justify-center shadow-md">
+                  <View className="h-10 w-10 items-center justify-center rounded-full rounded-br-none rotate-45 bg-[#fb4824] border-2 border-white">
+                    <View className="-rotate-45 items-center justify-center">
+                      <Home size={20} color="white" strokeWidth={2.5} />
+                    </View>
+                  </View>
+                </View>
+                <Pressable 
+                  className={`absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-lg ${isLocating ? 'opacity-50' : 'opacity-100'}`}
+                  onPress={handleLocate}
+                  disabled={isLocating}
+                >
+                  <Navigation size={24} color="#fb4824" />
+                </Pressable>
+              </>
+            )}
+            
+            {isKeyboardVisible && (
+               <View className="absolute top-1/2 left-1/2 -ml-3 -mt-3 pointer-events-none items-center justify-center">
+                 <View className="h-6 w-6 rounded-full bg-[#fb4824] border-2 border-white" />
+               </View>
+            )}
+          </View>
+
+          {/* Inputs & Button */}
+          <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
+            <View className="p-6 pb-2">
               <Text className="text-sm font-bold text-zinc-700 mb-2">Adres Başlığı</Text>
               <TextInput
                 className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-zinc-900 mb-4"
@@ -159,7 +234,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
 
               <Text className="text-sm font-bold text-zinc-700 mb-2">Açık Adres</Text>
               <TextInput
-                className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-zinc-900 mb-6 h-20"
+                className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-zinc-900 h-20"
                 placeholder="Mahalle, sokak, bina no..."
                 multiline
                 textAlignVertical="top"
@@ -167,20 +242,33 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
                 onChangeText={setAddressDesc}
                 onBlur={geocodeAddress}
               />
-              <View className="h-20" />
-            </ScrollView>
+            </View>
 
-            <SafeAreaView edges={['bottom']} className="p-4 bg-white border-t border-zinc-100 absolute bottom-0 w-full">
+            {/* Product Modal stili butonu (ScrollView içinde) */}
+            <View className="px-6 py-4 w-full">
               <Pressable 
-                className="bg-[#fb4824] rounded-xl py-4 items-center shadow-sm"
+                className="w-full bg-[#fb4824] py-4 rounded-xl items-center"
                 onPress={handleSave}
               >
-                <Text className="text-white font-bold text-lg">Bu Konumu Onayla</Text>
+                <Text className="text-white font-black text-lg">Bu Konumu Onayla</Text>
               </Pressable>
-            </SafeAreaView>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
+  );
+
+  if (!visible) return null;
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      {content}
     </Modal>
   );
 };

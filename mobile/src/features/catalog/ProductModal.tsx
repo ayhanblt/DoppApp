@@ -5,6 +5,7 @@ import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store } from "@/shared/lib/types";
 import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { Plus, Minus, X } from "lucide-react-native";
+import { MarkdownText } from "@/shared/ui/MarkdownText";
 
 type ProductModalProps = {
   locale: Locale;
@@ -60,7 +61,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
         <SafeAreaView className="flex-1 justify-end">
           <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden">
             <View className="relative">
-              <Image source={{ uri: item.image }} className="w-full h-64 object-cover" />
+              <Image source={{ uri: item.image }} className="w-full h-64 bg-zinc-50" resizeMode="contain" />
               <Pressable
                 onPress={onClose}
                 className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 items-center justify-center"
@@ -71,9 +72,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
 
             <ScrollView className="flex-1 p-5">
               <Text className="text-2xl font-black text-zinc-900">{item.name[locale]}</Text>
-              <Text className="text-sm text-zinc-500 mt-2 leading-5">
-                {item.description[locale]}
-              </Text>
+              <MarkdownText content={item.description[locale]} style={{ marginTop: 8 }} />
               
               {(item.calories || 0) > 0 && (
                 <Text className="text-sm font-bold text-emerald-700 mt-3">

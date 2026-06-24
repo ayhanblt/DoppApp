@@ -24,7 +24,7 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
   useEffect(() => {
     if (visible) {
       scale.value = 0;
-      scale.value = withDelay(300, withSpring(1, { damping: 12, stiffness: 100 }));
+      scale.value = withDelay(0, withSpring(1, { damping: 15, stiffness: 400 }));
     }
   }, [visible]);
 

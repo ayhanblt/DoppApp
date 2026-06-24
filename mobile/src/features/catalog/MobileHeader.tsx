@@ -36,7 +36,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onAddressPress, onMe
           </View>
 
           <Pressable
-            className="flex-row items-center bg-white/20 rounded-xl p-2 border border-black/5 shadow-sm flex-1 ml-2 mr-3"
+            className="flex-row items-center bg-white/20 rounded-xl p-2 border border-black/5 flex-1 ml-2 mr-3"
             onPress={onAddressPress}
           >
             <MapPin size={16} color="#fff" />
@@ -51,7 +51,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onAddressPress, onMe
 
         <View className="flex-row items-center gap-2 ">
           <Pressable
-            className="bg-white/20 w-10 h-10 rounded-full items-center justify-center border border-black/5 shadow-sm relative"
+            className="bg-white/20 w-10 h-10 rounded-full items-center justify-center border border-black/5 relative"
             onPress={() => router.push('/cart')}
           >
             <ShoppingCart size={18} color="#fff" />
@@ -62,7 +62,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onAddressPress, onMe
             )}
           </Pressable>
           <Pressable
-            className="bg-white/20 w-10 h-10 rounded-xl items-center justify-center border border-black/5 shadow-sm"
+            className="bg-white/20 w-10 h-10 rounded-xl items-center justify-center border border-black/5"
             onPress={onMenuPress}
           >
             <Menu size={20} color="#fff" />

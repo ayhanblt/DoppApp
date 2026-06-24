@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCatalog } from '@/features/catalog/CatalogContext';
+import { themes } from '@/features/catalog/appConfig';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { formatMoney, formatNumber, uid } from '@/shared/lib/format';
 import { Locale, Product, Store, CartSelection } from '@/shared/lib/types';
-import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus } from 'lucide-react-native';
+import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus, ShoppingCart } from 'lucide-react-native';
 import { supabase } from '@/shared/api/supabase';
 import { ProductModal } from '@/features/catalog/ProductModal';
 import { MarkdownText } from '@/shared/ui/MarkdownText';
@@ -14,7 +15,8 @@ import { MarkdownText } from '@/shared/ui/MarkdownText';
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { stores, setStores, locale, setCart } = useCatalog();
+  const insets = useSafeAreaInsets();
+  const { stores, setStores, locale, setCart, cart } = useCatalog();
   const t = dictionaries[locale];
 
   const store = useMemo(() => stores.find((s) => s.id === id), [stores, id]);
@@ -216,7 +218,9 @@ export default function StoreDetailScreen() {
                       </View>
                     )}
                     <Text className="text-base font-black text-zinc-900 leading-tight" numberOfLines={1}>{item.name[locale]}</Text>
-                    <MarkdownText content={item.description[locale]} style={{ marginTop: 6 }} />
+                    <Text className="mt-1.5 text-[13px] text-zinc-500 leading-tight" numberOfLines={2}>
+                      {item.description[locale].replace(/(\*\*|[-*]\s)/g, '').replace(/\n/g, ' ')}
+                    </Text>
                     {(item.calories || 0) > 0 && (
                       <Text className="mt-2 text-xs font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</Text>
                     )}
@@ -321,6 +325,32 @@ export default function StoreDetailScreen() {
           onClose={() => setActiveItem(null)}
           onAdd={handleAddCart}
         />
+      )}
+
+      {cart.length > 0 && (
+        <View className="absolute left-4 right-4" style={{ bottom: Math.max(insets.bottom + 16, 32) }}>
+          <Pressable
+            onPress={() => router.push('/cart')}
+            style={{ backgroundColor: themes[store.type === 'shop' ? 'grape' : store.type === 'food' ? 'sunset' : 'mint'] }}
+            className="rounded-2xl flex-row items-center justify-between p-4 shadow-xl"
+          >
+            <View className="flex-row items-center">
+              <View className="bg-white/20 w-10 h-10 rounded-full items-center justify-center mr-3">
+                <ShoppingCart size={20} color="#ffffff" />
+              </View>
+              <View>
+                <Text className="text-white font-bold text-sm">Sepetim</Text>
+                <Text className="text-white/80 text-xs">{cart.length} Ürün</Text>
+              </View>
+            </View>
+            <Text className="text-white font-black text-lg">
+              {formatMoney(
+                cart.reduce((sum, ci) => sum + (store.menu.find(m => m.id === ci.itemId)?.price || 0) * ci.quantity, 0), 
+                locale
+              )}
+            </Text>
+          </Pressable>
+        </View>
       )}
     </SafeAreaView>
   );

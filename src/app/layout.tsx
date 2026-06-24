@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     images: ["https://doppapp.com/og-image.png"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/images/doppapp-logo-tek.svg",
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, Dimensions, Share, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
@@ -9,12 +9,14 @@ import { useRouter } from 'expo-router';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { getCartTotals, findProduct } from '@/features/order/cart';
 import { getRoute, interpolateAlongRoute } from '@/features/tracking/geo';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CelebrationModal } from '@/features/tracking/CelebrationModal';
 import { ReceiptShareModal } from '@/features/tracking/ReceiptShareModal';
 
 export default function TrackingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { order, setOrder, stores, locale } = useCatalog();
   const t = dictionaries[locale];
 
@@ -38,14 +40,16 @@ export default function TrackingScreen() {
   const [celebrationShown, setCelebrationShown] = useState(false);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState("");
+  const webViewRef = useRef<WebView>(null);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    getRoute(order.courierStartCoordinate, order.addressCoordinate).then((route) => {
+    getRoute(order.storeCoordinate, order.addressCoordinate).then((route) => {
       if (!cancelled) setDisplayRoute(route);
     });
     return () => { cancelled = true; };
-  }, [order.courierStartCoordinate, order.addressCoordinate]);
+  }, [order.storeCoordinate, order.addressCoordinate]);
 
   useEffect(() => {
     let offset = 0;
@@ -110,7 +114,7 @@ export default function TrackingScreen() {
   const courier = isCourierMoving
     ? displayRoute && displayRoute.length > 1
       ? interpolateAlongRoute(displayRoute, status === "delivered" ? 1 : progress)
-      : order.courierStartCoordinate
+      : order.storeCoordinate
     : undefined;
 
   const timeLeftMs = Math.max(0, order.deliveredAt - now);
@@ -120,12 +124,143 @@ export default function TrackingScreen() {
 
   const mapRegion = useMemo(() => {
     return {
-      latitude: (order.storeCoordinate[0] + order.addressCoordinate[0]) / 2,
-      longitude: (order.storeCoordinate[1] + order.addressCoordinate[1]) / 2,
-      latitudeDelta: Math.abs(order.storeCoordinate[0] - order.addressCoordinate[0]) * 2 + 0.01,
-      longitudeDelta: Math.abs(order.storeCoordinate[1] - order.addressCoordinate[1]) * 2 + 0.01,
+      sw: [
+        Math.min(order.storeCoordinate[0], order.addressCoordinate[0]) - 0.005,
+        Math.min(order.storeCoordinate[1], order.addressCoordinate[1]) - 0.005
+      ],
+      ne: [
+        Math.max(order.storeCoordinate[0], order.addressCoordinate[0]) + 0.005,
+        Math.max(order.storeCoordinate[1], order.addressCoordinate[1]) + 0.005
+      ]
     };
   }, [order.storeCoordinate, order.addressCoordinate]);
+
+  useEffect(() => {
+    if (mapReady && displayRoute && order) {
+      webViewRef.current?.injectJavaScript(`
+        if (window.initMap) {
+          window.initMap(
+            ${order.storeCoordinate[0]}, ${order.storeCoordinate[1]},
+            ${order.addressCoordinate[0]}, ${order.addressCoordinate[1]},
+            ${JSON.stringify(displayRoute)},
+            ${JSON.stringify(mapRegion.sw)},
+            ${JSON.stringify(mapRegion.ne)}
+          );
+        }
+        true;
+      `);
+    }
+  }, [mapReady, displayRoute, order, mapRegion]);
+
+  useEffect(() => {
+    if (mapReady && courier) {
+      webViewRef.current?.injectJavaScript(`
+        if (window.updateCourier) {
+          window.updateCourier(${courier[0]}, ${courier[1]});
+        }
+        true;
+      `);
+    }
+  }, [mapReady, courier]);
+
+  const LEAFLET_HTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { padding: 0; margin: 0; }
+    html, body, #map { height: 100%; width: 100%; }
+    .leaflet-control-attribution { display: none; }
+    .courier-marker {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    window.map = L.map('map', { zoomControl: false, attributionControl: false }).setView([0,0], 2);
+    L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(window.map);
+    
+    var courierIcon = L.divIcon({
+      className: 'bg-transparent',
+      html: \`<div style="display:flex; align-items:center; justify-content:center; width:56px; height:56px; filter:drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+               <div style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:9999px; border-bottom-right-radius:0; transform:rotate(45deg); background-color:#fb4824; border:1px solid white; color:white;">
+                 <div style="transform:rotate(-45deg); display:flex; align-items:center; justify-content:center;">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7-4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                 </div>
+               </div>
+             </div>\`,
+      iconSize: [56, 56],
+      iconAnchor: [28, 48]
+    });
+    
+    var blueIcon = L.divIcon({
+      className: 'bg-transparent',
+      html: \`<div style="display:flex; align-items:center; justify-content:center; width:48px; height:48px; filter:drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+               <div style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:9999px; border-bottom-right-radius:0; transform:rotate(45deg); background-color:#27272a; border:1px solid white; color:white;">
+                 <div style="transform:rotate(-45deg); display:flex; align-items:center; justify-content:center;">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                 </div>
+               </div>
+             </div>\`,
+      iconSize: [48, 48],
+      iconAnchor: [24, 40]
+    });
+    
+    var greenIcon = L.divIcon({
+      className: 'bg-transparent',
+      html: \`<div style="display:flex; align-items:center; justify-content:center; width:48px; height:48px; filter:drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+               <div style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:9999px; border-bottom-right-radius:0; transform:rotate(45deg); background-color:#10b981; border:1px solid white; color:white;">
+                 <div style="transform:rotate(-45deg); display:flex; align-items:center; justify-content:center;">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                 </div>
+               </div>
+             </div>\`,
+      iconSize: [48, 48],
+      iconAnchor: [24, 40]
+    });
+
+    window.initMap = function(storeLat, storeLng, addressLat, addressLng, routeCoords, sw, ne) {
+      if (window.storeMarker) window.map.removeLayer(window.storeMarker);
+      if (window.addressMarker) window.map.removeLayer(window.addressMarker);
+      if (window.routePolyline) window.map.removeLayer(window.routePolyline);
+      
+      window.map.fitBounds([sw, ne], { padding: [20, 20] });
+      
+      window.storeMarker = L.marker([storeLat, storeLng], {icon: blueIcon}).addTo(window.map);
+      window.addressMarker = L.marker([addressLat, addressLng], {icon: greenIcon}).addTo(window.map);
+      
+      if (routeCoords && routeCoords.length > 0) {
+        window.routePolyline = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(window.map);
+      }
+    };
+    
+    window.updateCourier = function(lat, lng) {
+      if (!window.courierMarker) {
+        window.courierMarker = L.marker([lat, lng], { icon: courierIcon }).addTo(window.map);
+      } else {
+        window.courierMarker.setLatLng([lat, lng]);
+      }
+    };
+    
+    setTimeout(function() {
+      window.ReactNativeWebView.postMessage('ready');
+    }, 100);
+  </script>
+</body>
+</html>
+  `;
 
   return (
     <SafeAreaView className="flex-1 bg-background relative">
@@ -143,41 +278,18 @@ export default function TrackingScreen() {
       </View>
 
       <View className="flex-1">
-        <MapView
+        <WebView
+          ref={webViewRef}
           style={{ width: '100%', height: '50%' }}
-          initialRegion={mapRegion}
-        >
-          {displayRoute && (
-            <Polyline
-              coordinates={displayRoute.map(coord => ({ latitude: coord[0], longitude: coord[1] }))}
-              strokeColor="#f97316" // orange-500
-              strokeWidth={4}
-            />
-          )}
-          
-          <Marker
-            coordinate={{ latitude: order.storeCoordinate[0], longitude: order.storeCoordinate[1] }}
-            title={t.restaurants}
-            pinColor="blue"
-          />
-
-          <Marker
-            coordinate={{ latitude: order.addressCoordinate[0], longitude: order.addressCoordinate[1] }}
-            title={t.deliveryAddress}
-            pinColor="green"
-          />
-
-          {courier && (
-            <Marker
-              coordinate={{ latitude: courier[0], longitude: courier[1] }}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <View className="bg-white p-2 rounded-full shadow-lg border border-black/10">
-                <Text className="text-xl">🛵</Text>
-              </View>
-            </Marker>
-          )}
-        </MapView>
+          source={{ html: LEAFLET_HTML }}
+          onMessage={(event) => {
+            if (event.nativeEvent.data === 'ready') {
+              setMapReady(true);
+            }
+          }}
+          scrollEnabled={false}
+          bounces={false}
+        />
 
         <View className="flex-1 bg-white p-4 pb-20">
           <View className="flex-row items-start justify-between mb-4">
@@ -187,20 +299,20 @@ export default function TrackingScreen() {
               <Text className="text-sm text-zinc-500">{order.addressText}</Text>
             </View>
 
-            <View className="items-end">
+            <View className="items-end shrink-0">
               {(status === "preparing" || status === "handoff" || status === "delivering") && (
-                <View className="bg-zinc-100 px-3 py-2 rounded-xl mb-2 items-center">
-                  <Text className="text-zinc-500 font-bold text-[10px] uppercase">{t.remainingTime}</Text>
+                <View className="bg-zinc-100 px-3 py-2 rounded-xl mb-2 items-center w-36">
+                  <Text className="text-zinc-500 font-bold text-[10px]">{t.remainingTime.toLocaleUpperCase(locale)}</Text>
                   <Text className="text-zinc-900 font-black text-sm">{timeLeftFormatted}</Text>
                 </View>
               )}
               {(status === "preparing" || status === "handoff" || status === "delivering") && !fastForward && (
                 <Pressable
                   onPress={() => setFastForward(true)}
-                  className="bg-emerald-600 px-3 py-2 rounded-xl items-center flex-row shadow-sm"
+                  className="bg-emerald-600 px-3 py-2 rounded-xl items-center justify-center flex-row shadow-sm w-36 gap-1"
                 >
-                  <Rocket size={14} color="white" className="mr-1" />
-                  <Text className="text-white font-black text-xs uppercase">{t.fastForwardBtn}</Text>
+                  <Rocket size={14} color="white" />
+                  <Text className="text-white font-black text-xs">{t.fastForwardBtn.toLocaleUpperCase(locale)}</Text>
                 </Pressable>
               )}
             </View>
@@ -240,7 +352,10 @@ export default function TrackingScreen() {
       </View>
 
       {status === "delivered" && celebrationShown && !celebrationOpen && (
-        <View className="absolute bottom-0 left-0 right-0 p-4 bg-white/90 border-t border-zinc-100 items-center pb-8">
+        <View 
+          className="absolute bottom-0 left-0 right-0 p-4 bg-white/90 border-t border-zinc-100 items-center"
+          style={{ paddingBottom: Math.max(16, insets.bottom) }}
+        >
           <Pressable
             onPress={handleShareClick}
             className="w-full max-w-sm flex-row items-center justify-center bg-accent py-4 rounded-xl shadow-sm"

@@ -102,14 +102,80 @@ export default function CartScreen() {
 
   const total = getCartTotal();
 
+  const renderModals = () => (
+    <>
+      <Modal visible={showSavePrompt} transparent animationType="fade" onRequestClose={() => setShowSavePrompt(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40 p-4">
+          <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
+            <Text className="text-lg font-black text-zinc-800 mb-2">{t.saveCart}</Text>
+            <Text className="text-xs text-zinc-500 mb-4">{t.enterCartName}</Text>
+            <TextInput
+              value={saveCartName}
+              onChangeText={setSaveCartName}
+              placeholder={t.egDinner}
+              placeholderTextColor="#a1a1aa"
+              className="w-full rounded-xl border border-zinc-200 p-3 mb-4 text-sm text-zinc-950 bg-zinc-50 font-bold"
+              autoFocus
+            />
+            <View className="flex-row gap-2">
+              <Pressable onPress={() => setShowSavePrompt(false)} className="flex-1 rounded-xl bg-zinc-100 py-3 items-center">
+                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
+              </Pressable>
+              <Pressable onPress={handleSaveCart} disabled={!saveCartName.trim()} className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50">
+                <Text className="font-bold text-white">{t.save}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showRestorePrompt} transparent animationType="fade" onRequestClose={() => setShowRestorePrompt(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40 p-4">
+          <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
+            <Text className="text-lg font-black text-zinc-800 mb-2">{t.restoreCart}</Text>
+            <Text className="text-xs text-zinc-500 mb-4">{t.selectCartToRestore}</Text>
+            
+            <ScrollView className="max-h-40 border border-zinc-200 rounded-xl mb-4 bg-zinc-50">
+              {savedCarts.map((c, idx) => (
+                <Pressable
+                  key={idx}
+                  onPress={() => setSelectedCartIndex(idx)}
+                  className={`p-3 border-b border-zinc-100 flex-row justify-between items-center ${selectedCartIndex === idx ? 'bg-accent/10' : ''}`}
+                >
+                  <Text className={`text-sm ${selectedCartIndex === idx ? 'font-bold text-accent' : 'text-zinc-700'}`}>{c.name}</Text>
+                  <Text className="text-xs text-zinc-400">({c.items.length} {t.itemCount})</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <View className="flex-row gap-2">
+              <Pressable onPress={() => setShowRestorePrompt(false)} className="flex-1 rounded-xl bg-zinc-100 py-3 items-center">
+                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
+              </Pressable>
+              <Pressable onPress={handleRestoreCart} disabled={selectedCartIndex === null} className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50">
+                <Text className="font-bold text-white">{t.restore}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+
   if (cart.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-          <Pressable onPress={() => router.back()} className="mr-3">
-            <ArrowLeft size={24} color="#09090b" />
+        <View className="flex-row items-center justify-between p-4 border-b border-black/5 bg-white">
+          <View className="flex-row items-center">
+            <Pressable onPress={() => router.back()} className="mr-3">
+              <ArrowLeft size={24} color="#09090b" />
+            </Pressable>
+            <Text className="text-xl font-black">{t.cart}</Text>
+          </View>
+          <Pressable onPress={openRestorePrompt} className="p-2 flex-row items-center gap-1">
+            <FolderDown size={18} color="#09090b" />
+            <Text className="text-sm font-bold text-zinc-800">{t.restore}</Text>
           </Pressable>
-          <Text className="text-xl font-black">{t.cart}</Text>
         </View>
         <View className="flex-1 items-center justify-center p-8">
           <Text className="text-zinc-500 font-medium text-center">{t.emptyCart}</Text>
@@ -120,6 +186,7 @@ export default function CartScreen() {
             <Text className="text-accent font-bold">Geri Dön</Text>
           </Pressable>
         </View>
+        {renderModals()}
       </SafeAreaView>
     );
   }
@@ -220,96 +287,7 @@ export default function CartScreen() {
           <ArrowLeft size={20} color="white" style={{ transform: [{ rotate: '180deg' }] }} />
         </Pressable>
       </View>
-
-      {/* SAVE CART MODAL */}
-      <Modal
-        visible={showSavePrompt}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowSavePrompt(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/40 p-4">
-          <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
-            <Text className="text-lg font-black text-zinc-800 mb-2">
-              {t.saveCart}
-            </Text>
-            <Text className="text-xs text-zinc-500 mb-4">
-              {t.enterCartName}
-            </Text>
-            <TextInput
-              value={saveCartName}
-              onChangeText={setSaveCartName}
-              placeholder={t.egDinner}
-              placeholderTextColor="#a1a1aa"
-              className="w-full rounded-xl border border-zinc-200 p-3 mb-4 text-sm text-zinc-950 bg-zinc-50 font-bold"
-              autoFocus
-            />
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={() => setShowSavePrompt(false)}
-                className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
-              >
-                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
-              </Pressable>
-              <Pressable
-                onPress={handleSaveCart}
-                disabled={!saveCartName.trim()}
-                className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
-              >
-                <Text className="font-bold text-white">{t.save}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* RESTORE CART MODAL */}
-      <Modal
-        visible={showRestorePrompt}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowRestorePrompt(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/40 p-4">
-          <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-zinc-100">
-            <Text className="text-lg font-black text-zinc-800 mb-2">
-              {t.restoreCart}
-            </Text>
-            <Text className="text-xs text-zinc-500 mb-4">
-              {t.selectCartToRestore}
-            </Text>
-            
-            <ScrollView className="max-h-40 border border-zinc-200 rounded-xl mb-4 bg-zinc-50">
-              {savedCarts.map((c, idx) => (
-                <Pressable
-                  key={idx}
-                  onPress={() => setSelectedCartIndex(idx)}
-                  className={`p-3 border-b border-zinc-100 flex-row justify-between items-center ${selectedCartIndex === idx ? 'bg-accent/10' : ''}`}
-                >
-                  <Text className={`text-sm ${selectedCartIndex === idx ? 'font-bold text-accent' : 'text-zinc-700'}`}>{c.name}</Text>
-                  <Text className="text-xs text-zinc-400">({c.items.length} {t.itemCount})</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={() => setShowRestorePrompt(false)}
-                className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
-              >
-                <Text className="font-bold text-zinc-700">{t.cancel}</Text>
-              </Pressable>
-              <Pressable
-                onPress={handleRestoreCart}
-                disabled={selectedCartIndex === null}
-                className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
-              >
-                <Text className="font-bold text-white">{t.restore}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {renderModals()}
     </SafeAreaView>
   );
 }

@@ -34,8 +34,8 @@ export default function CheckoutScreen() {
     const now = Date.now();
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
 
-    const targetTimeMins = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
-    const targetTimeMs = targetTimeMins * 60 * 1000;
+    const targetTimeSecs = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
+    const targetTimeMs = targetTimeSecs * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
     
     const targetMovementMs = Math.max(0, targetTimeMs - 2000 - 8000);
@@ -48,6 +48,8 @@ export default function CheckoutScreen() {
 
     const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, distanceKm, actualTotalTimeMs, speeds);
 
+    const storeCoord = courierStartCoordinate;
+
     setOrder({
       id: uid("order"),
       customerName: name || "Demo",
@@ -55,7 +57,7 @@ export default function CheckoutScreen() {
       addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
       note: "",
       addressCoordinate,
-      storeCoordinate: courierStartCoordinate,
+      storeCoordinate: storeCoord,
       courierStartCoordinate: courierStartCoordinate,
       speed,
       status: "confirmed",

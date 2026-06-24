@@ -73,7 +73,7 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
             </Pressable>
           </View>
 
-          <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 flex items-center justify-center min-h-[300px]">
+          <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 flex items-center justify-center">
             {loading && (
               <View className="absolute z-10">
                 <ActivityIndicator size="large" color="#fb4824" />
@@ -81,7 +81,7 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
             )}
             <Image 
               source={{ uri: imageUrl }} 
-              style={{ width: '100%', height: 400 }} 
+              style={{ width: '100%', aspectRatio: 1200 / 900 }} 
               resizeMode="contain"
               onLoad={() => setLoading(false)}
             />
