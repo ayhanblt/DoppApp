@@ -113,22 +113,19 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
 
     // Hedef süreyi admin konfigürasyonundan rastgele olarak alıyoruz
-    const targetTimeMins = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
-    const targetTimeMs = targetTimeMins * 60 * 1000;
+    const targetTimeSeconds = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
+    const targetTimeMs = targetTimeSeconds * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
     
-    // Haritadaki uzaklığı her zaman TAVŞAN hızına göre belirliyoruz ki mesafeler çok kısa olmasın
-    const targetMovementMs = Math.max(0, targetTimeMs - 2000 - 8000); // eksi onay + hazırlık süresi
-    const distanceKm = targetMovementMs / speeds["rabbit"].kmMultiplierMs;
+    const firstStore = stores.find(s => s.id === cart[0]?.storeId);
+    const courierStartCoordinate = firstStore?.coordinate || offsetCoordinate(addressCoordinate, 1, 180);
+    const actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
 
     // GERÇEK süreyi ise kullanıcının seçtiği hıza (Tavşan/Kaplumbağa) göre yeniden hesaplıyoruz
-    const actualMovementMs = distanceKm * speeds[speed].kmMultiplierMs;
+    const actualMovementMs = actualDistanceKm * speeds[speed].kmMultiplierMs;
     const actualTotalTimeMs = 2000 + 8000 + actualMovementMs;
 
-    // Belirlenen mesafeye göre kuryenin başlangıç koordinatını oluştur
-    const courierStartCoordinate = offsetCoordinate(addressCoordinate, distanceKm, 45);
-
-    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, distanceKm, actualTotalTimeMs, speeds);
+    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, actualDistanceKm, actualTotalTimeMs, speeds);
 
     setOrder({
       id: uid("order"),

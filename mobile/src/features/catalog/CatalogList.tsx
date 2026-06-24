@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, ScrollView } from "react-native";
+import { View, Text, Image, FlatList, ScrollView, Pressable } from 'react-native';
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/lib/types";
 import { formatMoney, formatNumber } from "@/shared/lib/format";
@@ -81,7 +81,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
     return (
       <View className="mb-4 bg-white rounded-xl border border-black/10 overflow-hidden shadow-sm">
-        <TouchableOpacity 
+        <Pressable 
           onPress={() => router.push(`/store/${store.id}`)}
           className="flex-row items-center p-4 bg-accent/5 border-b border-accent/10"
         >
@@ -107,13 +107,13 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
               {t.seeAllItems ? t.seeAllItems(store.menu.length) : t.seeAll} ›
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
 
         <View className="p-4">
           {displayedItems.map((product) => {
             const label = locale === "tr" ? product.section_label_tr : product.section_label_en;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={product.id}
                 onPress={() => setActiveItem({ store, item: product })}
                 className="flex-row items-center justify-between py-3 border-b border-black/5"
@@ -134,7 +134,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                   source={{ uri: product.image }}
                   className="w-20 h-20 rounded-lg bg-zinc-100"
                 />
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
@@ -151,15 +151,15 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
           </Text>
           <Text className="text-sm text-zinc-500">{t.chooseItems}</Text>
         </View>
-        <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm">
+        <Pressable className="w-10 h-10 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm">
           <Filter size={18} color="#52525b" />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View className="mb-4">
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
           {featuredLabels.map((label) => (
-            <TouchableOpacity
+            <Pressable
               key={label}
               onPress={() => setSelectedFeaturedLabel((curr) => (curr === label ? null : label))}
               className={`px-4 py-2 rounded-full mr-2 border ${
@@ -175,7 +175,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
               >
                 {label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </ScrollView>
       </View>

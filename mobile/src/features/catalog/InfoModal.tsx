@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, Modal, ScrollView, Pressable } from 'react-native';
 import { X } from 'lucide-react-native';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';
@@ -21,14 +21,14 @@ export const InfoModal: React.FC<InfoModalProps> = ({ locale = "tr" }) => {
       onRequestClose={() => setInfoOpen(false)}
     >
       <View className="flex-1 bg-black/50 justify-end">
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => setInfoOpen(false)} activeOpacity={1} />
+        <Pressable style={{ flex: 1 }} onPress={() => setInfoOpen(false)} activeOpacity={1} />
 
         <View className="bg-white rounded-t-3xl max-h-[80%] shadow-2xl p-6">
           <View className="flex-row items-center justify-between border-b border-zinc-100 pb-4 mb-4">
             <Text className="text-xl font-black text-zinc-900">{t.appName || "DoppApp"}</Text>
-            <TouchableOpacity onPress={() => setInfoOpen(false)} className="bg-zinc-100 p-2 rounded-full">
+            <Pressable onPress={() => setInfoOpen(false)} className="bg-zinc-100 p-2 rounded-full">
               <X size={20} color="#52525b" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <ScrollView className="mb-6">

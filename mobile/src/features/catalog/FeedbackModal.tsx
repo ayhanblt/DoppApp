@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, TextInput, ScrollView, Alert, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Send } from 'lucide-react-native';
 import { dictionaries } from '@/shared/i18n/dictionaries';
@@ -55,15 +55,15 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
       onRequestClose={() => setFeedbackOpen(false)}
     >
       <View className="flex-1 bg-black/50 justify-end">
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)} activeOpacity={1} />
+        <Pressable style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)} activeOpacity={1} />
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View className="bg-white rounded-t-3xl max-h-[90%] shadow-2xl">
             <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">
               <Text className="text-xl font-black text-zinc-900">{t.sendFeedback}</Text>
-              <TouchableOpacity onPress={() => setFeedbackOpen(false)} className="bg-zinc-100 p-2 rounded-full">
+              <Pressable onPress={() => setFeedbackOpen(false)} className="bg-zinc-100 p-2 rounded-full">
                 <X size={20} color="#52525b" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <ScrollView className="p-6">
@@ -102,7 +102,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
                   <Text className="text-sm font-bold text-zinc-700 mb-1">{t.feedbackType}</Text>
                   <View className="flex-row flex-wrap gap-2">
                     {["istek", "urun_ekleme", "sikayet", "tesekkur"].map((type) => (
-                      <TouchableOpacity
+                      <Pressable
                         key={type}
                         onPress={() => setMessageType(type)}
                         className={`px-3 py-2 rounded-lg border ${messageType === type ? 'bg-[#fb4824] border-[#fb4824]' : 'bg-white border-zinc-300'}`}
@@ -113,7 +113,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
                           {type === 'sikayet' && t.typeComplaint}
                           {type === 'tesekkur' && t.typeThanks}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 </View>
@@ -129,7 +129,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
                   />
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                   disabled={loading}
                   onPress={handleSubmit}
                   className="mt-2 flex-row items-center justify-center gap-2 rounded-xl py-4 bg-[#fb4824] shadow-sm"
@@ -143,7 +143,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
                       <Text className="font-black text-white">{t.send}</Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </ScrollView>
           </View>

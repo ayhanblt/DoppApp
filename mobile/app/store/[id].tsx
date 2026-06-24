@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCatalog } from '@/features/catalog/CatalogContext';
@@ -10,7 +10,6 @@ import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus } from 'lucide-react
 import { supabase } from '@/shared/api/supabase';
 import { ProductModal } from '@/features/catalog/ProductModal';
 import { MarkdownText } from '@/shared/ui/MarkdownText';
-import { themes } from '@/features/catalog/appConfig';
 
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -125,10 +124,10 @@ export default function StoreDetailScreen() {
     <SafeAreaView className="flex-1 bg-[#fbf5f1]" edges={['top', 'left', 'right']}>
       {/* HEADER BAR */}
       <View className="px-4 py-3 bg-white border-b border-black/5 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+        <Pressable onPress={() => router.back()} className="flex-row items-center">
           <ArrowLeft size={20} color="#09090b" />
           <Text className="ml-2 font-bold text-zinc-900">{t.backToApp}</Text>
-        </TouchableOpacity>
+        </Pressable>
         <Text className="text-sm font-black text-accent uppercase">{store.store_categories?.[locale === "tr" ? "name_tr" : "name_en"] || ""}</Text>
       </View>
 
@@ -172,24 +171,24 @@ export default function StoreDetailScreen() {
         {/* CATEGORY SELECTOR (HORIZONTAL SCROLL) */}
         <View className="bg-white border-b border-black/5 py-3">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 flex-row">
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSelectedFeaturedLabel(null)}
-              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedFeaturedLabel ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10"}`}
+              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedFeaturedLabel ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
             >
               <Text className={`text-xs font-bold ${!selectedFeaturedLabel ? "text-white" : "text-zinc-600"}`}>
                 {locale === "tr" ? "Tüm Ürünler" : "All Products"}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
             {featuredLabels.map(label => (
-              <TouchableOpacity
+              <Pressable
                 key={label}
                 onPress={() => setSelectedFeaturedLabel(label)}
-                className={`rounded-lg px-4 py-2 border mr-2 ${selectedFeaturedLabel === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10"}`}
+                className={`rounded-lg px-4 py-2 border mr-2 ${selectedFeaturedLabel === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
               >
                 <Text className={`text-xs font-bold ${selectedFeaturedLabel === label ? "text-white" : "text-zinc-600"}`}>
                   {label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </ScrollView>
         </View>
@@ -204,10 +203,10 @@ export default function StoreDetailScreen() {
               const sectionColor = item.section_color || '#f97316';
 
               return (
-                <TouchableOpacity
+                <Pressable
                   key={item.id}
                   onPress={() => setActiveItem({ store, item })}
-                  className="bg-white rounded-2xl border border-black/5 p-4 shadow-sm flex-row"
+                  className={`bg-white rounded-2xl border border-black/5 p-4 flex-row ${isFeatured ? "shadow-md" : "shadow-sm"}`}
                   style={isFeatured ? { backgroundColor: `${sectionColor}08`, borderColor: `${sectionColor}20` } : undefined}
                 >
                   <View className="flex-1 mr-4">
@@ -227,7 +226,7 @@ export default function StoreDetailScreen() {
                     source={{ uri: item.image }}
                     className="w-24 h-24 rounded-xl border border-black/5 bg-zinc-50 object-cover"
                   />
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -280,13 +279,13 @@ export default function StoreDetailScreen() {
                 <Text className="font-bold text-zinc-700 text-sm">{locale === "tr" ? "Puan:" : "Rating:"}</Text>
                 <View className="flex-row">
                   {[1, 2, 3, 4, 5].map(star => (
-                    <TouchableOpacity
+                    <Pressable
                       key={star}
                       onPress={() => setReviewRating(star)}
                       className="px-1"
                     >
                       <Text className={`text-2xl ${star <= reviewRating ? 'text-amber-500' : 'text-zinc-300'}`}>★</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </View>
               </View>
@@ -299,15 +298,15 @@ export default function StoreDetailScreen() {
                 textAlignVertical="top"
                 className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50 h-20"
               />
-              <TouchableOpacity
+              <Pressable
                 onPress={submitReview}
                 disabled={isSubmittingReview || !reviewName.trim() || !reviewText.trim()}
-                className="rounded-xl bg-accent py-3.5 items-center justify-center shadow-sm disabled:opacity-50"
+                className={`rounded-xl py-3.5 items-center justify-center ${isSubmittingReview || !reviewName.trim() || !reviewText.trim() ? "bg-accent/50 shadow-none" : "bg-accent shadow-sm"}`}
               >
                 <Text className="text-white font-black text-base">
                   {isSubmittingReview ? (locale === "tr" ? "Gönderiliyor..." : "Submitting...") : (locale === "tr" ? "Yorumu Gönder" : "Submit Review")}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>

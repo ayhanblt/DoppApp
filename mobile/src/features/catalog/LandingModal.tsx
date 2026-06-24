@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
+import { View, Text, Modal, Image, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
@@ -17,7 +17,8 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
   useEffect(() => {
     AsyncStorage.getItem("hasSeenLanding").then((hasSeen) => {
       if (!hasSeen) {
-        setIsVisible(true);
+        // Wait for the Custom Splash Screen to finish (2000ms hold + 500ms fade)
+        setTimeout(() => setIsVisible(true), 2500);
       }
     });
   }, []);
@@ -44,21 +45,21 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
           <Text className="text-zinc-600 mb-8 font-medium text-center">{t.welcomeDesc}</Text>
 
           <View className="w-full flex-col gap-4">
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleClose(false)}
               className="w-full flex-row items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 py-4 bg-white"
             >
               <MapPin size={18} color="#52525b" />
               <Text className="font-bold text-zinc-600">{t.pickLocation}</Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleClose(true)}
               className="w-full flex-row items-center justify-center gap-2 rounded-xl py-4 bg-accent"
             >
               <Text className="font-black text-white">{t.startNow}</Text>
               <Rocket size={18} color="#ffffff" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>

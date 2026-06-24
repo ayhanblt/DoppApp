@@ -9,11 +9,10 @@ import { ShoppingCart, ShoppingBag, Utensils, Store } from 'lucide-react-native'
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
 import { dictionaries } from '@/shared/i18n/dictionaries';
-import { Locale } from '@/shared/lib/types';
 import { useRouter, useNavigation } from 'expo-router';
 import { MobileHeader } from '@/features/catalog/MobileHeader';
 import { AddressModal } from '@/features/catalog/AddressModal';
-import { themes, themeIcons } from '@/features/catalog/appConfig';
+import { themes } from '@/features/catalog/appConfig';
 
 export default function CatalogScreen() {
   const [storeType, setStoreType] = useState<"shop" | "food" | "market">("shop");
@@ -47,8 +46,8 @@ export default function CatalogScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
-      <LandingModal 
-        locale={locale} 
+      <LandingModal
+        locale={locale}
         onClose={(defaultLocation) => {
           if (defaultLocation) {
             setDeliveryAddress({
@@ -62,34 +61,34 @@ export default function CatalogScreen() {
           } else {
             setAddressModalOpen(true);
           }
-        }} 
+        }}
       />
-      <AddressModal 
-        visible={addressModalOpen} 
-        onClose={() => setAddressModalOpen(false)} 
-        locale={locale} 
+      <AddressModal
+        visible={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        locale={locale}
       />
       <FeedbackModal locale={locale} />
       <InfoModal locale={locale} />
-      
-      <MobileHeader 
-        onAddressPress={() => setAddressModalOpen(true)} 
+
+      <MobileHeader
+        onAddressPress={() => setAddressModalOpen(true)}
         onMenuPress={() => { (navigation as any).openDrawer?.(); }}
-        storeType={storeType} 
+        storeType={storeType}
       />
 
       {/* TABS */}
       {/* TABS */}
-      <View 
-        style={{ 
-          paddingHorizontal: 16, 
-          paddingBottom: 8, 
-          backgroundColor: themes[storeType === 'shop' ? 'grape' : storeType === 'food' ? 'sunset' : 'mint'] 
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingBottom: 8,
+          backgroundColor: themes[storeType === 'shop' ? 'grape' : storeType === 'food' ? 'sunset' : 'mint']
         }}
       >
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
           {/* Shop Tab */}
-          <Pressable 
+          <Pressable
             style={[
               {
                 flex: 1,
@@ -100,15 +99,15 @@ export default function CatalogScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
               },
-              storeType === 'shop' 
-                ? { 
-                    backgroundColor: 'white',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 1.5,
-                    elevation: 2
-                  } 
+              storeType === 'shop'
+                ? {
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 1.5,
+                  elevation: 2
+                }
                 : { backgroundColor: 'rgba(255,255,255,0.2)' }
             ]}
             onPress={() => setStoreType('shop')}
@@ -118,7 +117,7 @@ export default function CatalogScreen() {
           </Pressable>
 
           {/* Food Tab */}
-          <Pressable 
+          <Pressable
             style={[
               {
                 flex: 1,
@@ -129,15 +128,15 @@ export default function CatalogScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
               },
-              storeType === 'food' 
-                ? { 
-                    backgroundColor: 'white',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 1.5,
-                    elevation: 2
-                  } 
+              storeType === 'food'
+                ? {
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 1.5,
+                  elevation: 2
+                }
                 : { backgroundColor: 'rgba(255,255,255,0.2)' }
             ]}
             onPress={() => setStoreType('food')}
@@ -147,7 +146,7 @@ export default function CatalogScreen() {
           </Pressable>
 
           {/* Market Tab */}
-          <Pressable 
+          <Pressable
             style={[
               {
                 flex: 1,
@@ -158,15 +157,15 @@ export default function CatalogScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
               },
-              storeType === 'market' 
-                ? { 
-                    backgroundColor: 'white',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 1.5,
-                    elevation: 2
-                  } 
+              storeType === 'market'
+                ? {
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 1.5,
+                  elevation: 2
+                }
                 : { backgroundColor: 'rgba(255,255,255,0.2)' }
             ]}
             onPress={() => setStoreType('market')}

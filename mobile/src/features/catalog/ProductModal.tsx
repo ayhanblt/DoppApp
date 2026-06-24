@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, Modal, ScrollView } from "react-native";
+import { View, Text, Image, Modal, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store } from "@/shared/lib/types";
@@ -61,12 +61,12 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
           <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden">
             <View className="relative">
               <Image source={{ uri: item.image }} className="w-full h-64 object-cover" />
-              <TouchableOpacity
+              <Pressable
                 onPress={onClose}
                 className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 items-center justify-center"
               >
                 <X color="white" size={24} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <ScrollView className="flex-1 p-5">
@@ -97,7 +97,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
                       {group.options.map((option) => {
                         const isSelected = selections[group.id]?.includes(option.id);
                         return (
-                          <TouchableOpacity
+                          <Pressable
                             key={option.id}
                             onPress={() => toggleSelection(group.id, option.id, group.multiple)}
                             className={`flex-row items-center justify-between p-4 rounded-xl border-2 ${
@@ -115,7 +115,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
                                 {isSelected && <View className="w-2.5 h-2.5 rounded-full bg-white" />}
                               </View>
                             </View>
-                          </TouchableOpacity>
+                          </Pressable>
                         );
                       })}
                     </View>
@@ -130,27 +130,27 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
                   {formatMoney(getActiveItemTotalPrice(), locale)}
                 </Text>
                 <View className="flex-row items-center gap-4">
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setQuantity((v) => Math.max(1, v - 1))}
                     className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-black/5"
                   >
                     <Minus size={20} color="#09090b" />
-                  </TouchableOpacity>
+                  </Pressable>
                   <Text className="text-xl font-black">{quantity}</Text>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setQuantity((v) => v + 1)}
                     className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-black/5"
                   >
                     <Plus size={20} color="#09090b" />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
-              <TouchableOpacity
+              <Pressable
                 onPress={() => onAdd(quantity, selections)}
                 className="w-full bg-accent py-4 rounded-xl items-center"
               >
                 <Text className="text-white font-black text-lg">{t.add}</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </SafeAreaView>

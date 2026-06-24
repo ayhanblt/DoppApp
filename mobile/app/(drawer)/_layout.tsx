@@ -1,9 +1,8 @@
 import React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView, DrawerItemList, DrawerItem } from 'expo-router/drawer';
-import { useRouter } from 'expo-router';
 import { dictionaries } from '@/shared/i18n/dictionaries';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { Globe, Info, MessageSquare } from 'lucide-react-native';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 
@@ -13,17 +12,21 @@ function CustomDrawerContent(props: any) {
 
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, backgroundColor: '#fff' }}>
-      <View className="p-6 pb-4 border-b border-zinc-100">
-        <View className="bg-accent w-12 h-12 rounded-xl items-center justify-center shadow-sm mb-3">
-          <Text className="text-white font-black text-2xl">D</Text>
+      <View className="p-6 pb-4 border-b border-zinc-100 flex flex-col items-center justify-center">
+        <View className="mb-3">
+          <Image
+            source={require('../../assets/icon.png')}
+            style={{ width: 48, height: 48, tintColor: '#fb4824' }}
+            resizeMode="contain"
+          />
         </View>
         <Text className="text-xl font-black text-zinc-900">DoppApp</Text>
-        <Text className="text-sm text-zinc-500">Cross-Platform Sandbox</Text>
+        <Text className="text-sm text-zinc-500 mt-1">{t.welcomeTagline}</Text>
       </View>
-      
+
       <View className="flex-1 pt-2">
         <DrawerItemList {...props} />
-        
+
         <DrawerItem
           label={locale === "tr" ? t.langEn : t.langTr}
           icon={({ color, size }) => <Globe color={color} size={size} />}
@@ -64,6 +67,7 @@ export default function DrawerLayout() {
         drawerActiveBackgroundColor: '#fff7ef',
         drawerActiveTintColor: '#fb4824',
         drawerInactiveTintColor: '#52525b',
+        drawerPosition: 'right',
         drawerLabelStyle: {
           fontFamily: 'System',
           fontWeight: '700',
@@ -74,12 +78,14 @@ export default function DrawerLayout() {
         name="index"
         options={{
           drawerLabel: "Katalog",
+          drawerIcon: ({ color, size }) => <Image source={require('../../assets/icon.png')} style={{ width: size, height: size, tintColor: color }} resizeMode="contain" />
         }}
       />
       <Drawer.Screen
         name="about"
         options={{
           drawerLabel: "Hakkımızda",
+          drawerIcon: ({ color, size }) => <Info color={color} size={size} />
         }}
       />
     </Drawer>

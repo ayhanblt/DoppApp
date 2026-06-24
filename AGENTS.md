@@ -29,7 +29,7 @@ Projeye yeni bir özellik ekleneceğinde her iki platform için de FSD prensiple
 
 ## Cross-Platform UI Kuralları (Önemli!)
 - **Web UI:** Standart HTML etiketleri (`<nav>`, `<button>`) ve standart TailwindCSS kullanın. Hamburger Menü, Dropdown, Adres haritası (Modal içi) web'de Next.js bileşenleriyle oluşturulmuştur. Varsayılan açılış sayfası `/shop` rotasıdır. Arama çubuğu (Search Bar) Web Header'ında sabittir.
-- **Mobile UI:** Yalnızca Native bileşenler (`<View>`, `<Text>`, `<TouchableOpacity>`) kullanın. NativeWind v4 ile Tailwind class'larını kullanın.
+- **Mobile UI:** Yalnızca Native bileşenler (`<View>`, `<Text>`, `<Pressable>`) kullanın. NativeWind v4 ile Tailwind class'larını kullanın.
   - Mobil uygulamada çentik (Notch/Dynamic Island) altına tam oturması için `react-native-safe-area-context` kullanın (React Native'in kendi `SafeAreaView`'unu DEĞİL!).
   - Web'deki Hamburger Menünün karşılığı olarak Mobilde **Drawer Navigation** (`expo-router/drawer`) kullanın.
   - Konum/Adres seçici harita ekranını Mobilde `react-native-maps` ile oluşturup Native `Modal` içinde barındırın. **ÖNEMLİ:** Kullanıcının henüz seçili bir adresi yoksa harita çökmemsi için varsayılan koordinat Beşiktaş / İstanbul (`lat: 41.0422, lng: 29.0060`) olarak ayarlanmalıdır. Seçili adres cihazda `AsyncStorage` ile kalıcı hale getirilmelidir.
@@ -55,3 +55,7 @@ Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutu
 - [ ] Modal kapatma işlemleri dış alana (backdrop) tıklama ve ESC tuşu ile desteklendi mi?
 - [ ] Görseller kare formatta (`aspect-square object-cover`) ayarlandı mı?
 - [ ] Web ve Mobil eşzamanlı olarak FSD yapısına sadık kaldı mı?
+
+## NativeWind v4 - Dinamik Class Optimizasyonu
+- NativeWind v4 kullanırken `className` içinde eksik veya dalgalanan (fluctuating) class isimlerinden kaçının. Örneğin `className={\`shadow-${isActive ? 'sm' : 'none'}\`}` gibi kullanımlar veya bir durumda `shadow-sm` varken diğer durumda gölge class'ının tamamen silinmesi render hatalarına sebep olabilir.
+- **İyi Kullanım:** Ana stili her durumda sabit tutun ve yokluk durumunu açıkça belirtin. (Örn: `className={\`shadow-sm ${isActive ? 'shadow-md' : 'shadow-none'}\`}`)

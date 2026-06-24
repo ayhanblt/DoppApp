@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, Image, Modal, TextInput, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
@@ -106,19 +106,19 @@ export default function CartScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-          <TouchableOpacity onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => router.back()} className="mr-3">
             <ArrowLeft size={24} color="#09090b" />
-          </TouchableOpacity>
+          </Pressable>
           <Text className="text-xl font-black">{t.cart}</Text>
         </View>
         <View className="flex-1 items-center justify-center p-8">
           <Text className="text-zinc-500 font-medium text-center">{t.emptyCart}</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             className="mt-6 px-6 py-3 rounded-full bg-accent/10"
           >
             <Text className="text-accent font-bold">Geri Dön</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -127,9 +127,9 @@ export default function CartScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-        <TouchableOpacity onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => router.back()} className="mr-3">
           <ArrowLeft size={24} color="#09090b" />
-        </TouchableOpacity>
+        </Pressable>
         <Text className="text-xl font-black">{t.cart}</Text>
       </View>
 
@@ -167,9 +167,9 @@ export default function CartScreen() {
                   <Text className="font-black text-accent">
                     {cartItem.quantity}x {formatMoney(itemTotal, locale)}
                   </Text>
-                  <TouchableOpacity onPress={() => handleRemove(cartItem.id)} className="p-1">
+                  <Pressable onPress={() => handleRemove(cartItem.id)} className="p-1">
                     <Trash2 size={16} color="#ef4444" />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             </View>
@@ -193,32 +193,32 @@ export default function CartScreen() {
 
         {/* SAVE & RESTORE BUTTONS */}
         <View className="flex-row items-center justify-center gap-4 py-4 mt-2 mb-6">
-          <TouchableOpacity
+          <Pressable
             onPress={() => setShowSavePrompt(true)}
             className="flex-row items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-black/10 shadow-sm"
           >
             <Save size={16} color="#fb4824" />
             <Text className="text-xs font-black text-zinc-700">{locale === 'tr' ? 'Sepeti Kaydet' : 'Save Cart'}</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text className="text-zinc-300">|</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={openRestorePrompt}
             className="flex-row items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-black/10 shadow-sm"
           >
             <FolderDown size={16} color="#fb4824" />
             <Text className="text-xs font-black text-zinc-700">{locale === 'tr' ? 'Geri Yükle' : 'Restore'}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScrollView>
 
       <View className="p-4 bg-white border-t border-black/5">
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.push('/checkout')}
           className="w-full bg-accent py-4 rounded-xl flex-row items-center justify-center gap-2"
         >
           <Text className="text-white font-black text-lg">{t.checkout}</Text>
           <ArrowLeft size={20} color="white" style={{ transform: [{ rotate: '180deg' }] }} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* SAVE CART MODAL */}
@@ -245,19 +245,19 @@ export default function CartScreen() {
               autoFocus
             />
             <View className="flex-row gap-2">
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setShowSavePrompt(false)}
                 className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
               >
                 <Text className="font-bold text-zinc-700">{locale === 'tr' ? 'İptal' : 'Cancel'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 onPress={handleSaveCart}
                 disabled={!saveCartName.trim()}
                 className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
               >
                 <Text className="font-bold text-white">{locale === 'tr' ? 'Kaydet' : 'Save'}</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -281,31 +281,31 @@ export default function CartScreen() {
             
             <ScrollView className="max-h-40 border border-zinc-200 rounded-xl mb-4 bg-zinc-50">
               {savedCarts.map((c, idx) => (
-                <TouchableOpacity
+                <Pressable
                   key={idx}
                   onPress={() => setSelectedCartIndex(idx)}
                   className={`p-3 border-b border-zinc-100 flex-row justify-between items-center ${selectedCartIndex === idx ? 'bg-accent/10' : ''}`}
                 >
                   <Text className={`text-sm ${selectedCartIndex === idx ? 'font-bold text-accent' : 'text-zinc-700'}`}>{c.name}</Text>
                   <Text className="text-xs text-zinc-400">({c.items.length} {locale === 'tr' ? 'ürün' : 'items'})</Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </ScrollView>
 
             <View className="flex-row gap-2">
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setShowRestorePrompt(false)}
                 className="flex-1 rounded-xl bg-zinc-100 py-3 items-center"
               >
                 <Text className="font-bold text-zinc-700">{locale === 'tr' ? 'İptal' : 'Cancel'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 onPress={handleRestoreCart}
                 disabled={selectedCartIndex === null}
                 className="flex-1 rounded-xl bg-accent py-3 items-center disabled:opacity-50"
               >
                 <Text className="font-bold text-white">{locale === 'tr' ? 'Geri Yükle' : 'Restore'}</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>

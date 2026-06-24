@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, Share } from 'react-native';
+import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable } from 'react-native';
 import { X, Share2 } from 'lucide-react-native';
 import { Locale } from '@/shared/lib/types';
 import { supabase } from '@/shared/api/supabase';
@@ -60,7 +60,7 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/70 items-center justify-center p-4">
-        <TouchableOpacity style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
+        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
         
         <View className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl flex-col z-10">
           <View className="flex-row items-center justify-between mb-4">
@@ -68,9 +68,9 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
               <Share2 size={20} color="#fb4824" />
               <Text className="text-xl font-black text-zinc-800 ml-2">Siparişi Paylaş</Text>
             </View>
-            <TouchableOpacity onPress={onClose} className="p-2 bg-zinc-100 rounded-full">
+            <Pressable onPress={onClose} className="p-2 bg-zinc-100 rounded-full">
               <X size={18} color="#52525b" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 flex items-center justify-center min-h-[300px]">
@@ -87,14 +87,14 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
             />
           </View>
 
-          <TouchableOpacity
+          <Pressable
             onPress={handleNativeShare}
             className="w-full flex-row items-center justify-center bg-zinc-100 py-4 rounded-xl mb-3"
             disabled={loading}
           >
             <Share2 size={18} color="#3f3f46" className="mr-2" />
             <Text className="text-zinc-800 font-bold">Paylaş</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Modal>

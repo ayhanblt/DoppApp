@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, ScrollView, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
@@ -74,9 +74,9 @@ export default function CheckoutScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-        <TouchableOpacity onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => router.back()} className="mr-3">
           <ArrowLeft size={24} color="#09090b" />
-        </TouchableOpacity>
+        </Pressable>
         <Text className="text-xl font-black">{t.checkout}</Text>
       </View>
 
@@ -128,7 +128,7 @@ export default function CheckoutScreen() {
 
           <Text className="font-bold mb-3">{t.deliverySpeed}</Text>
           <View className="flex-row gap-2">
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSpeed("rabbit")}
               className={`flex-1 items-center justify-center p-3 rounded-xl border-2 ${
                 speed === "rabbit" ? "border-orange-500 bg-orange-50" : "border-black/10 bg-white"
@@ -138,9 +138,9 @@ export default function CheckoutScreen() {
               <Text className={`mt-2 font-bold ${speed === "rabbit" ? "text-orange-700" : "text-zinc-500"}`}>
                 {t.rabbit}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSpeed("turtle")}
               className={`flex-1 items-center justify-center p-3 rounded-xl border-2 ${
                 speed === "turtle" ? "border-emerald-500 bg-emerald-50" : "border-black/10 bg-white"
@@ -150,18 +150,18 @@ export default function CheckoutScreen() {
               <Text className={`mt-2 font-bold ${speed === "turtle" ? "text-emerald-700" : "text-zinc-500"}`}>
                 {t.turtle}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
 
       <View className="p-4 bg-white border-t border-black/5">
-        <TouchableOpacity
+        <Pressable
           onPress={handleCheckout}
           className="w-full bg-accent py-4 rounded-xl items-center"
         >
           <Text className="text-white font-black text-lg">{t.demoOrder}</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

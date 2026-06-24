@@ -30,7 +30,7 @@ const restaurantIcon = L.divIcon({
     </div>
   ),
   iconSize: [48, 48],
-  iconAnchor: [24, 24]
+  iconAnchor: [24, 48]
 });
 
 const courierIcon = L.divIcon({
@@ -45,7 +45,7 @@ const courierIcon = L.divIcon({
     </div>
   ),
   iconSize: [56, 56],
-  iconAnchor: [28, 28]
+  iconAnchor: [28, 56]
 });
 
 const destinationIcon = L.divIcon({
@@ -60,7 +60,7 @@ const destinationIcon = L.divIcon({
     </div>
   ),
   iconSize: [48, 48],
-  iconAnchor: [24, 24]
+  iconAnchor: [24, 48]
 });
 
 function FitBounds({ points }: { points: [number, number][] }) {

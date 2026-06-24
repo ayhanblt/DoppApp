@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, Share } from 'react-native';
+import { View, Text, Dimensions, Share, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney, formatNumber } from '@/shared/lib/format';
@@ -22,9 +22,9 @@ export default function TrackingScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background justify-center items-center">
         <Text className="text-zinc-500 font-medium">{t.noActiveOrder}</Text>
-        <TouchableOpacity onPress={() => router.replace('/')} className="mt-4 px-6 py-3 bg-accent rounded-xl">
+        <Pressable onPress={() => router.replace('/')} className="mt-4 px-6 py-3 bg-accent rounded-xl">
           <Text className="text-white font-bold">{t.backToApp}</Text>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -130,7 +130,7 @@ export default function TrackingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background relative">
       <View className="flex-row items-center justify-between p-4 bg-white border-b border-black/5">
-        <TouchableOpacity 
+        <Pressable 
           onPress={() => {
             setOrder(null);
             router.replace('/');
@@ -139,7 +139,7 @@ export default function TrackingScreen() {
         >
           <ArrowLeft size={20} color="#09090b" className="mr-2" />
           <Text className="font-bold">{t.backToApp}</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View className="flex-1">
@@ -195,13 +195,13 @@ export default function TrackingScreen() {
                 </View>
               )}
               {(status === "preparing" || status === "handoff" || status === "delivering") && !fastForward && (
-                <TouchableOpacity
+                <Pressable
                   onPress={() => setFastForward(true)}
                   className="bg-emerald-600 px-3 py-2 rounded-xl items-center flex-row shadow-sm"
                 >
                   <Rocket size={14} color="white" className="mr-1" />
                   <Text className="text-white font-black text-xs uppercase">{t.fastForwardBtn}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
           </View>
@@ -241,13 +241,13 @@ export default function TrackingScreen() {
 
       {status === "delivered" && celebrationShown && !celebrationOpen && (
         <View className="absolute bottom-0 left-0 right-0 p-4 bg-white/90 border-t border-zinc-100 items-center pb-8">
-          <TouchableOpacity
+          <Pressable
             onPress={handleShareClick}
             className="w-full max-w-sm flex-row items-center justify-center bg-accent py-4 rounded-xl shadow-sm"
           >
             <Text className="text-white font-black mr-2">{t.shareReceipt}</Text>
             <Share2 size={18} color="white" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
 

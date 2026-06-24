@@ -222,8 +222,13 @@ export async function getStoresOnRoadsAroundAddress(center: [number, number], db
 
   const snapped = await Promise.all(
     candidates.map(async (store) => {
-      const roadCoordinate = await snapCoordinateToRoad(store.coordinate).catch(() => null);
-      if (!roadCoordinate) return store;
+      let roadCoordinate = await snapCoordinateToRoad(store.coordinate).catch(() => null);
+      if (!roadCoordinate) {
+        const seed = store.id.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
+        const bearing = (seed * 29 + candidates.indexOf(store) * 47) % 360;
+        const newCoord = offsetCoordinate(center, 1, (bearing + 180) % 360);
+        roadCoordinate = await snapCoordinateToRoad(newCoord).catch(() => null) || newCoord;
+      }
 
       const typeConfig = deliveryTimes[store.type] || DEFAULT_DELIVERY_TIMES[store.type] || { min: 1, max: 3 };
       const minTime = typeConfig.min;
@@ -232,7 +237,7 @@ export async function getStoresOnRoadsAroundAddress(center: [number, number], db
       return {
         ...store,
         coordinate: roadCoordinate,
-        eta: formatEta(minTime, maxTime)
+        eta: formatEta(minTime / 60, maxTime / 60)
       };
     })
   );

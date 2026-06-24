@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, Modal, TextInput, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, MapPin, Navigation } from 'lucide-react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
@@ -120,14 +120,14 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
         className="flex-1"
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <TouchableOpacity style={{ flex: 1 }} onPress={onClose} activeOpacity={1} />
+          <Pressable style={{ flex: 1 }} onPress={onClose} activeOpacity={1} />
           
           <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden shadow-2xl flex-col">
             <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">
               <Text className="text-lg font-black text-zinc-900">{t.deliveryAddress}</Text>
-              <TouchableOpacity onPress={onClose} className="bg-zinc-100 p-2 rounded-full">
+              <Pressable onPress={onClose} className="bg-zinc-100 p-2 rounded-full">
                 <X size={20} color="#52525b" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
             
             <View className="flex-[0.6] relative">
@@ -139,13 +139,13 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
               <View className="absolute top-1/2 left-1/2 -ml-4 -mt-8 pointer-events-none">
                 <MapPin size={32} color="#fb4824" fill="#fb4824" />
               </View>
-              <TouchableOpacity 
+              <Pressable 
                 className={`absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-lg ${isLocating ? 'opacity-50' : 'opacity-100'}`}
                 onPress={handleLocate}
                 disabled={isLocating}
               >
                 <Navigation size={24} color="#fb4824" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <ScrollView className="flex-[0.4] p-6 bg-white border-t border-zinc-100">
@@ -171,12 +171,12 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
             </ScrollView>
 
             <SafeAreaView edges={['bottom']} className="p-4 bg-white border-t border-zinc-100 absolute bottom-0 w-full">
-              <TouchableOpacity 
+              <Pressable 
                 className="bg-[#fb4824] rounded-xl py-4 items-center shadow-sm"
                 onPress={handleSave}
               >
                 <Text className="text-white font-bold text-lg">Bu Konumu Onayla</Text>
-              </TouchableOpacity>
+              </Pressable>
             </SafeAreaView>
           </View>
         </View>

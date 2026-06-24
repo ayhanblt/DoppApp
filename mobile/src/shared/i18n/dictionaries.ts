@@ -94,9 +94,9 @@ export const dictionaries = {
     shareReceipt: "Siparişi Paylaş",
     noActiveOrder: "Aktif sipariş bulunamadı.",
     itemFallback: "Ürün",
-    savingsSummary: (priceStr: string, caloriesStr: string) => 
+    savingsSummary: (priceStr: string, caloriesStr: string) =>
       `Bu siparişinizden toplamda ${priceStr} tutarında${caloriesStr ? ` ve ${caloriesStr} kcal kalori` : ""} tasarruf yaptınız.`,
-    
+
     // Admin & General Refactor
     savedToDb: "Veritabanına kaydedildi.",
     addedToDb: "Veritabanına eklendi.",
@@ -126,24 +126,24 @@ export const dictionaries = {
     langEn: "EN",
     langTr: "TR",
     reviews: "Yorum",
-    
+
     // Header & Categories
     shop: "Alışveriş",
     food: "Yemek",
     market: "Market",
     about: "Hakkında",
     sendFeedback: "Geri Bildirim Gönder",
-    
+
     // CatalogList
     seeAll: "Tümünü Gör >",
     seeAllItems: (count: number) => `Tümünü Gör (${count} Ürün)`,
-    
+
     // Landing Modal
     welcomeTitle: "DoppApp'e Hoş Geldin!",
     welcomeDesc: "DoppApp, hayalindeki ürünlerle sepetler oluşturabileceğin, alışveriş ve sipariş süreçlerini simüle ederek kurye takibini deneyimleyebileceğin ve sipariş fişlerini arkadaşlarınla paylaşabileceğin eğlenceli bir e-ticaret simülasyonudur.",
     pickLocation: "Konumunu Seç",
     startNow: "Hemen Başla",
-    
+
     // Feedback Modal
     nameSurnameOptional: "Ad Soyad (Opsiyonel)",
     emailLabel: "E-posta *",
@@ -159,6 +159,7 @@ export const dictionaries = {
     sending: "Gönderiliyor...",
     feedbackSuccess: "Geri bildiriminiz gönderildi. Teşekkürler!",
     feedbackError: "Bir hata oluştu. Lütfen tekrar deneyin.",
+    welcomeTagline: "Favorilerini keşfet, sepetin oluştur ve paylaş!",
 
     // Address Modal extras
     chooseLocationOnMap: "Haritadan Seçildi",
@@ -268,7 +269,7 @@ export const dictionaries = {
     shareReceipt: "Share Order",
     noActiveOrder: "No active order found.",
     itemFallback: "Product",
-    savingsSummary: (priceStr: string, caloriesStr: string) => 
+    savingsSummary: (priceStr: string, caloriesStr: string) =>
       `From this order, you saved a total of ${priceStr}${caloriesStr ? ` and ${caloriesStr} kcal` : ""}.`,
 
     // Admin & General Refactor
@@ -307,7 +308,7 @@ export const dictionaries = {
     market: "Market",
     about: "About",
     sendFeedback: "Send Feedback",
-    
+
     // CatalogList
     seeAll: "See All >",
     seeAllItems: (count: number) => `See All (${count} Items)`,
@@ -317,7 +318,7 @@ export const dictionaries = {
     welcomeDesc: "DoppApp is a fun e-commerce simulation where you can build dream carts, simulate shopping and delivery flows, track your courier, and share receipts with friends.",
     pickLocation: "Choose Location",
     startNow: "Start Now",
-    
+
     // Feedback Modal
     nameSurnameOptional: "Name Surname (Optional)",
     emailLabel: "Email *",
@@ -347,7 +348,8 @@ export const dictionaries = {
     aboutBullet3: "Once your order is confirmed, you can track your courier's arrival via a live map.",
     aboutBullet4: "Finally, you can generate a cool receipt of your dream order and share it with your friends!",
     aboutP3: "This application was developed to showcase how an end-to-end order process is designed and to present a flawless user experience (UX).",
-    aboutHaveFun: "Have fun!"
+    aboutHaveFun: "Have fun!",
+    welcomeTagline: "Discover your favorites, create your cart and share!"
   }
 };
 

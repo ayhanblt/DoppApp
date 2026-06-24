@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, Pressable } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 import { X, Share2 } from 'lucide-react-native';
@@ -37,12 +37,12 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/50 items-center justify-center p-4">
-        <TouchableOpacity style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
+        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} activeOpacity={1} />
         
         <Animated.View style={[animatedStyle]} className="bg-white rounded-3xl p-6 w-full max-w-sm items-center shadow-2xl">
-          <TouchableOpacity onPress={onClose} className="absolute top-4 right-4 bg-zinc-100 p-2 rounded-full z-10">
+          <Pressable onPress={onClose} className="absolute top-4 right-4 bg-zinc-100 p-2 rounded-full z-10">
             <X size={20} color="#52525b" />
-          </TouchableOpacity>
+          </Pressable>
 
           {visible && (
             <ConfettiCannon
@@ -77,20 +77,20 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
             )}
           </Text>
 
-          <TouchableOpacity
+          <Pressable
             onPress={onShareRequest}
             className="w-full flex-row items-center justify-center bg-accent py-4 rounded-xl shadow-sm mb-3"
           >
             <Text className="text-white font-black mr-2">Siparişini Paylaş</Text>
             <Share2 size={18} color="white" />
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity
+          <Pressable
             onPress={onClose}
             className="w-full py-4 bg-zinc-100 rounded-xl items-center"
           >
             <Text className="text-zinc-700 font-bold">{t.close}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
       </View>
     </Modal>
