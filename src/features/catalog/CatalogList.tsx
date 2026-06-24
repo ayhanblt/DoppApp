@@ -203,26 +203,28 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-4">
-      <div id="stores" className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="shrink-0">
+    <section className="mx-auto max-w-7xl px-4 pb-4 pt-1 sm:pt-4">
+      <div id="stores" className="mt-1 sm:mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="hidden sm:block shrink-0">
           <h2 className="text-xl font-black">{filtered.length} {storeType === "food" ? t.restaurants : "Mağaza"}</h2>
           <p className="text-sm text-zinc-500">{t.chooseItems}</p>
         </div>
-        <div className="flex w-full sm:w-auto flex-1 items-center justify-start sm:justify-end gap-2 overflow-x-auto no-scrollbar py-1">
-          {featuredLabels.map(label => (
-            <button
-              key={label}
-              onClick={() => setSelectedFeaturedLabel(current => current === label ? null : label)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${selectedFeaturedLabel === label
-                ? "bg-zinc-800 text-white border-transparent"
-                : "bg-white text-zinc-600 hover:bg-zinc-50 border-black/10"
-                }`}
-            >
-              {label}
-            </button>
-          ))}
-          <button onClick={() => setIsSortModalOpen(true)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm border border-black/10 ml-1 hover:bg-zinc-50 transition-colors" aria-label="Filtrele">
+        <div className="flex w-full flex-1 items-center justify-between gap-2 py-1">
+          <div className="flex flex-1 items-center justify-start sm:justify-end gap-2 overflow-x-auto no-scrollbar mask-gradient-right pr-2">
+            {featuredLabels.map(label => (
+              <button
+                key={label}
+                onClick={() => setSelectedFeaturedLabel(current => current === label ? null : label)}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${selectedFeaturedLabel === label
+                  ? "bg-zinc-800 text-white border-transparent"
+                  : "bg-white text-zinc-600 hover:bg-zinc-50 border-black/10"
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setIsSortModalOpen(true)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm border border-black/10 hover:bg-zinc-50 transition-colors" aria-label="Filtrele">
             <Filter size={14} />
           </button>
         </div>

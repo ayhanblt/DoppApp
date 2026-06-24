@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Image, FlatList, ScrollView, Pressable } from 'react-native';
+import { View, Text, Image, FlatList, ScrollView, Pressable, Modal } from 'react-native';
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/lib/types";
 import { formatMoney, formatNumber } from "@/shared/lib/format";
@@ -16,6 +16,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<{ store: Store; item: Product } | null>(null);
+  const [sortBy, setSortBy] = useState<"recommended" | "rating_desc" | "rating_asc" | "deliveryFee_asc" | "deliveryFee_desc" | "eta_asc">("recommended");
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
   const featuredLabels = useMemo(() => {
     const labels = new Set<string>();
@@ -31,7 +33,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   const filtered = useMemo(() => {
     const normalized = query.toLocaleLowerCase(locale);
-    return stores.filter((store) => {
+    const result = stores.filter((store) => {
       if (store.type !== storeType) return false;
 
       if (selectedFeaturedLabel) {
@@ -51,7 +53,17 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
       return haystack.includes(normalized);
     });
-  }, [locale, query, stores, storeType, selectedFeaturedLabel]);
+
+    switch (sortBy) {
+      case "rating_desc": result.sort((a, b) => b.rating - a.rating); break;
+      case "rating_asc": result.sort((a, b) => a.rating - b.rating); break;
+      case "deliveryFee_asc": result.sort((a, b) => a.deliveryFee - b.deliveryFee); break;
+      case "deliveryFee_desc": result.sort((a, b) => b.deliveryFee - a.deliveryFee); break;
+      case "eta_asc": result.sort((a, b) => parseInt(a.eta) - parseInt(b.eta)); break;
+    }
+
+    return result;
+  }, [locale, query, stores, storeType, selectedFeaturedLabel, sortBy]);
 
   const handleAddCart = (quantity: number, selections: CartSelection) => {
     if (!activeItem) return;
@@ -144,20 +156,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   return (
     <View className="flex-1 bg-background px-4 pt-4">
-      <View className="flex-row items-center justify-between mb-4">
-        <View>
-          <Text className="text-xl font-black text-zinc-900">
-            {filtered.length} {storeType === "food" ? t.restaurants : "Mağaza"}
-          </Text>
-          <Text className="text-sm text-zinc-500">{t.chooseItems}</Text>
-        </View>
-        <Pressable className="w-10 h-10 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm">
-          <Filter size={18} color="#52525b" />
-        </Pressable>
-      </View>
-
-      <View className="mb-4">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+      <View className="flex-row items-center mb-4 gap-2">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1 mr-1">
           {featuredLabels.map((label) => (
             <Pressable
               key={label}
@@ -178,6 +178,12 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
             </Pressable>
           ))}
         </ScrollView>
+        <Pressable 
+          onPress={() => setIsSortModalOpen(true)}
+          className="w-10 h-10 shrink-0 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm"
+        >
+          <Filter size={18} color="#52525b" />
+        </Pressable>
       </View>
 
       <FlatList
@@ -198,6 +204,42 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
           onAdd={handleAddCart}
         />
       )}
+
+      {/* Sort Modal */}
+      <Modal visible={isSortModalOpen} transparent animationType="fade">
+        <Pressable className="flex-1 bg-black/50 justify-end" onPress={() => setIsSortModalOpen(false)}>
+          <Pressable 
+            onPress={(e) => e.stopPropagation()} 
+            className="bg-white rounded-t-3xl p-6 pb-12 shadow-xl"
+          >
+            <View className="flex-row items-center justify-between mb-6">
+              <Text className="text-xl font-black text-zinc-900">Sırala</Text>
+              <Pressable onPress={() => setIsSortModalOpen(false)} className="bg-zinc-100 p-2 rounded-full">
+                <Text className="text-zinc-600 font-bold px-1">X</Text>
+              </Pressable>
+            </View>
+            <View className="flex-col gap-2">
+              {[
+                { id: "recommended", label: "Önerilenler" },
+                { id: "rating_desc", label: "Puan (Yüksekten Düşüğe)" },
+                { id: "rating_asc", label: "Puan (Düşükten Yükseğe)" },
+                { id: "deliveryFee_asc", label: "Teslimat Ücreti (Düşükten Yükseğe)" },
+                { id: "deliveryFee_desc", label: "Teslimat Ücreti (Yüksekten Düşüğe)" },
+                { id: "eta_asc", label: "Tahmini Süre (En Hızlı)" },
+              ].map(opt => (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => { setSortBy(opt.id as any); setIsSortModalOpen(false); }}
+                  className={`flex-row items-center justify-between p-4 rounded-xl ${sortBy === opt.id ? 'bg-orange-50' : 'bg-zinc-50'}`}
+                >
+                  <Text className={`font-semibold ${sortBy === opt.id ? 'text-orange-700' : 'text-zinc-700'}`}>{opt.label}</Text>
+                  {sortBy === opt.id && <View className="w-3 h-3 rounded-full bg-orange-600" />}
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

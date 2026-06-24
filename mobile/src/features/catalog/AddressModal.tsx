@@ -8,6 +8,7 @@ import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
+import { reverseGeocode } from '@/features/tracking/geo';
 
 interface AddressModalProps {
   visible: boolean;
@@ -182,11 +183,15 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
                 </body>
                 </html>
               ` }}
-              onMessage={(event) => {
+              onMessage={async (event) => {
                 try {
                   const data = JSON.parse(event.nativeEvent.data);
                   if (data.lat && data.lng) {
                     setRegion(prev => ({ ...prev, latitude: data.lat, longitude: data.lng }));
+                    const addr = await reverseGeocode(data.lat, data.lng);
+                    if (addr && addr.full) {
+                      setAddressDesc(addr.full);
+                    }
                   }
                 } catch (e) {}
               }}

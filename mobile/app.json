@@ -11,6 +11,13 @@
       "supportsTablet": true
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "navigationBar": {
+        "visible": "sticky-immersive"
+      },
       "predictiveBackGestureEnabled": false,
       "package": "DoppApp.Preview"
     },

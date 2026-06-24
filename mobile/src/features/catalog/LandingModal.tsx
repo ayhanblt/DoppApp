@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { MapPin, Rocket } from "lucide-react-native";
+import { DoppAppLogoTek } from "@/shared/ui/DoppAppLogoTek";
 
 type LandingModalProps = {
   locale: Locale;
@@ -34,11 +35,7 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
       <View className="flex-1 bg-black/60 items-center justify-center p-4">
         <View className="w-full max-w-sm rounded-3xl bg-white p-8 items-center shadow-lg">
           <View className="mb-6 h-28 w-28 rounded-3xl bg-zinc-100 items-center justify-center border border-black/5">
-            <Image
-              source={require("../../../assets/images/doppapp-logo.webp")}
-              style={{ width: 64, height: 64 }}
-              resizeMode="contain"
-            />
+            <DoppAppLogoTek width={64} height={64} />
           </View>
 
           <Text className="text-3xl font-black mb-3 text-center">{t.welcomeTitle}</Text>

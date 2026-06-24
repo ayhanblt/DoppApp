@@ -172,28 +172,50 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
   return (
     <div className="min-h-screen bg-[#fbf5f1]">
       <div className="bg-white border-b border-black/5">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:py-8">
-          <div className="flex flex-col md:flex-row md:items-start gap-4">
+        <div className="mx-auto max-w-7xl px-4 py-4 md:py-8">
+          
+          {/* Mobile Top Bar: Back Button + Logo + Title */}
+          <div className="flex md:hidden items-center gap-3 mb-4">
             <button
               onClick={() => router.back()}
-              className="md:mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="flex shrink-0">
+              <Image width={128} height={128} className="h-12 w-12 rounded-full border border-black/10 object-cover shadow-sm" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt={store.name[locale]} />
+            </div>
+            <h1 className="text-xl font-black text-zinc-900 truncate flex-1">{store.name[locale]}</h1>
+            {store.badge && (
+              <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
+                {store.badge[locale]}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-row items-start gap-4">
+            {/* Desktop Back Button */}
+            <button
+              onClick={() => router.back()}
+              className="hidden md:flex mt-1 h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200"
             >
               <ArrowLeft size={20} />
             </button>
-            <div className="flex flex-row items-start gap-4">
-              <div className="flex shrink-0">
+            
+            <div className="flex flex-row flex-1 items-start gap-4 min-w-0">
+              <div className="hidden md:flex shrink-0">
                 <Image width={128} height={128} className="h-16 w-16 md:h-24 md:w-24 rounded-full border border-black/10 object-cover shadow-sm" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt={store.name[locale]} />
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl md:text-3xl font-black text-zinc-900">{store.name[locale]}</h1>
+              <div className="flex flex-col justify-center flex-1 min-w-0">
+                <div className="hidden md:flex items-center gap-2">
+                  <h1 className="text-3xl font-black text-zinc-900">{store.name[locale]}</h1>
                   {store.badge && (
                     <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-2 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-[var(--accent)]">
                       {store.badge[locale]}
                     </span>
                   )}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-zinc-600">
+                <div className="mt-1 md:mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-zinc-600">
                   <span className="text-amber-500 flex items-center gap-1"><Star size={14} fill="currentColor" /> {Number(store.rating).toFixed(1)}</span>
                   <span>·</span>
                   <span>{formatNumber(store.reviews, locale)} {t.reviews}</span>
