@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, Image, Animated } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { dictionaries } from '@/shared/i18n/dictionaries';
+import { usePushNotifications } from '@/features/notifications/usePushNotifications';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -62,6 +63,12 @@ function CustomSplashScreen({ onFinish }: { onFinish: () => void }) {
   );
 }
 
+function PushNotificationInitializer() {
+  const { locale } = useCatalog();
+  usePushNotifications(locale);
+  return null;
+}
+
 export default function RootLayout() {
   const [splashVisible, setSplashVisible] = useState(true);
 
@@ -77,6 +84,7 @@ export default function RootLayout() {
               <Stack.Screen name="tracking" />
               <Stack.Screen name="store/[id]" />
             </Stack>
+            <PushNotificationInitializer />
             {splashVisible && <CustomSplashScreen onFinish={() => setSplashVisible(false)} />}
           </View>
         </CatalogProvider>

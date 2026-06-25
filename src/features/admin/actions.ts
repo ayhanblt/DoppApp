@@ -191,3 +191,112 @@ export async function uploadMenuImageAction(formData: FormData): Promise<{ url: 
     filename: filename
   };
 }
+
+export async function sendPushNotificationAction(payload: { title_tr: string, message_tr: string, title_en: string, message_en: string, route?: string }) {
+  await verifyAuth();
+  
+  try {
+    const { data: devices, error: dbError } = await supabaseAdmin
+      .from('device_tokens')
+      .select('push_token, language');
+
+    if (dbError) throw dbError;
+    
+    if (!devices || devices.length === 0) {
+      // Log to database even if zero devices
+      await supabaseAdmin.from('push_notification_logs').insert({
+        title_tr: payload.title_tr,
+        message_tr: payload.message_tr,
+        title_en: payload.title_en,
+        message_en: payload.message_en,
+        route: payload.route || null,
+        success_count: 0,
+        error_count: 0
+      });
+      return { success: true, data: { success: 0, failed: 0, total: 0 } };
+    }
+
+    const messages = devices.map((device) => {
+      const isEn = device.language === 'en';
+      return {
+        to: device.push_token,
+        sound: 'default',
+        title: isEn ? payload.title_en : payload.title_tr,
+        body: isEn ? payload.message_en : payload.message_tr,
+        data: { route: payload.route || '' },
+      };
+    });
+
+    const chunks = [];
+    for (let i = 0; i < messages.length; i += 100) {
+      chunks.push(messages.slice(i, i + 100));
+    }
+
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (const chunk of chunks) {
+      try {
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chunk),
+        });
+        
+        const result = await response.json();
+        
+        if (result.data) {
+           result.data.forEach((ticket: { status: string; id?: string; message?: string; details?: Record<string, unknown> }) => {
+             if (ticket.status === 'ok') {
+               successCount++;
+             } else {
+               failureCount++;
+               console.error('Expo Push Error:', ticket);
+             }
+           });
+        }
+      } catch (err) {
+        console.error('Failed to send chunk:', err);
+        failureCount += chunk.length;
+      }
+    }
+
+    // Log to database
+    await supabaseAdmin.from('push_notification_logs').insert({
+      title_tr: payload.title_tr,
+      message_tr: payload.message_tr,
+      title_en: payload.title_en,
+      message_en: payload.message_en,
+      route: payload.route || null,
+      success_count: successCount,
+      error_count: failureCount
+    });
+
+    return { success: true, data: { success: successCount, failed: failureCount, total: messages.length } };
+
+  } catch (error: unknown) {
+    console.error("Push notification action error:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu" };
+  }
+}
+
+export async function getPushNotificationLogsAction() {
+  await verifyAuth();
+  
+  const { data, error } = await supabaseAdmin
+    .from('push_notification_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("Failed to fetch push logs:", error);
+    return [];
+  }
+
+  return data;
+}

@@ -145,3 +145,13 @@ export type Order = {
   deliveredAt: number;
   items: CartItem[];
 };
+
+export type PushLog = {
+  id: string;
+  title_tr: string;
+  message_tr: string;
+  created_at: string;
+  success_count: number;
+  error_count: number;
+  route?: string;
+};
