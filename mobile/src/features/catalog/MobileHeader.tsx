@@ -43,7 +43,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onAddressPress, onMe
             <View className="ml-2 flex-1">
               <Text className="text-[10px] text-white/80 font-medium leading-tight">{t.deliveryAddress}</Text>
               <Text className="text-xs font-bold text-white/80 leading-tight" numberOfLines={1}>
-                {deliveryAddress?.shortAddress || t.addressMissing}
+                {deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.shortAddress}` : t.addressMissing}
               </Text>
             </View>
           </Pressable>

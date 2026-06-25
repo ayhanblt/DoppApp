@@ -293,10 +293,10 @@ export default function TrackingScreen() {
 
         <View className="flex-1 bg-white p-4 pb-20">
           <View className="flex-row items-start justify-between mb-4">
-            <View>
+            <View className="flex-1 mr-4">
               <Text className="text-sm font-bold text-orange-600">{t.orderConfirmed}</Text>
               <Text className="text-2xl font-black">{t.liveTracking}</Text>
-              <Text className="text-sm text-zinc-500">{order.addressText}</Text>
+              <Text className="text-sm text-zinc-500" numberOfLines={1}>{order.addressText}</Text>
             </View>
 
             <View className="items-end shrink-0">

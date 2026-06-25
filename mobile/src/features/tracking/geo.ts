@@ -6,7 +6,10 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
   });
 
   const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
-    headers: { Accept: "application/json" }
+    headers: { 
+      Accept: "application/json",
+      "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
+    }
   });
 
   if (!response.ok) return null;
@@ -29,7 +32,10 @@ export async function reverseGeocode(lat: number, lon: number): Promise<GeocodeR
   });
 
   const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
-    headers: { Accept: "application/json" }
+    headers: { 
+      Accept: "application/json",
+      "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
+    }
   });
 
   if (!response.ok) return null;

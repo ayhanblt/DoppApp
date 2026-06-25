@@ -10,7 +10,7 @@ import { dictionaries } from '@/shared/i18n/dictionaries';
 import { getCartTotals, getCartDeliveryTimeMinutes } from '@/features/order/cart';
 import { uid } from '@/shared/lib/format';
 import { buildOrderTimeline, DEFAULT_DELIVERY_SPEEDS } from '@/features/catalog/appConfig';
-import { offsetCoordinate } from '@/features/tracking/geo';
+import { offsetCoordinate, coordinateDistanceKm } from '@/features/tracking/geo';
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -38,15 +38,14 @@ export default function CheckoutScreen() {
     const targetTimeMs = targetTimeSecs * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
     
-    const targetMovementMs = Math.max(0, targetTimeMs - 2000 - 8000);
-    const distanceKm = targetMovementMs / speeds["rabbit"].kmMultiplierMs;
+    const firstStore = stores.find(s => s.id === cart[0]?.storeId);
+    const courierStartCoordinate = firstStore?.coordinate || offsetCoordinate(addressCoordinate, 1, 180);
+    const actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
 
-    const actualMovementMs = distanceKm * speeds[speed].kmMultiplierMs;
+    const actualMovementMs = actualDistanceKm * speeds[speed].kmMultiplierMs;
     const actualTotalTimeMs = 2000 + 8000 + actualMovementMs;
 
-    const courierStartCoordinate = offsetCoordinate(addressCoordinate, distanceKm, 45);
-
-    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, distanceKm, actualTotalTimeMs, speeds);
+    const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, actualDistanceKm, actualTotalTimeMs, speeds);
 
     const storeCoord = courierStartCoordinate;
 
@@ -54,7 +53,7 @@ export default function CheckoutScreen() {
       id: uid("order"),
       customerName: name || "Demo",
       phone: phone || "",
-      addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
+      addressText: `${deliveryAddress.title}: ${deliveryAddress.shortAddress}`,
       note: "",
       addressCoordinate,
       storeCoordinate: storeCoord,
@@ -124,7 +123,7 @@ export default function CheckoutScreen() {
               <Text className="font-black ml-2">{t.deliveryAddress}</Text>
             </View>
             <Text className="mt-1 text-zinc-600 font-bold">
-              {deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.address}` : t.addressRequired}
+              {deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.shortAddress}` : t.addressRequired}
             </Text>
           </View>
 

@@ -34,6 +34,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
 
   const [title, setTitle] = useState(deliveryAddress?.title || '');
   const [addressDesc, setAddressDesc] = useState(deliveryAddress?.address || '');
+  const [shortAddressDesc, setShortAddressDesc] = useState(deliveryAddress?.shortAddress || '');
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
         webViewRef.current?.injectJavaScript(`if(window.map) map.setView([${coord.lat}, ${coord.lng}], 15); true;`);
         setTitle(deliveryAddress.title);
         setAddressDesc(deliveryAddress.address);
+        setShortAddressDesc(deliveryAddress.shortAddress || '');
       } else {
         setRegion({ latitude: DEFAULT_COORD.lat, longitude: DEFAULT_COORD.lng, latitudeDelta: 0.05, longitudeDelta: 0.05 });
         setInitialMapCoord(DEFAULT_COORD);
@@ -115,13 +117,15 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
     }
   };
 
+
+
   const handleSave = () => {
     setDeliveryAddress({
       ...deliveryAddress,
       id: deliveryAddress?.id || "custom",
       title: title.trim() || t.other,
       address: addressDesc.trim() || t.chooseLocationOnMap,
-      shortAddress: addressDesc.trim() ? addressDesc.split(',')[0] : t.chooseLocationOnMap,
+      shortAddress: shortAddressDesc.trim() || (addressDesc.trim() ? addressDesc.split(',')[0] : t.chooseLocationOnMap),
       latitude: region.latitude,
       longitude: region.longitude,
     });
@@ -176,8 +180,12 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
                     }).addTo(window.map);
 
                     window.map.on('moveend', function() {
-                      var center = window.map.getCenter();
-                      window.ReactNativeWebView.postMessage(JSON.stringify({ lat: center.lat, lng: center.lng }));
+                      setTimeout(function() {
+                        var center = window.map.getCenter();
+                        if (window.ReactNativeWebView) {
+                          window.ReactNativeWebView.postMessage(JSON.stringify({ lat: center.lat, lng: center.lng }));
+                        }
+                      }, 50);
                     });
                   </script>
                 </body>
@@ -191,11 +199,22 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
                     const addr = await reverseGeocode(data.lat, data.lng);
                     if (addr && addr.full) {
                       setAddressDesc(addr.full);
+                      setShortAddressDesc(addr.short);
+                    } else {
+                      // Fallback to coordinates if API fails, so we know the message arrived
+                      const coordStr = `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`;
+                      setAddressDesc(coordStr);
+                      setShortAddressDesc(coordStr);
                     }
                   }
-                } catch (e) {}
+                } catch (e) {
+                  console.error("WebView onMessage error:", e);
+                }
               }}
-              scrollEnabled={false}
+              originWhitelist={['*']}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              overScrollMode="never"
               bounces={false}
             />
             
