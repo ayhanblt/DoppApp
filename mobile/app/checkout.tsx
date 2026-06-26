@@ -10,7 +10,7 @@ import { dictionaries } from '@/shared/i18n/dictionaries';
 import { getCartTotals, getCartDeliveryTimeMinutes } from '@/features/order/cart';
 import { uid } from '@/shared/lib/format';
 import { buildOrderTimeline, DEFAULT_DELIVERY_SPEEDS } from '@/features/catalog/appConfig';
-import { offsetCoordinate, coordinateDistanceKm } from '@/features/tracking/geo';
+import { coordinateDistanceKm, getOptimizedTrip, offsetCoordinate } from '@/features/tracking/geo';
 import { supabase } from '@/shared/api/supabase';
 
 export default function CheckoutScreen() {
@@ -24,7 +24,7 @@ export default function CheckoutScreen() {
 
   const totals = getCartTotals(stores, cart);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!deliveryAddress) {
       Alert.alert(t.error, t.addressRequired);
       return;
@@ -42,24 +42,28 @@ export default function CheckoutScreen() {
     const uniqueStoreIds = Array.from(new Set(cart.map(item => item.storeId)));
     const uniqueStores = uniqueStoreIds.map(id => stores.find(s => s.id === id)).filter((s): s is Store => !!s);
     
-    // En uzaktan en yakına sıralama
+    // En uzaktan en yakına sıralama (Sadece Fallback için)
     uniqueStores.sort((a, b) => coordinateDistanceKm(b.coordinate, addressCoordinate) - coordinateDistanceKm(a.coordinate, addressCoordinate));
     
-    const courierStartCoordinate = uniqueStores.length > 0 ? uniqueStores[0].coordinate : offsetCoordinate(addressCoordinate, 1, 180);
+    let courierStartCoordinate = uniqueStores.length > 0 ? uniqueStores[0].coordinate : offsetCoordinate(addressCoordinate, 1, 180);
     
     let actualDistanceKm = 0;
     const waypoints: [number, number][] = [];
     
     if (uniqueStores.length > 0) {
-      let currentPos = courierStartCoordinate;
-      waypoints.push(currentPos);
-      for (let i = 1; i < uniqueStores.length; i++) {
-        actualDistanceKm += coordinateDistanceKm(currentPos, uniqueStores[i].coordinate);
-        currentPos = uniqueStores[i].coordinate;
-        waypoints.push(currentPos);
+      const inputWaypoints = [...uniqueStores.map(s => s.coordinate), addressCoordinate];
+      const trip = await getOptimizedTrip(inputWaypoints);
+
+      if (trip) {
+        waypoints.push(...trip.optimizedWaypoints);
+        actualDistanceKm = trip.distanceKm;
+        courierStartCoordinate = waypoints[0];
+      } else {
+        // Fallback
+        courierStartCoordinate = uniqueStores[0].coordinate;
+        waypoints.push(courierStartCoordinate, addressCoordinate);
+        actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
       }
-      actualDistanceKm += coordinateDistanceKm(currentPos, addressCoordinate);
-      waypoints.push(addressCoordinate);
     } else {
       actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
       waypoints.push(courierStartCoordinate);

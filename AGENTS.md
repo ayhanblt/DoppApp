@@ -61,10 +61,10 @@ Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutu
 - **İyi Kullanım:** Ana stili her durumda sabit tutun ve yokluk durumunu açıkça belirtin. (Örn: `className={\`shadow-sm ${isActive ? 'shadow-md' : 'shadow-none'}\`}`)
 
 ## Rota ve Teslimat Hesaplamaları (Multi-Stop Routing)
-- Sepette birden fazla mağazadan ürün varsa, kurye **kullanıcıya en uzak mağazadan** başlayarak sırayla diğer mağazaları toplayıp (en yakına doğru) adrese gelir.
-- Uzaklık hesaplaması `coordinateDistanceKm` ile `[latitude, longitude]` üzerinden düz çizgi mesafesine (haversine) göre yapılır.
-- `routeWaypoints` (dizisi) içerisinde sırayla uğranacak mağazalar ve en son teslimat adresi bulunur. Bu veriler `orders` tablosuna yazılır.
-- V şeklinde bir rota oluşmaması için kurye rotasına asla kullanıcının bulunduğu konumdan (adres) başlanmaz veya en uzaktaki mağazaya gitmeden önce yakındakine uğranmaz.
+- Sepette birden fazla mağazadan ürün varsa, kurye **OSRM /trip API** kullanılarak Gezgin Satıcı Problemi (TSP) çözümü ile rotalandırılır.
+- Uzaklık ve optimizasyon hesaplaması için eski "kuş uçuşu (haversine)" mantığı kullanılmaz. Tüm mağazalar ve ev koordinatı API'ye gönderilir.
+- `routeWaypoints` (dizisi) içerisinde sırayla uğranacak mağazalar ve **en son** teslimat adresi bulunur. Bu sıralama doğrudan OSRM `trip` diziliminden alınır ve `orders` tablosuna yazılır.
+- Kurye, ev adresi haricindeki en mantıklı (veya API tarafından fallback olarak atanan) mağazadan başlar. Rotada V şekli gibi mantıksız çizimlerin önüne doğrudan Karayolu Geometrisi optimizasyonuyla geçilmiştir.
 
 ## Kurye Takip ve Paylaşım (Tracking & Sharing)
 - **Ziyaret Edilen Mağazalar:** Sipariş takip ekranında kurye rotasındaki mağazalara uğradıkça (ya da sipariş teslim edildiğinde), mağaza ikonları yeşil `CircleCheckBig` olarak güncellenmelidir. (Web'de `TrackingMap.tsx` içinde Marker icon prop'u ile, Mobilde ise WebView içine JS string `window.initMap` ile enjekte edilerek.)

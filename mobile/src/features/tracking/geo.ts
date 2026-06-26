@@ -98,6 +98,49 @@ export async function getRoute(
 }
 
 /**
+ * OSRM /trip API'sini kullanarak verilen koordinatların (Mağazalar + Ev)
+ * en kısa karayolu ziyaret sırasını (Traveling Salesperson) ve gerçek mesafesini hesaplar.
+ * @param waypoints İlk N-1 koordinat mağazalar, SON koordinat her zaman teslimat adresi (Ev).
+ */
+export async function getOptimizedTrip(
+  waypoints: [number, number][]
+): Promise<{
+  optimizedWaypoints: [number, number][];
+  distanceKm: number;
+} | null> {
+  if (waypoints.length < 2) return null;
+  
+  // Koordinatları lng,lat formatına çevir
+  const coordsStr = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(';');
+  
+  // source=any: Nereden başladığı önemli değil, en uygun yerden başlasın.
+  // destination=last: Rota KESİNLİKLE son verdiğimiz koordinatta (Ev) bitmeli.
+  const url = `https://router.project-osrm.org/trip/v1/driving/${coordsStr}?source=any&destination=last&roundtrip=false`;
+
+  const response = await fetch(url, { 
+    headers: { 
+      Accept: "application/json",
+      "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
+    } 
+  });
+  if (!response.ok) return null;
+
+  const data = await response.json();
+  if (data.code !== "Ok" || !data.waypoints || !data.trips || data.trips.length === 0) return null;
+
+  const trip = data.trips[0];
+  
+  // waypoints dizisi, API'nin bize "Hangi sırayla gitmen gerektiğini buldum" dediği yerdir.
+  // trip ucunda, sonuç dizisinin kendi sırası, rotanın mantıklı ziyaret sırasıdır.
+  const optimizedWaypoints: [number, number][] = data.waypoints.map((wp: { waypoint_index: number }) => waypoints[wp.waypoint_index]);
+
+  return {
+    optimizedWaypoints,
+    distanceKm: trip.distance / 1000 // Metre -> Kilometre
+  };
+}
+
+/**
  * Gerçek rota üzerinde toplam mesafe hesaplar (km).
  */
 export function routeTotalDistance(route: [number, number][]): number {

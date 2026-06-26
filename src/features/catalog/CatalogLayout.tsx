@@ -12,7 +12,7 @@ import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findProduct, getItemUnitPrice, getCartDeliveryTimeMinutes } from "@/features/order/cart";
 import { buildOrderTimeline, themeIcons, themes, DEFAULT_DELIVERY_SPEEDS } from "@/features/catalog/appConfig";
 import { useCatalog } from "./CatalogContext";
-import { geocodeAddress, reverseGeocode, coordinateDistanceKm, offsetCoordinate } from "@/features/tracking/geo";
+import { geocodeAddress, reverseGeocode, coordinateDistanceKm, offsetCoordinate, getOptimizedTrip } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
 import { supabase } from "@/shared/api/supabase";
 import { LandingModal } from "./LandingModal";
@@ -103,7 +103,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     }
   };
 
-  function createOrder(event: React.FormEvent<HTMLFormElement>) {
+  async function createOrder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!deliveryAddress) {
       setAddressModalOpen(true);
@@ -126,43 +126,19 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     let courierStartCoordinate = addressCoordinate;
 
     if (uniqueStores.length > 0) {
-      // Find the furthest store from home to start
-      let furthestStore = uniqueStores[0];
-      let maxDist = coordinateDistanceKm(furthestStore.coordinate, addressCoordinate);
-      for (let i = 1; i < uniqueStores.length; i++) {
-        const d = coordinateDistanceKm(uniqueStores[i].coordinate, addressCoordinate);
-        if (d > maxDist) {
-          maxDist = d;
-          furthestStore = uniqueStores[i];
-        }
+      const inputWaypoints = [...uniqueStores.map(s => s.coordinate), addressCoordinate];
+      const trip = await getOptimizedTrip(inputWaypoints);
+
+      if (trip) {
+        waypoints.push(...trip.optimizedWaypoints);
+        actualDistanceKm = trip.distanceKm;
+        courierStartCoordinate = waypoints[0];
+      } else {
+        // Fallback if API fails
+        courierStartCoordinate = uniqueStores[0].coordinate;
+        waypoints.push(courierStartCoordinate, addressCoordinate);
+        actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
       }
-
-      courierStartCoordinate = furthestStore.coordinate;
-      let currentPos = courierStartCoordinate;
-      waypoints.push(currentPos);
-
-      let unvisited = uniqueStores.filter(s => s.id !== furthestStore.id);
-
-      // Greedy path: always go to the nearest unvisited store
-      while (unvisited.length > 0) {
-        let nearestStore = unvisited[0];
-        let minDist = coordinateDistanceKm(currentPos, nearestStore.coordinate);
-        for (let i = 1; i < unvisited.length; i++) {
-          const d = coordinateDistanceKm(currentPos, unvisited[i].coordinate);
-          if (d < minDist) {
-            minDist = d;
-            nearestStore = unvisited[i];
-          }
-        }
-        
-        actualDistanceKm += minDist;
-        currentPos = nearestStore.coordinate;
-        waypoints.push(currentPos);
-        unvisited = unvisited.filter(s => s.id !== nearestStore.id);
-      }
-
-      actualDistanceKm += coordinateDistanceKm(currentPos, addressCoordinate);
-      waypoints.push(addressCoordinate);
     } else {
       courierStartCoordinate = offsetCoordinate(addressCoordinate, 1, 180);
       actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
