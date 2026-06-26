@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import { X, Share2, Copy } from "lucide-react";
+import { X, Share2, Copy, Check, Link2 } from "lucide-react";
 
 type ReceiptShareModalProps = {
   locale: Locale;
@@ -15,6 +15,7 @@ type ReceiptShareModalProps = {
 
 export default function ReceiptShareModal({ locale, imageUrl, onClose }: ReceiptShareModalProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -70,7 +71,7 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -109,7 +110,7 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-black text-zinc-800 flex items-center gap-2"><Share2 size={20} className="text-[var(--accent)]"/> Siparişi Paylaş</h3>
+          <h3 className="text-xl font-black text-zinc-800 flex items-center gap-2"><Share2 size={20} className="text-violet-600"/> Siparişi Paylaş</h3>
           <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200"><X size={18} /></button>
         </div>
 
@@ -152,13 +153,37 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
           </button>
         </div>
 
-        <button
-          onClick={handleCopyLink}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-zinc-200 font-bold text-zinc-700 hover:bg-zinc-50 transition-colors"
-        >
-          <Copy size={18} />
-          {copied ? "Kopyalandı!" : "Bağlantıyı Kopyala"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                await navigator.clipboard.write([
+                  new ClipboardItem({
+                    [blob.type]: blob
+                  })
+                ]);
+                setCopiedImage(true);
+                setTimeout(() => setCopiedImage(false), 2000);
+              } catch (err) {
+                console.error("Error copying image:", err);
+                downloadImage(); // fallback
+              }
+            }}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 font-bold text-white shadow-sm hover:opacity-90 transition-opacity"
+          >
+            {copiedImage ? <Check size={18} /> : <Copy size={18} />}
+            {copiedImage ? "Kopyalandı!" : "Görseli Kopyala"}
+          </button>
+          <button
+            onClick={handleCopyLink}
+            className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-xl bg-white border-2 border-zinc-200 text-zinc-600 shadow-sm hover:bg-zinc-50 transition-colors"
+            title="Bağlantıyı Kopyala"
+          >
+            {copied ? <Check size={20} className="text-emerald-500" /> : <Link2 size={20} />}
+          </button>
+        </div>
       </div>
     </div>
   );

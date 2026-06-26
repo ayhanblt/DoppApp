@@ -45,15 +45,17 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
           </Pressable>
 
           {visible && (
-            <ConfettiCannon
-              count={200}
-              origin={{x: -10, y: 0}}
-              autoStart={true}
-              fadeOut={true}
-            />
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} pointerEvents="none">
+              <ConfettiCannon
+                count={200}
+                origin={{x: -10, y: 0}}
+                autoStart={true}
+                fadeOut={true}
+              />
+            </View>
           )}
 
-          <Text style={{ fontSize: 64 }} className="mt-4 mb-2">🎉</Text>
+          <Text style={{ fontSize: 64 }} className="mt-4 mb-2 z-10">🎉</Text>
           <Text className="text-3xl font-black text-accent mb-2 text-center">{t.celebration}</Text>
           <Text className="text-zinc-600 mb-6 text-center">{t.orderDelivered}</Text>
 

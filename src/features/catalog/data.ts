@@ -194,6 +194,7 @@ function formatEta(min: number, max: number): string {
 export function getStoresAroundAddressSync(center: [number, number], dbStores: Store[], config?: GlobalConfig | null) {
   const deliveryTimes = config?.delivery_times || DEFAULT_DELIVERY_TIMES;
 
+  // Create a deterministic base bearing for this specific address
   return dbStores.map((store, index) => {
     const seed = storeSeed(store.id);
     const bearing = (seed * 29 + index * 47) % 360;
@@ -202,10 +203,6 @@ export function getStoresAroundAddressSync(center: [number, number], dbStores: S
     const minTime = typeConfig.min;
     const maxTime = typeConfig.max;
     
-    // Distance matching the maxTime using rabbit speed
-    // 1 min = 60000ms. movementMs = (maxTime * 60000) - confirmed(30000) - preparing(60000)
-    // Actually, we don't need distance to perfectly match here, but we can make distanceKm proportional.
-    // Let's just use (maxTime / 1.5) as rough distance
     const distanceKm = Math.max(0.5, (maxTime / 60) / 1.5 + (seed % 10) / 20);
 
     return {
@@ -224,11 +221,9 @@ export async function getStoresOnRoadsAroundAddress(center: [number, number], db
     candidates.map(async (store) => {
       let roadCoordinate = await snapCoordinateToRoad(store.coordinate).catch(() => null);
       if (!roadCoordinate) {
-        const seed = store.id.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
-        const bearing = (seed * 29 + candidates.indexOf(store) * 47) % 360;
-        const newCoord = offsetCoordinate(center, 1, (bearing + 180) % 360);
-        roadCoordinate = await snapCoordinateToRoad(newCoord).catch(() => null) || newCoord;
+        roadCoordinate = store.coordinate;
       }
+
 
       const typeConfig = deliveryTimes[store.type] || DEFAULT_DELIVERY_TIMES[store.type] || { min: 1, max: 3 };
       const minTime = typeConfig.min;

@@ -59,3 +59,16 @@ Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutu
 ## NativeWind v4 - Dinamik Class Optimizasyonu
 - NativeWind v4 kullanırken `className` içinde eksik veya dalgalanan (fluctuating) class isimlerinden kaçının. Örneğin `className={\`shadow-${isActive ? 'sm' : 'none'}\`}` gibi kullanımlar veya bir durumda `shadow-sm` varken diğer durumda gölge class'ının tamamen silinmesi render hatalarına sebep olabilir.
 - **İyi Kullanım:** Ana stili her durumda sabit tutun ve yokluk durumunu açıkça belirtin. (Örn: `className={\`shadow-sm ${isActive ? 'shadow-md' : 'shadow-none'}\`}`)
+
+## Rota ve Teslimat Hesaplamaları (Multi-Stop Routing)
+- Sepette birden fazla mağazadan ürün varsa, kurye **kullanıcıya en uzak mağazadan** başlayarak sırayla diğer mağazaları toplayıp (en yakına doğru) adrese gelir.
+- Uzaklık hesaplaması `coordinateDistanceKm` ile `[latitude, longitude]` üzerinden düz çizgi mesafesine (haversine) göre yapılır.
+- `routeWaypoints` (dizisi) içerisinde sırayla uğranacak mağazalar ve en son teslimat adresi bulunur. Bu veriler `orders` tablosuna yazılır.
+- V şeklinde bir rota oluşmaması için kurye rotasına asla kullanıcının bulunduğu konumdan (adres) başlanmaz veya en uzaktaki mağazaya gitmeden önce yakındakine uğranmaz.
+
+## Kurye Takip ve Paylaşım (Tracking & Sharing)
+- **Ziyaret Edilen Mağazalar:** Sipariş takip ekranında kurye rotasındaki mağazalara uğradıkça (ya da sipariş teslim edildiğinde), mağaza ikonları yeşil `CircleCheckBig` olarak güncellenmelidir. (Web'de `TrackingMap.tsx` içinde Marker icon prop'u ile, Mobilde ise WebView içine JS string `window.initMap` ile enjekte edilerek.)
+- **Harita Tooltip/Popup:** Web'de `react-leaflet` in `<Tooltip>` bileşeni kullanılarak, mobilde ise `marker.bindPopup` HTML stringi üzerinden mağazanın adı ve sepetteki ilgili ürünleri (`name x qty`) gösterilmelidir.
+- **Paylaşım (Share):** Siparişi paylaş butonunun yanına, resmi Native Share menüsü yerine sadece sipariş URL'sini panoya kopyalayan (`expo-clipboard` / `navigator.clipboard`) "Link Kopyala" (Link2) ikonu konulmalıdır.
+- **Native Görsel Paylaşımı (Mobile):** Mobilde "Siparişi Paylaş" butonuna tıklandığında açılan `ReceiptShareModal` içerisinde, `expo-file-system` (`downloadAsync`, `cacheDirectory` / legacy metodlar) kullanılarak görsel cihaza indirilmeli ve `expo-sharing` ile (resim dosyası formatında) paylaşılmalıdır.
+

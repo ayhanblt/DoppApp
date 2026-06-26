@@ -14,6 +14,7 @@ import { buildOrderTimeline, themeIcons, themes, DEFAULT_DELIVERY_SPEEDS } from 
 import { useCatalog } from "./CatalogContext";
 import { geocodeAddress, reverseGeocode, coordinateDistanceKm, offsetCoordinate } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
+import { supabase } from "@/shared/api/supabase";
 import { LandingModal } from "./LandingModal";
 
 import { HeaderMenu } from "./HeaderMenu";
@@ -117,9 +118,57 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     const targetTimeMs = targetTimeSeconds * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
     
-    const firstStore = stores.find(s => s.id === cart[0]?.storeId);
-    const courierStartCoordinate = firstStore?.coordinate || offsetCoordinate(addressCoordinate, 1, 180);
-    const actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
+    const uniqueStoreIds = Array.from(new Set(cart.map(item => item.storeId)));
+    const uniqueStores = uniqueStoreIds.map(id => stores.find(s => s.id === id)).filter((s): s is Store => !!s);
+    
+    let actualDistanceKm = 0;
+    const waypoints: [number, number][] = [];
+    let courierStartCoordinate = addressCoordinate;
+
+    if (uniqueStores.length > 0) {
+      // Find the furthest store from home to start
+      let furthestStore = uniqueStores[0];
+      let maxDist = coordinateDistanceKm(furthestStore.coordinate, addressCoordinate);
+      for (let i = 1; i < uniqueStores.length; i++) {
+        const d = coordinateDistanceKm(uniqueStores[i].coordinate, addressCoordinate);
+        if (d > maxDist) {
+          maxDist = d;
+          furthestStore = uniqueStores[i];
+        }
+      }
+
+      courierStartCoordinate = furthestStore.coordinate;
+      let currentPos = courierStartCoordinate;
+      waypoints.push(currentPos);
+
+      let unvisited = uniqueStores.filter(s => s.id !== furthestStore.id);
+
+      // Greedy path: always go to the nearest unvisited store
+      while (unvisited.length > 0) {
+        let nearestStore = unvisited[0];
+        let minDist = coordinateDistanceKm(currentPos, nearestStore.coordinate);
+        for (let i = 1; i < unvisited.length; i++) {
+          const d = coordinateDistanceKm(currentPos, unvisited[i].coordinate);
+          if (d < minDist) {
+            minDist = d;
+            nearestStore = unvisited[i];
+          }
+        }
+        
+        actualDistanceKm += minDist;
+        currentPos = nearestStore.coordinate;
+        waypoints.push(currentPos);
+        unvisited = unvisited.filter(s => s.id !== nearestStore.id);
+      }
+
+      actualDistanceKm += coordinateDistanceKm(currentPos, addressCoordinate);
+      waypoints.push(addressCoordinate);
+    } else {
+      courierStartCoordinate = offsetCoordinate(addressCoordinate, 1, 180);
+      actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
+      waypoints.push(courierStartCoordinate);
+      waypoints.push(addressCoordinate);
+    }
 
     // GERÇEK süreyi ise kullanıcının seçtiği hıza (Tavşan/Kaplumbağa) göre yeniden hesaplıyoruz
     const actualMovementMs = actualDistanceKm * speeds[speed].kmMultiplierMs;
@@ -127,15 +176,17 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
 
     const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, actualDistanceKm, actualTotalTimeMs, speeds);
 
-    setOrder({
-      id: uid("order"),
+    const orderId = uid("order");
+    const newOrder: Order = {
+      id: orderId,
       customerName: String(data.get("name") || "Demo"),
       phone: String(data.get("phone") || ""),
       addressText: `${deliveryAddress.title}: ${deliveryAddress.address}`,
       note: "",
       addressCoordinate,
-      storeCoordinate: courierStartCoordinate,
+      storeCoordinate: courierStartCoordinate, // Geriye dönük uyumluluk
       courierStartCoordinate: courierStartCoordinate,
+      routeWaypoints: waypoints,
       speed,
       status: "confirmed",
       placedAt: now,
@@ -143,8 +194,33 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       deliveringAt,
       deliveredAt,
       items: cart
-    });
+    };
+
+    setOrder(newOrder);
     setCheckoutOpen(false);
+
+    // Supabase kaydı (UI'ı bloklamadan arka planda atıyoruz)
+    const saveOrder = async () => {
+      const { error } = await supabase.from("orders").insert({
+        id: orderId,
+        status: "confirmed",
+        cart: cart,
+        customer: {
+          name: newOrder.customerName,
+          phone: newOrder.phone,
+          address: newOrder.addressText
+        },
+        total: totals.total,
+        delivery_speed: speed,
+        restaurant_coordinate: courierStartCoordinate, // Geriye dönük uyumluluk
+        destination_coordinate: addressCoordinate,
+        courier_start_coordinate: courierStartCoordinate,
+        route_waypoints: waypoints, // Yeni kolon
+        platform: "web" // Yeni kolon
+      });
+      if (error) console.error("Order insert error:", error);
+    };
+    saveOrder();
   }
 
   function openRestorePrompt() {

@@ -142,27 +142,27 @@ export async function GET(req: NextRequest) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '40px' }}>
                 <div style={{ display: 'flex', width: '480px', height: totalItems <= 3 ? '400px' : '480px', position: 'relative', marginBottom: '60px', alignItems: 'center', justifyContent: 'center' }}>
                   {data.items[0].image && (
-                    <div style={{ display: 'flex', width: '280px', height: '280px', borderRadius: '140px', overflow: 'hidden', border: '8px solid #ffffff', zIndex: 10, position: 'absolute', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                    <div style={{ display: 'flex', width: '280px', height: '280px', borderRadius: '140px', overflow: 'hidden', border: '8px solid #ffffff', zIndex: '10', position: 'absolute', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
                       <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[0].image)}&output=jpg&w=560&h=560`} width={280} height={280} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[1]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 5, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 2 ? { bottom: 0, right: 20 } : totalItems === 3 ? { bottom: 0, left: 20 } : totalItems === 4 ? { bottom: 0, left: 0 } : { top: 0, left: 0 }) }}>
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '5', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 2 ? { bottom: 0, right: 20 } : totalItems === 3 ? { bottom: 0, left: 20 } : totalItems === 4 ? { bottom: 0, left: 0 } : { top: 0, left: 0 }) }}>
                       <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[1].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[2]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 5, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 3 ? { top: 0, right: 20 } : totalItems === 4 ? { top: 0, left: 160 } : { bottom: 0, right: 0 }) }}>
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '5', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 3 ? { top: 0, right: 20 } : totalItems === 4 ? { top: 0, left: 160 } : { bottom: 0, right: 0 }) }}>
                       <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[2].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[3]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 4, position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 4 ? { bottom: 0, right: 0 } : { top: 0, right: 0 }) }}>
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '4', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 4 ? { bottom: 0, right: 0 } : { top: 0, right: 0 }) }}>
                       <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[3].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[4]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: 4, position: 'absolute', bottom: 0, left: 0, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '4', position: 'absolute', bottom: 0, left: 0, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
                       <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[4].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "895568724373",
+    "project_id": "doppapp-e6bf4",
+    "storage_bucket": "doppapp-e6bf4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895568724373:android:338d7ff34528ec8e78769c",
+        "android_client_info": {
+          "package_name": "DoppApp.Preview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCllBWiLwPjY1jQ3tJO9rzExKWtRAdHVFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

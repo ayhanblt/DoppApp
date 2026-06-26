@@ -139,6 +139,7 @@ export type Order = {
   courierStartCoordinate: [number, number];
   speed: DeliverySpeed;
   status: OrderStatus;
+  routeWaypoints?: [number, number][];
   placedAt: number;
   handoffAt: number;
   deliveringAt: number;

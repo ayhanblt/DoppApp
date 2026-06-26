@@ -69,12 +69,13 @@ export function interpolateRoute(from: [number, number], to: [number, number], p
  * Dönüş: sıralı [lat, lng] koordinat dizisi veya hata durumunda null.
  */
 export async function getRoute(
-  from: [number, number],
-  to: [number, number]
+  waypoints: [number, number][]
 ): Promise<[number, number][] | null> {
+  if (waypoints.length < 2) return null;
+  const coordsStr = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(';');
   const url =
     `https://router.project-osrm.org/route/v1/driving/` +
-    `${from[1]},${from[0]};${to[1]},${to[0]}` +
+    coordsStr +
     `?overview=full&geometries=geojson&annotations=true`;
 
   const response = await fetch(url, { headers: { Accept: "application/json" } });

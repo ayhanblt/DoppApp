@@ -91,16 +91,15 @@ async function registerDeviceToSupabase(pushToken: string, locale: string) {
       await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
     }
 
-    const { error } = await supabase.from('device_tokens').upsert({
-      device_id: deviceId,
-      push_token: pushToken,
-      platform: Platform.OS,
-      language: locale,
-      last_seen_at: new Date().toISOString()
-    }, { onConflict: 'device_id' });
+    const { error } = await supabase.rpc('register_device', {
+      p_device_id: deviceId,
+      p_push_token: pushToken,
+      p_platform: Platform.OS,
+      p_language: locale
+    });
 
     if (error) {
-      console.error("Supabase device_tokens upsert error:", error);
+      console.error("Supabase register_device RPC error:", error);
     }
   } catch (e) {
     console.error("registerDeviceToSupabase exception:", e);

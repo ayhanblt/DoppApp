@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale, Order, Store } from "@/shared/lib/types";
 import { formatMoney, formatNumber } from "@/shared/lib/format";
 import { findProduct } from "@/features/order/cart";
 import { getCartTotals } from "@/features/order/cart";
-import { getRoute, interpolateAlongRoute } from "@/features/tracking/geo";
-import { ArrowLeft, Info, Gift, X, Share2, Rocket } from "lucide-react";
+import { getRoute, interpolateAlongRoute, coordinateDistanceKm } from "@/features/tracking/geo";
+import { ArrowLeft, Info, Gift, X, Share2, Rocket, Link2, Check } from "lucide-react";
 import ReceiptShareModal from "./ReceiptShareModal";
 
 const TrackingMap = dynamic(() => import("@/features/tracking/TrackingMap"), { ssr: false });
@@ -34,8 +34,11 @@ export default function TrackingExperience({
   const [displayRoute, setDisplayRoute] = useState<[number, number][] | null>(null);
   const [savingsModalOpen, setSavingsModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState("");
   const [fastForward, setFastForward] = useState(false);
+
+
 
   const handleShareClick = () => {
     const items = order.items.map(item => {
@@ -60,11 +63,12 @@ export default function TrackingExperience({
 
   useEffect(() => {
     let cancelled = false;
-    getRoute(order.courierStartCoordinate, order.addressCoordinate).then((route) => {
+    const waypoints = order.routeWaypoints || [order.courierStartCoordinate, order.addressCoordinate];
+    getRoute(waypoints).then((route) => {
       if (!cancelled) setDisplayRoute(route);
     });
     return () => { cancelled = true; };
-  }, [order.courierStartCoordinate, order.addressCoordinate]);
+  }, [order.routeWaypoints, order.courierStartCoordinate, order.addressCoordinate]);
 
   useEffect(() => {
     let offset = 0;
@@ -116,6 +120,40 @@ export default function TrackingExperience({
   const secsLeft = Math.floor((timeLeftMs % 60000) / 1000);
   const timeLeftFormatted = `${minsLeft}:${secsLeft.toString().padStart(2, '0')}`;
 
+  const uniqueStores = Array.from(new Set(order.items.map(item => item.storeId)))
+    .map(id => stores.find(s => s.id === id))
+    .filter((s): s is Store => !!s)
+    .sort((a, b) => {
+      if (!order.routeWaypoints) return 0;
+      const idxA = order.routeWaypoints.findIndex(wp => wp[0] === a.coordinate[0] && wp[1] === a.coordinate[1]);
+      const idxB = order.routeWaypoints.findIndex(wp => wp[0] === b.coordinate[0] && wp[1] === b.coordinate[1]);
+      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+    });
+
+  const storeDistances = useMemo(() => {
+    let cumulative = 0;
+    const waypoints = order.routeWaypoints || [order.courierStartCoordinate, order.addressCoordinate];
+    const distances: number[] = [0];
+    for (let i = 0; i < waypoints.length - 2; i++) {
+      cumulative += coordinateDistanceKm(waypoints[i], waypoints[i+1]);
+      distances.push(cumulative);
+    }
+    let totalDist = 0;
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      totalDist += coordinateDistanceKm(waypoints[i], waypoints[i+1]);
+    }
+    totalDist = totalDist || 1;
+    return uniqueStores.map((_, i) => distances[i] / totalDist);
+  }, [uniqueStores, order.routeWaypoints, order.courierStartCoordinate, order.addressCoordinate]);
+
+  const getStoreTooltipText = (storeId: string) => {
+    const itemsInStore = order.items.filter(i => i.storeId === storeId);
+    return itemsInStore.map(item => {
+      const p = stores.find(s => s.id === storeId)?.menu.find(p => p.id === item.itemId);
+      return p ? `${p.name[locale]} x${item.quantity}` : "";
+    }).filter(Boolean).join(", ");
+  };
+
   return (
     <main className="min-h-screen bg-[#fff7ef] p-4 text-zinc-950">
       <section className="mx-auto max-w-7xl py-6 pb-24">
@@ -155,7 +193,14 @@ export default function TrackingExperience({
           </div>
           <div className="mt-5">
             <TrackingMap
-              restaurant={order.courierStartCoordinate}
+              stores={uniqueStores.map((s, idx) => ({ 
+                coordinate: s.coordinate, 
+                type: s.type,
+                visited: status === "delivered" || ((status === "handoff" || status === "delivering") && progress >= storeDistances[idx]),
+                name: s.name[locale],
+                tooltipText: getStoreTooltipText(s.id),
+                logo: s.logo
+              }))}
               address={order.addressCoordinate}
               courier={courier}
               routePoints={displayRoute ?? undefined}
@@ -232,13 +277,15 @@ export default function TrackingExperience({
 
       {status === "delivered" && celebrationShown && !celebrationOpen && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-zinc-200 flex justify-center z-40">
-          <button
-            onClick={handleShareClick}
-            className="w-full max-w-md flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
-          >
-            {t.shareOrder}
-            <Share2 size={18} />
-          </button>
+          <div className="w-full max-w-md flex items-center gap-2">
+            <button
+              onClick={handleShareClick}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-white hover:opacity-90 shadow-md transition-all bg-gradient-to-r from-violet-600 to-indigo-600"
+            >
+              {t.shareOrder}
+              <Share2 size={18} />
+            </button>
+          </div>
         </div>
       )}
     </main>

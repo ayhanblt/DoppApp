@@ -8,7 +8,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "DoppApp.Preview"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,8 @@
         "visible": "sticky-immersive"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "DoppApp.Preview"
+      "package": "DoppApp.Preview",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -27,7 +29,8 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sharing"
     ],
     "extra": {
       "router": {},

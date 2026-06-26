@@ -3,7 +3,7 @@ import { View, Text, TextInput, ScrollView, Alert, Pressable } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
-import { Locale } from '@/shared/lib/types';
+import { Locale, Store, Order } from '@/shared/lib/types';
 import { ArrowLeft, MapPin, Rabbit, Turtle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { dictionaries } from '@/shared/i18n/dictionaries';
@@ -11,6 +11,7 @@ import { getCartTotals, getCartDeliveryTimeMinutes } from '@/features/order/cart
 import { uid } from '@/shared/lib/format';
 import { buildOrderTimeline, DEFAULT_DELIVERY_SPEEDS } from '@/features/catalog/appConfig';
 import { offsetCoordinate, coordinateDistanceKm } from '@/features/tracking/geo';
+import { supabase } from '@/shared/api/supabase';
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -38,9 +39,32 @@ export default function CheckoutScreen() {
     const targetTimeMs = targetTimeSecs * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
     
-    const firstStore = stores.find(s => s.id === cart[0]?.storeId);
-    const courierStartCoordinate = firstStore?.coordinate || offsetCoordinate(addressCoordinate, 1, 180);
-    const actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
+    const uniqueStoreIds = Array.from(new Set(cart.map(item => item.storeId)));
+    const uniqueStores = uniqueStoreIds.map(id => stores.find(s => s.id === id)).filter((s): s is Store => !!s);
+    
+    // En uzaktan en yakına sıralama
+    uniqueStores.sort((a, b) => coordinateDistanceKm(b.coordinate, addressCoordinate) - coordinateDistanceKm(a.coordinate, addressCoordinate));
+    
+    const courierStartCoordinate = uniqueStores.length > 0 ? uniqueStores[0].coordinate : offsetCoordinate(addressCoordinate, 1, 180);
+    
+    let actualDistanceKm = 0;
+    const waypoints: [number, number][] = [];
+    
+    if (uniqueStores.length > 0) {
+      let currentPos = courierStartCoordinate;
+      waypoints.push(currentPos);
+      for (let i = 1; i < uniqueStores.length; i++) {
+        actualDistanceKm += coordinateDistanceKm(currentPos, uniqueStores[i].coordinate);
+        currentPos = uniqueStores[i].coordinate;
+        waypoints.push(currentPos);
+      }
+      actualDistanceKm += coordinateDistanceKm(currentPos, addressCoordinate);
+      waypoints.push(addressCoordinate);
+    } else {
+      actualDistanceKm = coordinateDistanceKm(courierStartCoordinate, addressCoordinate);
+      waypoints.push(courierStartCoordinate);
+      waypoints.push(addressCoordinate);
+    }
 
     const actualMovementMs = actualDistanceKm * speeds[speed].kmMultiplierMs;
     const actualTotalTimeMs = 2000 + 8000 + actualMovementMs;
@@ -48,9 +72,10 @@ export default function CheckoutScreen() {
     const { handoffAt, deliveringAt, deliveredAt } = buildOrderTimeline(now, speed, actualDistanceKm, actualTotalTimeMs, speeds);
 
     const storeCoord = courierStartCoordinate;
+    const orderId = uid("order");
 
-    setOrder({
-      id: uid("order"),
+    const newOrder: Order = {
+      id: orderId,
       customerName: name || "Demo",
       phone: phone || "",
       addressText: `${deliveryAddress.title}: ${deliveryAddress.shortAddress}`,
@@ -58,6 +83,7 @@ export default function CheckoutScreen() {
       addressCoordinate,
       storeCoordinate: storeCoord,
       courierStartCoordinate: courierStartCoordinate,
+      routeWaypoints: waypoints,
       speed,
       status: "confirmed",
       placedAt: now,
@@ -65,7 +91,32 @@ export default function CheckoutScreen() {
       deliveringAt,
       deliveredAt,
       items: cart
-    });
+    };
+
+    setOrder(newOrder);
+    
+    // Supabase kaydı
+    const saveOrder = async () => {
+      const { error } = await supabase.from("orders").insert({
+        id: orderId,
+        status: "confirmed",
+        cart: cart,
+        customer: {
+          name: newOrder.customerName,
+          phone: newOrder.phone,
+          address: newOrder.addressText
+        },
+        total: totals.total,
+        delivery_speed: speed,
+        restaurant_coordinate: courierStartCoordinate, // Geriye dönük uyumluluk
+        destination_coordinate: addressCoordinate,
+        courier_start_coordinate: courierStartCoordinate,
+        route_waypoints: waypoints,
+        platform: "mobile"
+      });
+      if (error) console.error("Order insert error:", error);
+    };
+    saveOrder();
     
     // Empty cart and navigate to tracking
     setCart([]);

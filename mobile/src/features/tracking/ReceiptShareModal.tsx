@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable } from 'react-native';
-import { X, Share2 } from 'lucide-react-native';
+import { X, Share2, Check, Link2 } from 'lucide-react-native';
 import { Locale } from '@/shared/lib/types';
 import { supabase } from '@/shared/api/supabase';
+import { cacheDirectory, downloadAsync } from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import * as Clipboard from 'expo-clipboard';
 
 interface ReceiptShareModalProps {
   locale: Locale;
@@ -14,6 +17,7 @@ interface ReceiptShareModalProps {
 export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: ReceiptShareModalProps) {
   const [shortId, setShortId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
@@ -48,12 +52,26 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
 
   const handleNativeShare = async () => {
     try {
-      await Share.share({
-        message: `${shareText}\n${shareUrl}`,
-        title: "DoppApp Sepetim",
-      });
+      setLoading(true);
+      const fileUri = cacheDirectory + 'doppapp-sepetim.png';
+      await downloadAsync(imageUrl, fileUri);
+      
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'image/png',
+          dialogTitle: 'DoppApp Sepetim',
+        });
+      } else {
+        await Share.share({
+          message: `${shareText}\n${shareUrl}`,
+          title: "DoppApp Sepetim",
+        });
+      }
     } catch (err) {
       console.error("Error sharing:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,14 +105,26 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
             />
           </View>
 
-          <Pressable
-            onPress={handleNativeShare}
-            className="w-full flex-row items-center justify-center bg-zinc-100 py-4 rounded-xl mb-3"
-            disabled={loading}
-          >
-            <Share2 size={18} color="#3f3f46" className="mr-2" />
-            <Text className="text-zinc-800 font-bold">Paylaş</Text>
-          </Pressable>
+          <View className="flex-row gap-2 mb-3">
+            <Pressable
+              onPress={handleNativeShare}
+              className="flex-1 flex-row items-center justify-center bg-accent py-4 rounded-xl"
+              disabled={loading}
+            >
+              <Share2 size={18} color="white" className="mr-2" />
+              <Text className="text-white font-bold">Paylaş</Text>
+            </Pressable>
+            <Pressable
+              onPress={async () => {
+                await Clipboard.setStringAsync(shareUrl);
+                setCopiedLink(true);
+                setTimeout(() => setCopiedLink(false), 2000);
+              }}
+              className="h-[54px] w-[54px] items-center justify-center bg-zinc-100 rounded-xl border border-zinc-200"
+            >
+              {copiedLink ? <Check size={20} color="#10b981" /> : <Link2 size={20} color="#52525b" />}
+            </Pressable>
+          </View>
         </View>
       </View>
     </Modal>
