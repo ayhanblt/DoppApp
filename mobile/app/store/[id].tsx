@@ -22,7 +22,8 @@ export default function StoreDetailScreen() {
   const store = useMemo(() => stores.find((s) => s.id === id), [stores, id]);
 
   const [activeItem, setActiveItem] = useState<{ store: Store; item: Product } | null>(null);
-  const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSectionLabel, setSelectedSectionLabel] = useState<string | null>(null);
 
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
@@ -39,21 +40,27 @@ export default function StoreDetailScreen() {
   }
 
   const getCategoryName = (item: Product, loc: Locale) => {
-    if (loc === 'tr' && item.section_label_tr) return item.section_label_tr;
-    if (loc === 'en' && item.section_label_en) return item.section_label_en;
     if (item.product_categories) {
       return loc === 'tr' ? item.product_categories.name_tr : item.product_categories.name_en;
     }
     return "";
   };
 
-  const featuredLabels = Array.from(new Set(
+  const sidebarCategories = Array.from(new Set(
     store.menu.map(item => getCategoryName(item, locale)).filter(Boolean) as string[]
   )).sort();
 
-  const storeMenu = selectedFeaturedLabel
-    ? store.menu.filter(item => getCategoryName(item, locale) === selectedFeaturedLabel)
+  const storeMenuFilteredByCategory = selectedCategory
+    ? store.menu.filter(item => getCategoryName(item, locale) === selectedCategory)
     : store.menu;
+
+  const sectionLabelsAvailable = Array.from(new Set(
+    storeMenuFilteredByCategory.map(item => locale === 'tr' ? item.section_label_tr : item.section_label_en).filter(Boolean) as string[]
+  )).sort();
+
+  const storeMenu = selectedSectionLabel
+    ? storeMenuFilteredByCategory.filter(item => (locale === 'tr' ? item.section_label_tr : item.section_label_en) === selectedSectionLabel)
+    : storeMenuFilteredByCategory;
 
   const featuredItems = storeMenu.filter(item => locale === 'tr' ? item.section_label_tr : item.section_label_en);
   const regularItems = storeMenu.filter(item => !(locale === 'tr' ? item.section_label_tr : item.section_label_en));
@@ -174,20 +181,26 @@ export default function StoreDetailScreen() {
         <View className="bg-white border-b border-black/5 py-3">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 flex-row">
             <Pressable
-              onPress={() => setSelectedFeaturedLabel(null)}
-              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedFeaturedLabel ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
+              onPress={() => {
+                setSelectedCategory(null);
+                setSelectedSectionLabel(null);
+              }}
+              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedCategory ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
             >
-              <Text className={`text-xs font-bold ${!selectedFeaturedLabel ? "text-white" : "text-zinc-600"}`}>
+              <Text className={`text-xs font-bold ${!selectedCategory ? "text-white" : "text-zinc-600"}`}>
                 {t.allProducts}
               </Text>
             </Pressable>
-            {featuredLabels.map(label => (
+            {sidebarCategories.map(label => (
               <Pressable
                 key={label}
-                onPress={() => setSelectedFeaturedLabel(label)}
-                className={`rounded-lg px-4 py-2 border mr-2 ${selectedFeaturedLabel === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
+                onPress={() => {
+                  setSelectedCategory(label);
+                  setSelectedSectionLabel(null);
+                }}
+                className={`rounded-lg px-4 py-2 border mr-2 ${selectedCategory === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
               >
-                <Text className={`text-xs font-bold ${selectedFeaturedLabel === label ? "text-white" : "text-zinc-600"}`}>
+                <Text className={`text-xs font-bold ${selectedCategory === label ? "text-white" : "text-zinc-600"}`}>
                   {label}
                 </Text>
               </Pressable>
@@ -197,7 +210,24 @@ export default function StoreDetailScreen() {
 
         {/* PRODUCT LIST */}
         <View className="p-4">
-          <Text className="text-lg font-black text-zinc-900 mb-4">{selectedFeaturedLabel || t.allProducts}</Text>
+          <View className="flex-row items-center justify-between mb-4 flex-wrap gap-2">
+            <Text className="text-lg font-black text-zinc-900">{selectedCategory || t.allProducts}</Text>
+            {sectionLabelsAvailable.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                {sectionLabelsAvailable.map(label => (
+                  <Pressable
+                    key={label}
+                    onPress={() => setSelectedSectionLabel(current => current === label ? null : label)}
+                    className={`rounded-full px-3 py-1.5 border mr-2 ${selectedSectionLabel === label ? "bg-zinc-800 border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
+                  >
+                    <Text className={`text-[11px] font-bold ${selectedSectionLabel === label ? "text-white" : "text-zinc-600"}`}>
+                      {label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
           <View className="gap-3">
             {displayedItems.map((item) => {
               const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;

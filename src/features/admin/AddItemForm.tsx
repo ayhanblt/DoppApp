@@ -25,6 +25,20 @@ export function AddItemForm({ locale, stores, storeCategories, productCategories
 
   const selectedStoreObj = stores.find(s => s.id === selectedStore);
 
+  const getValidStoreCatIds = (baseId: string) => {
+    const validIds = new Set<string>();
+    const traverse = (id: string) => {
+      if (!validIds.has(id)) {
+        validIds.add(id);
+        storeCategories.filter(c => c.parent_id === id).forEach(child => traverse(child.id));
+      }
+    };
+    traverse(baseId);
+    return Array.from(validIds);
+  };
+
+  const validStoreCatIds = selectedStoreObj?.category_id ? getValidStoreCatIds(selectedStoreObj.category_id) : [];
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -78,11 +92,11 @@ export function AddItemForm({ locale, stores, storeCategories, productCategories
             Ürün Kategorisi
             <select name="product_category_id" className="mt-1 w-full rounded-lg border border-black/10 p-3 h-[46px]" required>
               <option value="">Seçiniz</option>
-              {productCategories.filter(c => !selectedStoreObj?.category_id || c.store_cat_id === selectedStoreObj?.category_id).map(c => (
+              {productCategories.filter(c => !selectedStoreObj?.category_id || validStoreCatIds.includes(c.store_cat_id)).map(c => (
                 <option key={c.id} value={c.id}>{c.name_tr} ({c.name_en})</option>
               ))}
             </select>
-            {productCategories.filter(c => !selectedStoreObj?.category_id || c.store_cat_id === selectedStoreObj?.category_id).length === 0 && (
+            {productCategories.filter(c => !selectedStoreObj?.category_id || validStoreCatIds.includes(c.store_cat_id)).length === 0 && (
               <p className="text-red-500 text-xs mt-1">Görünür alt kategori bulunamadı! Lütfen Kategori Yönetiminden ekleyin.</p>
             )}
           </label>

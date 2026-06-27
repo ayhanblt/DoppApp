@@ -240,6 +240,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
             locale={locale}
             store={editingItemsStore}
             productCategories={productCategories}
+            storeCategories={storeCategories}
             onClose={() => setEditingItemsStore(null)}
             onSave={(updated: Store) => updateStore(updated, true)}
           />

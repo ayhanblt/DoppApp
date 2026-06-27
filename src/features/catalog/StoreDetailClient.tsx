@@ -24,7 +24,8 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
   const [selections, setSelections] = useState<CartSelection>({});
   const [quantity, setQuantity] = useState(1);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSectionLabel, setSelectedSectionLabel] = useState<string | null>(null);
 
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
@@ -51,21 +52,27 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
   }
 
   const getCategoryName = (item: Product, locale: Locale) => {
-    if (locale === 'tr' && item.section_label_tr) return item.section_label_tr;
-    if (locale === 'en' && item.section_label_en) return item.section_label_en;
     if (item.product_categories) {
       return locale === 'tr' ? item.product_categories.name_tr : item.product_categories.name_en;
     }
     return "";
   };
 
-  const featuredLabels = Array.from(new Set(
+  const sidebarCategories = Array.from(new Set(
     store.menu.map(item => getCategoryName(item, locale)).filter(Boolean) as string[]
   )).sort();
 
-  const storeMenu = selectedFeaturedLabel
-    ? store.menu.filter(item => getCategoryName(item, locale) === selectedFeaturedLabel)
+  const storeMenuFilteredByCategory = selectedCategory
+    ? store.menu.filter(item => getCategoryName(item, locale) === selectedCategory)
     : store.menu;
+
+  const sectionLabelsAvailable = Array.from(new Set(
+    storeMenuFilteredByCategory.map(item => locale === 'tr' ? item.section_label_tr : item.section_label_en).filter(Boolean) as string[]
+  )).sort();
+
+  const storeMenu = selectedSectionLabel
+    ? storeMenuFilteredByCategory.filter(item => (locale === 'tr' ? item.section_label_tr : item.section_label_en) === selectedSectionLabel)
+    : storeMenuFilteredByCategory;
 
   const featuredItems = storeMenu.filter(item => locale === 'tr' ? item.section_label_tr : item.section_label_en);
   const regularItems = storeMenu.filter(item => !(locale === 'tr' ? item.section_label_tr : item.section_label_en));
@@ -247,19 +254,25 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
               <h3 className="font-black text-lg mb-4 text-zinc-900">Kategoriler</h3>
               <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
                 <button
-                  onClick={() => setSelectedFeaturedLabel(null)}
-                  className={`shrink-0 rounded-lg px-4 py-2 text-sm font-bold text-left transition-colors border ${!selectedFeaturedLabel
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedSectionLabel(null);
+                  }}
+                  className={`shrink-0 rounded-lg px-4 py-2 text-sm font-bold text-left transition-colors border ${!selectedCategory
                     ? "bg-[var(--accent)] text-white border-transparent shadow-sm"
                     : "bg-white text-zinc-600 hover:bg-zinc-50 border-black/10"
                     }`}
                 >
                   Tüm Ürünler
                 </button>
-                {featuredLabels.map(label => (
+                {sidebarCategories.map(label => (
                   <button
                     key={label}
-                    onClick={() => setSelectedFeaturedLabel(label)}
-                    className={`shrink-0 rounded-lg px-4 py-2 text-sm font-bold text-left transition-colors border ${selectedFeaturedLabel === label
+                    onClick={() => {
+                      setSelectedCategory(label);
+                      setSelectedSectionLabel(null);
+                    }}
+                    className={`shrink-0 rounded-lg px-4 py-2 text-sm font-bold text-left transition-colors border ${selectedCategory === label
                       ? "bg-[var(--accent)] text-white border-transparent shadow-sm"
                       : "bg-white text-zinc-600 hover:bg-zinc-50 border-black/10"
                       }`}
@@ -271,8 +284,26 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
             </div>
           </div>
 
-          <div className="flex-1">
-            <h2 className="text-2xl font-black mb-6">{selectedFeaturedLabel || "Tüm Ürünler"}</h2>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+              <h2 className="text-2xl font-black">{selectedCategory || "Tüm Ürünler"}</h2>
+              {sectionLabelsAvailable.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar mask-gradient-right pr-2">
+                  {sectionLabelsAvailable.map(label => (
+                    <button
+                      key={label}
+                      onClick={() => setSelectedSectionLabel(current => current === label ? null : label)}
+                      className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${selectedSectionLabel === label
+                        ? "bg-zinc-800 text-white border-transparent"
+                        : "bg-white text-zinc-600 hover:bg-zinc-50 border-black/10"
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
               {displayedItems.map((item) => {
@@ -287,9 +318,9 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
                     onClick={() => openItem(store, item)}
                   >
                     {isFeatured && (
-                      <span className="absolute top-2 right-2 z-10 flex rounded-full px-2.5 py-1 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm items-center gap-1" style={{ backgroundColor: sectionColor }}>
-                        <Star className="inline-flex" size={12} fill="white" strokeWidth={1} />
-                        <span className="pt-[1px]">{label}</span>
+                      <span className="absolute top-2 right-2 z-10 flex rounded-full px-2.5 py-1 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm items-center gap-1 max-w-[calc(100%-16px)] overflow-hidden" style={{ backgroundColor: sectionColor }}>
+                        <Star className="inline-flex shrink-0" size={12} fill="white" strokeWidth={1} />
+                        <span className="pt-[1px] truncate">{label}</span>
                       </span>
                     )}
                     <div className="aspect-square w-full relative overflow-hidden bg-zinc-50">

@@ -234,8 +234,8 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
         {filtered.map((store) => (
           <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm transition-shadow hover:shadow-md">
             <div className="flex border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5 items-start">
-              <div className="hidden md:flex shrink-0 mr-3 mt-0.5">
-                <Image width={96} height={96} className="h-12 w-12 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
+              <div className="flex shrink-0 mr-3 mt-0.5">
+                <Image width={96} height={96} className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col justify-center">
@@ -297,11 +297,11 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                         const sectionColor = item.section_color || '#f97316';
 
                         return (
-                          <div key={item.id} className={`relative flex flex-col justify-start lg:justify-between py-2 lg:py-4 lg:border-b ${isFeatured ? 'lg:px-3 lg:-mx-3 lg:rounded-xl lg:border lg:mb-1 lg:mt-2 lg:shadow-sm' : 'border-black/5'}`} style={isFeatured ? { backgroundColor: `${sectionColor}15`, borderColor: `${sectionColor}30` } : undefined}>
+                          <div key={item.id} className={`relative flex flex-col justify-start lg:justify-between py-2 lg:py-4 lg:border-b ${isFeatured ? 'lg:px-3 lg:-mx-3 lg:rounded-xl lg:border lg:mb-1 lg:mt-2 lg:shadow-sm bg-transparent lg:bg-[var(--f-bg)] lg:border-[var(--f-border)]' : 'border-transparent lg:border-black/5'}`} style={isFeatured ? { '--f-bg': `${sectionColor}10`, '--f-border': `${sectionColor}20` } as React.CSSProperties : undefined}>
                             {isFeatured && (
-                              <span className="hidden lg:flex absolute -top-2 right-2 rounded-full px-2.5 py-0.5 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm items-center gap-1" style={{ backgroundColor: sectionColor }}>
-                                <Star className="inline-flex" size={12} fill="white" strokeWidth={1} />
-                                <span className="pt-[1px]">{label}</span>
+                              <span className="flex absolute top-0 lg:-top-2 right-0 lg:right-2 z-10 rounded-full p-1 lg:px-2.5 lg:py-0.5 text-[10px] leading-none font-black uppercase tracking-wider text-white shadow-sm items-center gap-1 max-w-[calc(100%-8px)] lg:max-w-[calc(100%-16px)] overflow-hidden" style={{ backgroundColor: sectionColor }}>
+                                <Star className="inline-flex shrink-0" size={10} fill="white" strokeWidth={1} />
+                                <span className="hidden lg:inline pt-[1px] truncate">{label}</span>
                               </span>
                             )}
                             <div className={`flex flex-col lg:grid lg:grid-cols-[64px_1fr] gap-1.5 lg:gap-3 ${isFeatured ? 'lg:mt-2' : ''}`} onClick={() => openItem(store, item)}>

@@ -9,18 +9,19 @@ import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
 import { deleteProductFromSupabase } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { formatMoney } from "@/shared/lib/format";
-import type { Locale, Product, MenuOptionGroup, Store, ProductCategory } from "@/shared/lib/types";
+import type { Locale, Product, MenuOptionGroup, Store, ProductCategory, StoreCategory } from "@/shared/lib/types";
 import Image from "next/image";
 
 type EditProductsModalProps = {
   locale: Locale;
   store: Store;
   productCategories: ProductCategory[];
+  storeCategories: StoreCategory[];
   onClose: () => void;
   onSave: (store: Store) => void;
 };
 
-export function EditProductsModal({ locale, store, productCategories, onClose, onSave }: EditProductsModalProps) {
+export function EditProductsModal({ locale, store, productCategories, storeCategories, onClose, onSave }: EditProductsModalProps) {
   const t = dictionaries[locale];
   
   // Sort products alphabetically
@@ -125,7 +126,21 @@ export function EditProductsModal({ locale, store, productCategories, onClose, o
                 Ürün Kategorisi
                 <select className="mt-1 w-full rounded-lg border border-black/10 p-3 h-[46px]" value={productCategoryId} onChange={(e) => setProductCategoryId(e.target.value)} required>
                   <option value="">Seçiniz</option>
-                  {productCategories.filter(c => !store.category_id || c.store_cat_id === store.category_id).map(c => (
+                  {productCategories.filter(c => {
+                    if (!store.category_id) return true;
+                    const getValidStoreCatIds = (baseId: string) => {
+                      const validIds = new Set<string>();
+                      const traverse = (id: string) => {
+                        if (!validIds.has(id)) {
+                          validIds.add(id);
+                          storeCategories.filter(sc => sc.parent_id === id).forEach(child => traverse(child.id));
+                        }
+                      };
+                      traverse(baseId);
+                      return Array.from(validIds);
+                    };
+                    return getValidStoreCatIds(store.category_id).includes(c.store_cat_id);
+                  }).map(c => (
                     <option key={c.id} value={c.id}>{c.name_tr} ({c.name_en})</option>
                   ))}
                 </select>
