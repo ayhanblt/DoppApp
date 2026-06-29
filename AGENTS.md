@@ -72,3 +72,5 @@ Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutu
 - **Paylaşım (Share):** Siparişi paylaş butonunun yanına, resmi Native Share menüsü yerine sadece sipariş URL'sini panoya kopyalayan (`expo-clipboard` / `navigator.clipboard`) "Link Kopyala" (Link2) ikonu konulmalıdır.
 - **Native Görsel Paylaşımı (Mobile):** Mobilde "Siparişi Paylaş" butonuna tıklandığında açılan `ReceiptShareModal` içerisinde, `expo-file-system` (`downloadAsync`, `cacheDirectory` / legacy metodlar) kullanılarak görsel cihaza indirilmeli ve `expo-sharing` ile (resim dosyası formatında) paylaşılmalıdır.
 
+
+- [ ] React Native'de (Mobil) `TextInput` içeren sayfalar ve modallarda, klavye açıldığında input alanlarının kapanmaması için `KeyboardAvoidingView` kullanımı bir standart (alışkanlık) olarak uygulanmalı mıdır? (Evet, uygulanmalıdır).

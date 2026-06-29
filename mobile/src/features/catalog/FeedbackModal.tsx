@@ -54,10 +54,10 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
       animationType="slide"
       onRequestClose={() => setFeedbackOpen(false)}
     >
-      <View className="flex-1 bg-black/50 justify-end">
-        <Pressable style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)}  />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <Pressable style={{ flex: 1 }} onPress={() => setFeedbackOpen(false)}  />
 
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View className="bg-white rounded-t-3xl max-h-[90%] shadow-2xl">
             <View className="px-6 py-4 flex-row items-center justify-between border-b border-zinc-100">
               <Text className="text-xl font-black text-zinc-900">{t.sendFeedback}</Text>
@@ -147,8 +147,8 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

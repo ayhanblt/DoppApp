@@ -232,7 +232,7 @@ export async function getStoresOnRoadsAroundAddress(center: [number, number], db
       return {
         ...store,
         coordinate: roadCoordinate,
-        eta: formatEta(minTime, maxTime)
+        eta: formatEta(minTime / 60, maxTime / 60)
       };
     })
   );

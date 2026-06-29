@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Plus, Minus, Search, Tag, Filter, Star, Clock, Bike, MessageCircle } from "lucide-react";
+import { Plus, Minus, Search, Tag, Filter, Star, Clock, Bike, MessageCircle, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { dictionaries } from "@/shared/i18n/dictionaries";
@@ -233,47 +233,54 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       <div className="mt-4 grid gap-4 pb-28 md:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((store) => (
           <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm transition-shadow hover:shadow-md">
-            <div className="flex border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5 items-start">
-              <div className="flex shrink-0 mr-3 mt-0.5">
-                <Image width={96} height={96} className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
-              </div>
-
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-2">
-                  <h3 className="truncate text-lg font-black leading-tight cursor-pointer hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
-                    {store.name[locale]}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    {store.badge && (
-                      <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
-                        {store.badge[locale]}
-                      </span>
-                    )}
-                    <button className="shrink-0 text-xs font-bold text-[var(--accent)] hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
-                      {t.seeAllItems ? t.seeAllItems(store.menu.length) : t.seeAll}
-                    </button>
-                  </div>
+            <div className="flex flex-col border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5">
+              <div className="flex items-start">
+                <div className="flex shrink-0 mr-3 mt-0.5">
+                  <Image width={96} height={96} className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-black/10 object-cover" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt="" />
                 </div>
 
-                {store.description && store.description[locale] && store.description[locale] !== "null" && store.description[locale].trim() !== "" && (
-                  <p className="mt-1 text-xs text-zinc-500 line-clamp-2 leading-snug">
-                    {store.description[locale]}
-                  </p>
-                )}
-
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex flex-wrap items-center gap-x-2 text-xs font-semibold text-zinc-600 cursor-pointer hover:opacity-80" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
-                    <span>{store.store_categories ? store.store_categories[locale === "tr" ? "name_tr" : "name_en"] : store.category_id}</span>
-                    <span>·</span>
-                    <span className="text-amber-500">★ {Number(store.rating).toFixed(1)}</span>
-                    <span>·</span>
-                    <span>{formatNumber(store.reviews, locale)} {t.reviews}</span>
-                  </p>
-
-                  <div className="flex flex-col items-end gap-1 shrink-0 text-xs font-bold text-zinc-700">
-                    <span className="flex items-center gap-1"><Clock size={14} className="text-[var(--accent)]" /> {store.eta}</span>
-                    {/* <span className="flex items-center gap-1"><Bike size={14} className="text-[var(--accent)]" /> {store.deliveryFee ? formatMoney(store.deliveryFee, locale) : t.free}</span> */}
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+                    <h3 className="truncate flex-1 min-w-0 text-lg font-black leading-tight cursor-pointer hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
+                      {store.name[locale]}
+                    </h3>
+                    {store.badge && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="shrink-0 rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
+                          {store.badge[locale]}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  <div className="mt-1 h-[34px]">
+                    {store.description && store.description[locale] && store.description[locale] !== "null" && store.description[locale].trim() !== "" && (
+                      <p className="text-xs text-zinc-500 line-clamp-2 leading-snug">
+                        {store.description[locale]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-x-2 text-xs font-semibold text-zinc-600 cursor-pointer hover:opacity-80" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
+                  <span>{store.store_categories ? store.store_categories[locale === "tr" ? "name_tr" : "name_en"] : store.category_id}</span>
+                  <span>·</span>
+                  <span className="text-amber-500">★ {Number(store.rating).toFixed(1)}</span>
+                  <span>·</span>
+                  <span>{formatNumber(store.reviews, locale)} {t.reviews}</span>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="flex items-center gap-1 text-xs font-bold text-zinc-700">
+                    <Clock size={14} className="text-[var(--accent)]" /> {store.eta}
+                  </span>
+                  {store.menu.length > 3 && (
+                    <button className="flex items-center gap-0.5 text-[11px] sm:text-xs font-bold text-[var(--accent)] hover:underline" onClick={() => router.push(`/${locale}/store/${store.id}`)}>
+                      +{store.menu.length} {locale === 'tr' ? 'Ürün' : 'Items'} <ChevronRight size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -314,7 +321,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
                               />
                               <div className="min-w-0 flex flex-col">
                                 <h4 className="line-clamp-2 lg:line-clamp-1 cursor-pointer font-bold lg:font-black text-xs lg:text-base hover:underline leading-tight">{item.name[locale]}</h4>
-                                <div className="hidden lg:block line-clamp-2 text-sm text-zinc-500 mt-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                <div className="hidden lg:block line-clamp-2 text-sm text-zinc-500 mt-1 h-[40px]" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                   <ReactMarkdown
                                     components={{
                                       ul: ({ node, ...props }) => <ul className="list-disc pl-4" {...props} />,

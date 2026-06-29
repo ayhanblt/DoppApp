@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCatalog } from '@/features/catalog/CatalogContext';
@@ -140,211 +140,217 @@ export default function StoreDetailScreen() {
         <Text className="text-sm font-black text-accent uppercase">{store.store_categories?.[locale === "tr" ? "name_tr" : "name_en"] || ""}</Text>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-        {/* STORE INFO CARD */}
-        <View className="bg-white p-5 border-b border-black/5">
-          <View className="flex-row items-start gap-4">
-            <Image
-              source={{ uri: store.logo || "https://placehold.co/100x100.webp?text=Logo" }}
-              className="h-16 w-16 md:h-20 md:w-20 rounded-full border border-black/10 object-cover shadow-sm bg-zinc-50"
-            />
-            <View className="flex-1">
-              <View className="flex-row flex-wrap items-center gap-2">
-                <Text className="text-xl font-black text-zinc-900 leading-tight">{store.name[locale]}</Text>
-                {store.badge && (
-                  <View className="rounded bg-accent/10 px-1.5 py-0.5">
-                    <Text className="text-[10px] font-black uppercase text-accent">{store.badge[locale]}</Text>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: cart.length > 0 ? 100 : 32 }} keyboardShouldPersistTaps="handled">
+          {/* STORE INFO CARD */}
+          <View className="bg-white p-5 border-b border-black/5">
+            <View className="flex-row items-start gap-4">
+              <Image
+                source={{ uri: store.logo || "https://placehold.co/100x100.webp?text=Logo" }}
+                className="h-16 w-16 md:h-20 md:w-20 rounded-full border border-black/10 object-cover shadow-sm bg-zinc-50"
+              />
+              <View className="flex-1">
+                <View className="flex-row flex-wrap items-center gap-2">
+                  <Text className="text-xl font-black text-zinc-900 leading-tight">{store.name[locale]}</Text>
+                  {store.badge && (
+                    <View className="rounded bg-accent/10 px-1.5 py-0.5">
+                      <Text className="text-[10px] font-black uppercase text-accent">{store.badge[locale]}</Text>
+                    </View>
+                  )}
+                </View>
+                <View className="mt-2 flex-row flex-wrap items-center gap-2">
+                  <View className="flex-row items-center gap-0.5">
+                    <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                    <Text className="text-xs font-bold text-amber-500">{Number(store.rating).toFixed(1)}</Text>
                   </View>
+                  <Text className="text-xs text-zinc-400">·</Text>
+                  <Text className="text-xs text-zinc-500 font-medium">{formatNumber(store.reviews, locale)} {t.reviews}</Text>
+                  <Text className="text-xs text-zinc-400">·</Text>
+                  <View className="flex-row items-center gap-1">
+                    <Clock size={12} color="#fb4824" />
+                    <Text className="text-xs font-bold text-zinc-700">{store.eta}</Text>
+                  </View>
+                </View>
+                {store.description && store.description[locale] !== "null" && store.description[locale]?.trim() !== "" && (
+                  <Text className="mt-3 text-xs text-zinc-500 leading-relaxed">{store.description[locale]}</Text>
                 )}
               </View>
-              <View className="mt-2 flex-row flex-wrap items-center gap-2">
-                <View className="flex-row items-center gap-0.5">
-                  <Star size={12} color="#f59e0b" fill="#f59e0b" />
-                  <Text className="text-xs font-bold text-amber-500">{Number(store.rating).toFixed(1)}</Text>
-                </View>
-                <Text className="text-xs text-zinc-400">·</Text>
-                <Text className="text-xs text-zinc-500 font-medium">{formatNumber(store.reviews, locale)} {t.reviews}</Text>
-                <Text className="text-xs text-zinc-400">·</Text>
-                <View className="flex-row items-center gap-1">
-                  <Clock size={12} color="#fb4824" />
-                  <Text className="text-xs font-bold text-zinc-700">{store.eta}</Text>
-                </View>
-              </View>
-              {store.description && store.description[locale] !== "null" && store.description[locale]?.trim() !== "" && (
-                <Text className="mt-3 text-xs text-zinc-500 leading-relaxed">{store.description[locale]}</Text>
-              )}
             </View>
           </View>
-        </View>
 
-        {/* CATEGORY SELECTOR (HORIZONTAL SCROLL) */}
-        <View className="bg-white border-b border-black/5 py-3">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 flex-row">
-            <Pressable
-              onPress={() => {
-                setSelectedCategory(null);
-                setSelectedSectionLabel(null);
-              }}
-              className={`rounded-lg px-4 py-2 border mr-2 ${!selectedCategory ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
-            >
-              <Text className={`text-xs font-bold ${!selectedCategory ? "text-white" : "text-zinc-600"}`}>
-                {t.allProducts}
-              </Text>
-            </Pressable>
-            {sidebarCategories.map(label => (
+          {/* CATEGORY SELECTOR (HORIZONTAL SCROLL) */}
+          <View className="bg-white border-b border-black/5 py-3">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 flex-row">
               <Pressable
-                key={label}
                 onPress={() => {
-                  setSelectedCategory(label);
+                  setSelectedCategory(null);
                   setSelectedSectionLabel(null);
                 }}
-                className={`rounded-lg px-4 py-2 border mr-2 ${selectedCategory === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
+                className={`rounded-lg px-4 py-2 border mr-2 ${!selectedCategory ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
               >
-                <Text className={`text-xs font-bold ${selectedCategory === label ? "text-white" : "text-zinc-600"}`}>
-                  {label}
+                <Text className={`text-xs font-bold ${!selectedCategory ? "text-white" : "text-zinc-600"}`}>
+                  {t.allProducts}
                 </Text>
               </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* PRODUCT LIST */}
-        <View className="p-4">
-          <View className="flex-row items-center justify-between mb-4 flex-wrap gap-2">
-            <Text className="text-lg font-black text-zinc-900">{selectedCategory || t.allProducts}</Text>
-            {sectionLabelsAvailable.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                {sectionLabelsAvailable.map(label => (
-                  <Pressable
-                    key={label}
-                    onPress={() => setSelectedSectionLabel(current => current === label ? null : label)}
-                    className={`rounded-full px-3 py-1.5 border mr-2 ${selectedSectionLabel === label ? "bg-zinc-800 border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
-                  >
-                    <Text className={`text-[11px] font-bold ${selectedSectionLabel === label ? "text-white" : "text-zinc-600"}`}>
-                      {label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-          <View className="gap-3">
-            {displayedItems.map((item) => {
-              const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
-              const isFeatured = !!label;
-              const sectionColor = item.section_color || '#f97316';
-
-              return (
+              {sidebarCategories.map(label => (
                 <Pressable
-                  key={item.id}
-                  onPress={() => setActiveItem({ store, item })}
-                  className={`bg-white rounded-2xl border border-black/5 p-4 flex-row ${isFeatured ? "shadow-md" : "shadow-sm"}`}
-                  style={isFeatured ? { backgroundColor: `${sectionColor}08`, borderColor: `${sectionColor}20` } : undefined}
+                  key={label}
+                  onPress={() => {
+                    setSelectedCategory(label);
+                    setSelectedSectionLabel(null);
+                  }}
+                  className={`rounded-lg px-4 py-2 border mr-2 ${selectedCategory === label ? "bg-accent border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
                 >
-                  <View className="flex-1 mr-4">
+                  <Text className={`text-xs font-bold ${selectedCategory === label ? "text-white" : "text-zinc-600"}`}>
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* PRODUCT LIST */}
+          <View className="p-4">
+            <View className="flex-row items-center justify-between mb-4 flex-wrap gap-2">
+              <Text className="text-lg font-black text-zinc-900">{selectedCategory || t.allProducts}</Text>
+              {sectionLabelsAvailable.length > 0 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                  {sectionLabelsAvailable.map(label => (
+                    <Pressable
+                      key={label}
+                      onPress={() => setSelectedSectionLabel(current => current === label ? null : label)}
+                      className={`rounded-full px-3 py-1.5 border mr-2 ${selectedSectionLabel === label ? "bg-zinc-800 border-transparent shadow-sm" : "bg-white border-black/10 shadow-none"}`}
+                    >
+                      <Text className={`text-[11px] font-bold ${selectedSectionLabel === label ? "text-white" : "text-zinc-600"}`}>
+                        {label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+            <View className="gap-3">
+              {displayedItems.map((item) => {
+                const label = locale === 'tr' ? item.section_label_tr : item.section_label_en;
+                const isFeatured = !!label;
+                const sectionColor = item.section_color || '#f97316';
+
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => setActiveItem({ store, item })}
+                    className={`bg-white rounded-2xl border border-black/5 p-4 flex-col `}
+                    style={isFeatured ? { backgroundColor: `${sectionColor}10`, borderColor: `${sectionColor}20` } : undefined}
+                  >
                     {isFeatured && (
                       <View className="self-start rounded-full px-2 py-0.5 mb-2" style={{ backgroundColor: sectionColor }}>
                         <Text className="text-[9px] font-black uppercase text-white">★ {label}</Text>
                       </View>
                     )}
-                    <Text className="text-base font-black text-zinc-900 leading-tight" numberOfLines={1}>{item.name[locale]}</Text>
-                    <Text className="mt-1.5 text-[13px] text-zinc-500 leading-tight" numberOfLines={2}>
-                      {item.description[locale].replace(/(\*\*|[-*]\s)/g, '').replace(/\n/g, ' ')}
-                    </Text>
-                    {(item.calories || 0) > 0 && (
-                      <Text className="mt-2 text-xs font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</Text>
-                    )}
-                    <Text className="text-base font-black text-accent mt-3">{formatMoney(item.price, locale)}</Text>
-                  </View>
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-24 h-24 rounded-xl border border-black/5 bg-zinc-50 object-cover"
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* REVIEWS & RATINGS */}
-        <View className="bg-white p-5 border-t border-b border-black/5 mt-4">
-          <Text className="text-lg font-black text-zinc-900 mb-4 flex-row items-center gap-2">
-            <MessageSquare size={18} color="#fb4824" /> {t.reviews}
-          </Text>
-
-          {store.reviews_data && store.reviews_data.length > 0 ? (
-            <View className="gap-4">
-              {store.reviews_data.map((review, idx) => (
-                <View key={idx} className="flex-row gap-3 border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
-                  <View className="h-10 w-10 shrink-0 rounded-full bg-accent items-center justify-center shadow-sm">
-                    <Text className="text-white font-black text-lg">{review.author.charAt(0).toUpperCase()}</Text>
-                  </View>
-                  <View className="flex-1">
-                    <View className="flex-row items-center justify-between mb-1">
-                      <Text className="font-bold text-sm text-zinc-900">
-                        {review.author.split(' ').map(w => w.charAt(0).toUpperCase() + '*'.repeat(Math.max(0, w.length - 1))).join(' ')}
-                      </Text>
-                      <View className="flex-row">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} size={11} color={i < review.rating ? "#f59e0b" : "#e4e4e7"} fill={i < review.rating ? "#f59e0b" : "none"} />
-                        ))}
+                    <View className="flex-row">
+                      <View className="flex-1 mr-4">
+                        <Text className="text-base font-black text-zinc-900 leading-tight" numberOfLines={1}>{item.name[locale]}</Text>
+                        <Text className="mt-1.5 text-[13px] text-zinc-500 leading-tight" numberOfLines={2}>
+                          {item.description[locale].replace(/(\*\*|[-*]\s)/g, '').replace(/\n/g, ' ')}
+                        </Text>
+                        {(item.calories || 0) > 0 && (
+                          <Text className="mt-2 text-xs font-bold text-emerald-700">🔥 {formatNumber(item.calories || 0, locale)} kcal</Text>
+                        )}
+                        <Text className="text-base font-black text-accent mt-3">{formatMoney(item.price, locale)}</Text>
                       </View>
+                      <Image
+                        source={{ uri: item.image }}
+                        className="w-24 h-24 rounded-xl border border-black/5 bg-zinc-50 object-cover"
+                      />
                     </View>
-                    <Text className="text-sm text-zinc-600 leading-normal">{review.comment}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text className="text-sm text-zinc-400 italic py-4">{t.noReviewsYet}</Text>
-          )}
-
-          {/* ADD REVIEW FORM */}
-          <View className="mt-8 border-t border-zinc-100 pt-6">
-            <Text className="font-black text-base mb-4">{t.addReview}</Text>
-            <View className="gap-3">
-              <TextInput
-                placeholder={t.fullName}
-                value={reviewName}
-                onChangeText={setReviewName}
-                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50"
-              />
-              <View className="flex-row items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
-                <Text className="font-bold text-zinc-700 text-sm">{t.rating}</Text>
-                <View className="flex-row">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Pressable
-                      key={star}
-                      onPress={() => setReviewRating(star)}
-                      className="px-1"
-                    >
-                      <Text className={`text-2xl ${star <= reviewRating ? 'text-amber-500' : 'text-zinc-300'}`}>★</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-              <TextInput
-                placeholder={t.yourReview}
-                value={reviewText}
-                onChangeText={setReviewText}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50 h-20"
-              />
-              <Pressable
-                onPress={submitReview}
-                disabled={isSubmittingReview || !reviewName.trim() || !reviewText.trim()}
-                className={`rounded-xl py-3.5 items-center justify-center ${isSubmittingReview || !reviewName.trim() || !reviewText.trim() ? "bg-accent/50 shadow-none" : "bg-accent shadow-sm"}`}
-              >
-                <Text className="text-white font-black text-base">
-                  {isSubmittingReview ? t.submitting : t.submitReview}
-                </Text>
-              </Pressable>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
-        </View>
-      </ScrollView>
+
+          {/* REVIEWS & RATINGS */}
+          <View className="bg-white p-5 border-t border-b border-black/5 mt-4">
+            <Text className="text-lg font-black text-zinc-900 mb-4 flex-row items-center gap-2">
+              <MessageSquare size={18} color="#fb4824" /> {t.reviews}
+            </Text>
+
+            {store.reviews_data && store.reviews_data.length > 0 ? (
+              <View className="gap-4">
+                {store.reviews_data.map((review, idx) => (
+                  <View key={idx} className="flex-row gap-3 border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
+                    <View className="h-10 w-10 shrink-0 rounded-full bg-accent items-center justify-center shadow-sm">
+                      <Text className="text-white font-black text-lg">{review.author.charAt(0).toUpperCase()}</Text>
+                    </View>
+                    <View className="flex-1">
+                      <View className="flex-row items-center justify-between mb-1">
+                        <Text className="font-bold text-sm text-zinc-900">
+                          {review.author.split(' ').map(w => w.charAt(0).toUpperCase() + '*'.repeat(Math.max(0, w.length - 1))).join(' ')}
+                        </Text>
+                        <View className="flex-row">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={11} color={i < review.rating ? "#f59e0b" : "#e4e4e7"} fill={i < review.rating ? "#f59e0b" : "none"} />
+                          ))}
+                        </View>
+                      </View>
+                      <Text className="text-sm text-zinc-600 leading-normal">{review.comment}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="text-sm text-zinc-400 italic py-4">{t.noReviewsYet}</Text>
+            )}
+
+            {/* ADD REVIEW FORM */}
+            <View className="mt-8 border-t border-zinc-100 pt-6">
+              <Text className="font-black text-base mb-4">{t.addReview}</Text>
+              <View className="gap-3">
+                <TextInput
+                  placeholder={t.fullName}
+                  placeholderTextColor="#a1a1aa"
+                  value={reviewName}
+                  onChangeText={setReviewName}
+                  className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50"
+                />
+                <View className="flex-row items-center gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                  <Text className="font-bold text-zinc-700 text-sm">{t.rating}</Text>
+                  <View className="flex-row">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Pressable
+                        key={star}
+                        onPress={() => setReviewRating(star)}
+                        className="px-1"
+                      >
+                        <Text className={`text-2xl ${star <= reviewRating ? 'text-amber-500' : 'text-zinc-300'}`}>★</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+                <TextInput
+                  placeholder={t.yourReview}
+                  placeholderTextColor="#a1a1aa"
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 bg-zinc-50 h-20"
+                />
+                <Pressable
+                  onPress={submitReview}
+                  disabled={isSubmittingReview || !reviewName.trim() || !reviewText.trim()}
+                  className={`rounded-xl py-3.5 items-center justify-center ${isSubmittingReview || !reviewName.trim() || !reviewText.trim() ? "bg-accent/50 shadow-none" : "bg-accent shadow-sm"}`}
+                >
+                  <Text className="text-white font-black text-base">
+                    {isSubmittingReview ? t.submitting : t.submitReview}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {activeItem && (
         <ProductModal
@@ -375,7 +381,7 @@ export default function StoreDetailScreen() {
             </View>
             <Text className="text-white font-black text-lg">
               {formatMoney(
-                cart.reduce((sum, ci) => sum + (store.menu.find(m => m.id === ci.itemId)?.price || 0) * ci.quantity, 0), 
+                cart.reduce((sum, ci) => sum + (store.menu.find(m => m.id === ci.itemId)?.price || 0) * ci.quantity, 0),
                 locale
               )}
             </Text>

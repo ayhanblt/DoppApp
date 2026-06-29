@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Search, Send, Store } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 import { useCatalog } from '@/features/catalog/CatalogContext';
@@ -28,40 +28,50 @@ export default function AboutScreen() {
       <ScrollView className="flex-1 p-6">
         <View className="items-center mb-8 mt-4">
           <View className="bg-accent w-24 h-24 rounded-3xl items-center justify-center shadow-lg mb-4">
-            <Text className="text-white font-black text-5xl">D</Text>
+            <Image
+              source={require('../../assets/icon.png')}
+              style={{ width: 64, height: 64, tintColor: '#fff' }}
+              resizeMode="contain"
+            />
           </View>
-          <Text className="text-3xl font-black text-zinc-900">DoppApp</Text>
-          <Text className="text-zinc-500 font-medium text-base mt-1">Cross-Platform Delivery Simulator</Text>
+          <Text className="text-3xl font-black text-zinc-900">{t.aboutTitle}</Text>
+          <Text className="text-zinc-500 font-medium text-base mt-1">DoppApp</Text>
         </View>
 
-        <View className="bg-white rounded-2xl p-6 shadow-sm border border-black/5 mb-6">
+        <View className="bg-white rounded-2xl p-6 shadow-sm border border-black/5 mb-6 space-y-6">
           <Text className="text-zinc-700 text-base leading-relaxed">
-            DoppApp, modern web (Next.js 15) ve mobil (React Native/Expo) teknolojilerini bir araya getiren interaktif bir deneme (sandbox) uygulamasıdır.
-            Gerçek bir e-ticaret uygulaması gibi davranır ancak ödeme alınmaz; amaç baştan sona sipariş verme, kurye hızını ayarlama ve harita üzerinde gerçek zamanlı takip deneyimini yaşatmaktır.
+            <Text className="font-bold text-zinc-900">DoppApp</Text> {t.aboutP1}
           </Text>
-        </View>
 
-        <View className="gap-3">
-          <View className="bg-white rounded-xl p-4 shadow-sm border border-black/5 flex-row items-center">
-            <Text className="text-xl mr-3">🚀</Text>
-            <View>
-              <Text className="font-bold text-zinc-900">Cross Platform</Text>
-              <Text className="text-xs text-zinc-500">React Native & Expo Router</Text>
+          <Text className="text-zinc-700 text-base leading-relaxed mt-4">
+            {t.aboutP2}
+          </Text>
+
+          <View className="bg-zinc-50 rounded-xl p-4 border border-zinc-100 gap-4 mt-4">
+            <View className="flex-row items-start gap-3">
+              <MapPin size={20} color="#fb4824" className="mt-0.5" />
+              <Text className="flex-1 text-zinc-700 text-sm leading-relaxed">{t.aboutBullet1}</Text>
+            </View>
+            <View className="flex-row items-start gap-3">
+              <Search size={20} color="#fb4824" className="mt-0.5" />
+              <Text className="flex-1 text-zinc-700 text-sm leading-relaxed">{t.aboutBullet2}</Text>
+            </View>
+            <View className="flex-row items-start gap-3">
+              <Send size={20} color="#fb4824" className="mt-0.5" />
+              <Text className="flex-1 text-zinc-700 text-sm leading-relaxed">{t.aboutBullet3}</Text>
+            </View>
+            <View className="flex-row items-start gap-3">
+              <Store size={20} color="#fb4824" className="mt-0.5" />
+              <Text className="flex-1 text-zinc-700 text-sm leading-relaxed">{t.aboutBullet4}</Text>
             </View>
           </View>
-          <View className="bg-white rounded-xl p-4 shadow-sm border border-black/5 flex-row items-center">
-            <Text className="text-xl mr-3">🎨</Text>
-            <View>
-              <Text className="font-bold text-zinc-900">NativeWind v4</Text>
-              <Text className="text-xs text-zinc-500">Tailwind CSS for React Native</Text>
-            </View>
-          </View>
-          <View className="bg-white rounded-xl p-4 shadow-sm border border-black/5 flex-row items-center">
-            <Text className="text-xl mr-3">⚡</Text>
-            <View>
-              <Text className="font-bold text-zinc-900">Supabase</Text>
-              <Text className="text-xs text-zinc-500">PostgreSQL & Realtime</Text>
-            </View>
+
+          <Text className="text-zinc-700 text-base leading-relaxed mt-4">
+            {t.aboutP3}
+          </Text>
+
+          <View className="mt-6 p-4 bg-accent rounded-xl">
+            <Text className="text-white font-bold text-center text-base">{t.aboutHaveFun}</Text>
           </View>
         </View>
 

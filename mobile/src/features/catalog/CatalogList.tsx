@@ -128,27 +128,29 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
               <Pressable
                 key={product.id}
                 onPress={() => setActiveItem({ store, item: product })}
-                className="flex-row items-center justify-between py-3 border-b border-black/5"
+                className="flex-col py-3 border-b border-black/5"
               >
-                <View className="flex-1 mr-3">
-                  {label && (
-                    <View className="self-start rounded-full px-2 py-0.5 mb-1.5 flex-row items-center gap-1" style={{ backgroundColor: product.section_color || '#f97316' }}>
-                      <Star size={10} color="#fff" fill="#fff" />
-                      <Text className="text-[9px] font-black uppercase text-white tracking-wider" numberOfLines={1}>{label}</Text>
-                    </View>
-                  )}
-                  <Text className="text-sm font-bold text-zinc-900 mb-1" numberOfLines={1}>
-                    {product.name[locale]}
-                  </Text>
-                  <Text className="text-xs text-zinc-500" numberOfLines={2}>
-                    {product.description[locale]}
-                  </Text>
-                  <Text className="text-sm font-bold mt-2">{formatMoney(product.price, locale)}</Text>
+                {label && (
+                  <View className="self-start rounded-full px-2 py-0.5 mb-2 flex-row items-center gap-1" style={{ backgroundColor: product.section_color || '#f97316' }}>
+                    <Star size={10} color="#fff" fill="#fff" />
+                    <Text className="text-[9px] font-black uppercase text-white tracking-wider" numberOfLines={1}>{label}</Text>
+                  </View>
+                )}
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-3">
+                    <Text className="text-sm font-bold text-zinc-900 mb-1" numberOfLines={1}>
+                      {product.name[locale]}
+                    </Text>
+                    <Text className="text-xs text-zinc-500 h-8" numberOfLines={2}>
+                      {product.description[locale]}
+                    </Text>
+                    <Text className="text-sm font-bold mt-2">{formatMoney(product.price, locale)}</Text>
+                  </View>
+                  <Image
+                    source={{ uri: product.image }}
+                    className="w-20 h-20 rounded-lg bg-zinc-100"
+                  />
                 </View>
-                <Image
-                  source={{ uri: product.image }}
-                  className="w-20 h-20 rounded-lg bg-zinc-100"
-                />
               </Pressable>
             );
           })}

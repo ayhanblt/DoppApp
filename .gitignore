@@ -45,3 +45,10 @@ next-env.d.ts
 .claude
 .codex
 PRODUCTION_CHECKLIST.md
+
+# Graphify
+/graphify-out
+/graphify
+
+#Seed
+/DoppappSeed

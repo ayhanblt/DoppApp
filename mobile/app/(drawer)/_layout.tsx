@@ -65,7 +65,7 @@ export default function DrawerLayout() {
         drawerPosition: 'right',
         drawerLabelStyle: {
           fontFamily: 'System',
-          fontWeight: '700',
+          fontWeight: '600',
         }
       }}
     >
