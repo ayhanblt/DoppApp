@@ -74,3 +74,14 @@ Veritabanında teslimat süreleri (min/max) DAKİKA DEĞİL, SANİYE olarak tutu
 
 
 - [ ] React Native'de (Mobil) `TextInput` içeren sayfalar ve modallarda, klavye açıldığında input alanlarının kapanmaması için `KeyboardAvoidingView` kullanımı bir standart (alışkanlık) olarak uygulanmalı mıdır? (Evet, uygulanmalıdır).
+
+## Görsel Yükleme ve Gösterim Standartları (Ürün & Mağaza)
+- **Admin Paneli Görsel Standardizasyonu:** Admin panelinden yüklenen tüm ürün (itemImage) ve mağaza (storeLogo) fotoğrafları tarayıcı tarafında (Client-Side HTML Canvas ile) **1080x1080 kare ve beyaz arkaplanlı (object-contain)** formata otomatik olarak zorlanır. Görselin dışına çıkılarak kırpma yapılmasına olanak tanınır.
+- Sunucuya/Supabase'e giden nihai görseller her zaman 1:1 karedir. Bu sayede web ve mobil UI tarafında ek bir `object-cover` veya bulanık arkaplan hesaplaması yapmaya gerek kalmaz.
+- **Dosya İsimlendirme (Slug):** Yüklenen görseller rastgele id yerine okunabilir bir "slug" yapısıyla sunucuya gönderilmelidir. Ürün veya mağaza adı temizlenip (Türkçe karakter ve boşluklar dahil) üzerine benzersiz bir id eklenerek (Örn: `acili-kebap-x9f-2z.jpg`) isimlendirilir.
+- **FSD Mimarisi:** Görsel kütüphanesi ve kırpma aracı `src/features/admin/image-library` altında yönetilmelidir. Eski yüklenen fotoğrafları listeleyen (ImageLibraryModal) ve kırpma işlemini (ImageCropperModal) yapan modüller burada yer alır. Modallar `z-[99999]` sınıfına sahip olarak diğer UI katmanlarını (ör: z-50 olan AdminModal) ezer.
+- **Kütüphane Optimizasyonu:** Yüklenen görselleri listeleyen kütüphane her seferinde ağ isteği yapmamak için bellek içi (in-memory variable) cache kullanmalıdır. Kütüphane, arama ve çoklu seçim (bulk delete) işlemlerini desteklemelidir. Çoklu görsel seçildiğinde kütüphanedeki kırp ve seç butonları devreden çıkıp yalnızca çoklu sil butonuna izin verilmelidir.
+
+## Modal ve Scroll (Kaydırma) Yönetimi
+- **Arkaplan Kaymasını (Scroll) Engelleme:** Admin panelinde herhangi bir Modal (`AdminModal`, `ImageCropperModal`, `ImageLibraryModal` vb.) açıldığında arka plandaki ana sayfanın kaymaması için `src/shared/hooks/useScrollLock.ts` hook'u kullanılmalıdır. Inline styling veya body'ye doğrudan style ataması yapmak yerine (örn: `document.body.style.overflow`) component içerisinde `useScrollLock()` çağrılması standarttır. Bu yapı, performans sorunu yaratmadan React yaşam döngüsüne uygun olarak mount anında scroll'u kitler ve unmount anında serbest bırakır.
+- **Tip (Type) Güvenliği ve FSD:** Sayfa içerisinde, komponentlerin bulunduğu `tsx` dosyalarının başında (`AdminModalProps` vb.) tip tanımlamak yerine, tüm global ve ortak tipler FSD mimarisine uygun olarak sadece `src/shared/lib/types.ts` içerisinden `import type` ile içeri alınmalıdır.

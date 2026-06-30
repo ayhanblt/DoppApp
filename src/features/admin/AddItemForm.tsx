@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Save } from "lucide-react";
 import { AdminInput, AdminTextarea, AdminLangTabs } from "@/features/admin/AdminInput";
-import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
+import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/image-library/ui/ImageUploadField";
 import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
 import type { Locale, MenuOptionGroup, Store, StoreType, StoreCategory, ProductCategory, Product } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
@@ -111,7 +111,7 @@ export function AddItemForm({ locale, stores, storeCategories, productCategories
           <AdminInput name="calories" label="Kalori" type="number" />
         )}
         <div className="sm:col-span-2">
-          <ImageUploadField locale={locale} value={itemImage} onChange={setItemImage} />
+          <ImageUploadField locale={locale} value={itemImage} onChange={setItemImage} slugName={"product"} />
         </div>
       </div>
       <OptionGroupsEditor locale={locale} value={itemOptionGroups} onChange={setItemOptionGroups} />

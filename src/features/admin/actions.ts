@@ -162,10 +162,22 @@ export async function deleteProductCategoryAction(id: string): Promise<boolean> 
 export async function uploadMenuImageAction(formData: FormData): Promise<{ url: string, filename: string } | null> {
   await verifyAuth();
   const file = formData.get('file') as File;
+  const rawSlug = formData.get('slug') as string | null;
   if (!file) throw new Error("No file uploaded");
 
   const ext = file.name.split('.').pop() || "jpg";
-  const filename = `upload-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  
+  let cleanSlug = "upload";
+  if (rawSlug) {
+    cleanSlug = rawSlug.toLowerCase()
+      .replace(/[^a-z0-9ğüşöçİĞÜŞÖÇ]+/g, '-') // Allow turkish chars initially or just strip
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // remove accents
+      .replace(/[^a-z0-9]+/g, '-') // final clean
+      .replace(/(^-|-$)+/g, '');
+    if (!cleanSlug) cleanSlug = "upload";
+  }
+
+  const filename = `${cleanSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);

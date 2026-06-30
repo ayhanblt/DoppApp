@@ -276,7 +276,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
           {/* Mobile: Row 1 - Logo & Cart | Desktop: Same row */}
           <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_1.2fr_1fr]">
             <Link href={`/${locale}`} >
-              <Image width={320} height={160} className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp?v=5" alt={t.appName} priority />
+              <Image width={320} height={160} className="w-28 lg:w-40 object-contain" src="/images/doppapp-logo.webp" alt={t.appName} priority />
             </Link>
 
             <div className="hidden lg:block w-full">

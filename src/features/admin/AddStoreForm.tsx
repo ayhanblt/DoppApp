@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Save } from "lucide-react";
 import { AdminInput, AdminTextarea, AdminLangTabs } from "@/features/admin/AdminInput";
-import { ImageUploadField } from "@/features/admin/ImageUploadField";
+import { ImageUploadField } from "@/features/admin/image-library/ui/ImageUploadField";
 import type { Locale, Store, StoreType, StoreCategory } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 
@@ -80,7 +80,7 @@ export function AddStoreForm({ locale, storeCategories, onAddStore }: AddStoreFo
 
         <div className="sm:col-span-2">
           <input type="hidden" name="logo" value={newStoreLogo} />
-          <ImageUploadField locale={locale} value={newStoreLogo} onChange={setNewStoreLogo} />
+          <ImageUploadField locale={locale} value={newStoreLogo} onChange={setNewStoreLogo} slugName={"store"} />
         </div>
 
         <AdminInput name="rating" label="Puan" type="number" step="0.1" />

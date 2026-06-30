@@ -34,7 +34,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const groupLayouts = useRef<Record<string, number>>({});
-  
+
   const [errorGroupId, setErrorGroupId] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState<string>(t.add);
 
@@ -76,7 +76,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
 
   const handleAddToCart = () => {
     let missingGroupId = null;
-    
+
     // Check for required groups
     if (item.optionGroups) {
       for (const group of item.optionGroups) {
@@ -89,7 +89,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
 
     if (missingGroupId) {
       setErrorGroupId(missingGroupId);
-      
+
       // Temporary button text
       setButtonText(locale === 'tr' ? "Zorunlu seçimleri yapın" : "Make required selections");
       setTimeout(() => setButtonText(t.add), 2500);
@@ -163,8 +163,8 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
 
               <View className="mt-6">
                 {item.optionGroups?.map((group) => (
-                  <View 
-                    key={group.id} 
+                  <View
+                    key={group.id}
                     className={`mb-6 p-4 -mx-4 rounded-3xl border-2 ${errorGroupId === group.id ? "border-red-500 bg-red-50" : "border-transparent"}`}
                     onLayout={(e) => {
                       groupLayouts.current[group.id] = e.nativeEvent.layout.y;
@@ -214,7 +214,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
           {/* Bottom Add to Cart Bar */}
           <View
             className="p-4 bg-white border-t border-zinc-100 shadow-2xl z-20"
-            style={{ paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 24) : 12 }}
+            style={{ paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16) }}
           >
             <View className="flex-row items-center justify-between mb-3 bg-zinc-50 p-3 rounded-2xl">
               <Text className="text-2xl font-black text-zinc-900">

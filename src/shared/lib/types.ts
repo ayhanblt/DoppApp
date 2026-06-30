@@ -156,3 +156,47 @@ export type PushLog = {
   error_count: number;
   route?: string;
 };
+
+import type { ReactNode } from "react";
+
+export type AdminModalProps = {
+  locale: Locale;
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+};
+
+export type StorageImage = {
+  name: string;
+  url: string;
+  created_at: string;
+};
+
+export type StorageFileItem = {
+  name: string;
+  id?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  folderPath?: string;
+};
+
+export type ImageLibraryModalProps = {
+  onSelect: (url: string) => void;
+  onRecrop: (url: string) => void;
+  onCancel: () => void;
+};
+
+export type ImageCropperModalProps = {
+  imageSrc: string;
+  onCropDone: (croppedBlob: Blob) => void;
+  onCancel: () => void;
+};
+
+export type ImageUploadFieldProps = {
+  locale: Locale;
+  value: string;
+  onChange: (url: string) => void;
+  slugName?: string;
+};
+

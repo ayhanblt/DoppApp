@@ -5,7 +5,7 @@ import { AdminInput, AdminTextarea, AdminLangTabs } from "@/features/admin/Admin
 import { AdminModal } from "@/features/admin/AdminModal";
 import { useState } from "react";
 import { dictionaries } from "@/shared/i18n/dictionaries";
-import { ImageUploadField } from "@/features/admin/ImageUploadField";
+import { ImageUploadField } from "@/features/admin/image-library/ui/ImageUploadField";
 import type { Locale, Store, StoreType, StoreCategory } from "@/shared/lib/types";
 
 type EditStoreModalProps = {
@@ -80,7 +80,7 @@ export function EditStoreModal({ locale, store, storeCategories, onClose, onSave
         
         <div className="sm:col-span-2">
           <input type="hidden" name="logo" value={logo} />
-          <ImageUploadField locale={locale} value={logo} onChange={setLogo} />
+          <ImageUploadField locale={locale} value={logo} onChange={setLogo} slugName={store.name.tr || "store"} />
         </div>
 
         <AdminInput name="rating" label={t.rating} type="number" step="0.1" defaultValue={store.rating} />

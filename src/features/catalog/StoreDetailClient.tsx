@@ -180,7 +180,7 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
     <div className="min-h-screen bg-[#fbf5f1]">
       <div className="bg-white border-b border-black/5">
         <div className="mx-auto max-w-7xl px-4 py-4 md:py-8">
-          
+
           {/* Mobile Top Bar: Back Button + Logo + Title */}
           <div className="flex md:hidden items-center gap-3 mb-4">
             <button
@@ -208,7 +208,7 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
             >
               <ArrowLeft size={20} />
             </button>
-            
+
             <div className="flex flex-row flex-1 items-start gap-4 min-w-0">
               <div className="hidden md:flex shrink-0">
                 <Image width={128} height={128} className="h-16 w-16 md:h-24 md:w-24 rounded-full border border-black/10 object-cover shadow-sm" src={store.logo || "https://placehold.co/100x100.webp?text=Logo"} alt={store.name[locale]} />
@@ -351,7 +351,7 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
                       </div>
                       <div className="mt-4 flex items-end justify-between gap-2">
                         <strong className="text-xl font-black text-[var(--accent)]">{formatMoney(item.price, locale)}</strong>
-                        <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-black text-white hover:bg-zinc-800 transition-colors shadow-sm">{t.add}</button>
+                        <button className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-black text-white hover:brightness-110 transition-all shadow-sm">{t.add}</button>
                       </div>
                     </div>
                   </div>
@@ -434,20 +434,16 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
       {activeItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 md:p-8 animate-in fade-in duration-200" onClick={() => setActiveItem(null)}>
           <div className="flex w-full min-h-[50vh] md:min-h-[400px] max-h-[92vh] max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl md:flex-row" onClick={(e) => e.stopPropagation()}>
-            <div className="relative flex shrink-0 items-center justify-center bg-zinc-50 py-8 md:w-1/2 md:p-8">
-              <div className="relative aspect-square w-56 md:w-full max-w-[360px] p-4 md:p-8">
-                <div className="relative h-full w-full">
-                  <Image
-                    fill
-                    className="cursor-pointer object-contain transition-opacity hover:opacity-90 mix-blend-multiply"
-                    src={activeItem.item.image}
-                    alt=""
-                    onClick={() => setEnlargedImage(activeItem.item.image)}
-                    sizes="(max-width: 768px) 224px, 400px"
-                  />
-                </div>
+            <div className="relative flex shrink-0 items-center justify-center bg-white md:w-1/2 border-b md:border-b-0 md:border-r border-zinc-100 overflow-hidden">
+              <div className="relative w-full h-full flex items-center justify-center">
+                <img
+                  className="w-full h-full object-cover transition-opacity hover:opacity-90 min-h-[300px] md:min-h-full"
+                  src={activeItem.item.image}
+                  alt=""
+                  onClick={() => setEnlargedImage(activeItem.item.image)}
+                />
               </div>
-              <button onClick={() => setActiveItem(null)} className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 md:hidden font-bold shadow-sm">×</button>
+              <button onClick={() => setActiveItem(null)} className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 md:hidden font-bold shadow-sm border border-zinc-200">×</button>
             </div>
             <div className="relative flex flex-1 flex-col overflow-auto p-5 md:p-8">
               <button onClick={() => setActiveItem(null)} className="absolute right-5 top-5 hidden h-9 w-9 items-center justify-center rounded-full bg-zinc-100 md:flex font-bold hover:bg-zinc-200">×</button>

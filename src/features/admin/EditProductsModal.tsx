@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Pencil, Trash2, Save, Plus } from "lucide-react";
 import { AdminInput, AdminTextarea, AdminLangTabs } from "@/features/admin/AdminInput";
 import { AdminModal } from "@/features/admin/AdminModal";
-import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/ImageUploadField";
+import { FALLBACK_IMAGE, ImageUploadField } from "@/features/admin/image-library/ui/ImageUploadField";
 import { OptionGroupsEditor } from "@/features/admin/OptionGroupsEditor";
 import { deleteProductFromSupabase } from "@/features/catalog/data";
 import { dictionaries } from "@/shared/i18n/dictionaries";
@@ -158,7 +158,7 @@ export function EditProductsModal({ locale, store, productCategories, storeCateg
               )}
             </div>
             
-            <ImageUploadField locale={locale} value={image} onChange={setImage} />
+            <ImageUploadField locale={locale} value={image} onChange={setImage} slugName={nameTr || "product"} />
           </div>
 
           <OptionGroupsEditor locale={locale} value={optionGroups} onChange={setOptionGroups} />

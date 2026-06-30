@@ -12,6 +12,7 @@ import { ConfigManager } from "@/features/admin/ConfigManager";
 import { PushNotificationManager } from "@/features/admin/PushNotificationManager";
 import { StoreList } from "@/features/admin/StoreList";
 import { AdminInput } from "@/features/admin/AdminInput";
+import { ImageLibraryModal } from "@/features/admin/image-library/ui/ImageLibraryModal";
 import { saveStoreToSupabaseAction, deleteStoreFromSupabaseAction, loginAdmin, logoutAdmin, checkAdminAuth } from "./actions";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { uid } from "@/shared/lib/format";
@@ -24,6 +25,7 @@ export function AdminPanel({ locale }: { locale: Locale }) {
   const [loginError, setLoginError] = useState("");
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState("");
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const [config, setConfig] = useState<GlobalConfig | null>(null);
   const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
@@ -187,11 +189,21 @@ export function AdminPanel({ locale }: { locale: Locale }) {
         </div>
 
 
-        <div className="mt-4 flex gap-2 border-b border-black/10 pb-4 overflow-x-auto">
+        <div className="mt-4 flex gap-2 border-b border-black/10 pb-4 overflow-x-auto items-center">
           <button className={`px-4 py-2 whitespace-nowrap font-bold ${adminMode === 'stores' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('stores')}>Mağazalar & Ürünler</button>
           <button className={`px-4 py-2 whitespace-nowrap font-bold ${adminMode === 'categories' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('categories')}>Kategori Yönetimi</button>
           <button className={`px-4 py-2 whitespace-nowrap font-bold ${adminMode === 'config' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('config')}>Teslimat Ayarları</button>
           <button className={`px-4 py-2 whitespace-nowrap font-bold ${adminMode === 'push' ? 'border-b-2 border-orange-600 text-orange-600' : 'text-zinc-500'}`} onClick={() => setAdminMode('push')}>Push Bildirimleri</button>
+          
+          <div className="ml-auto flex items-center">
+            <button 
+              onClick={() => setShowLibrary(true)}
+              className="p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-[var(--accent)] transition-colors"
+              title="Görsel Kütüphanesini Aç"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </button>
+          </div>
         </div>
 
         {adminMode === 'stores' ? (
@@ -242,7 +254,14 @@ export function AdminPanel({ locale }: { locale: Locale }) {
             productCategories={productCategories}
             storeCategories={storeCategories}
             onClose={() => setEditingItemsStore(null)}
-            onSave={(updated: Store) => updateStore(updated, true)}
+            onSave={(updated: Store) => updateStore(updated, false)}
+          />
+        )}
+        {showLibrary && (
+          <ImageLibraryModal
+            onSelect={() => {}} // Yalnızca yönetim amaçlı açıldığında seçme işlevi boştur
+            onRecrop={() => {}} // Yeniden kırpma bu ekranda kapatılabilir veya null geçilebilir
+            onCancel={() => setShowLibrary(false)}
           />
         )}
       </section>
