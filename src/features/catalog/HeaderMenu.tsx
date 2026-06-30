@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Info, MessageSquare, BookOpen as AboutIcon, Globe } from "lucide-react";
+import { Menu, Info, MessageSquare, BookOpen as AboutIcon, Globe, Shield, HelpCircle } from "lucide-react";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 
@@ -66,6 +66,24 @@ export function HeaderMenu({ locale, onOpenInfo, onOpenFeedback }: HeaderMenuPro
           >
             <AboutIcon size={18} className="text-zinc-400" />
             {t.about}
+          </Link>
+
+          <Link
+            href={`/${locale}/faq`}
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+          >
+            <HelpCircle size={18} className="text-zinc-400" />
+            {t.faq}
+          </Link>
+
+          <Link
+            href={`/${locale}/privacy-policy`}
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+          >
+            <Shield size={18} className="text-zinc-400" />
+            {t.privacyPolicy}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-zinc-100" />

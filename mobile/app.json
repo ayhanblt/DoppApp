@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "DoppApp.Preview"
+      "bundleIdentifier": "com.ayhanbulut.doppapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
-      "package": "DoppApp.Preview",
+      "package": "com.ayhanbulut.doppapp",
       "googleServicesFile": "./google-services.json",
       "versionCode": 2
     },

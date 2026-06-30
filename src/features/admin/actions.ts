@@ -163,7 +163,16 @@ export async function uploadMenuImageAction(formData: FormData): Promise<{ url: 
   await verifyAuth();
   const file = formData.get('file') as File;
   const rawSlug = formData.get('slug') as string | null;
+  const oldFileUrl = formData.get('oldFileUrl') as string | null;
   if (!file) throw new Error("No file uploaded");
+
+  // Delete the old file if it exists, to keep bucket clean
+  if (oldFileUrl) {
+    const urlParts = oldFileUrl.split('/menu-images/');
+    if (urlParts.length === 2) {
+      await supabaseAdmin.storage.from('menu-images').remove([urlParts[1]]);
+    }
+  }
 
   const ext = file.name.split('.').pop() || "jpg";
   

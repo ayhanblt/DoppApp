@@ -182,6 +182,7 @@ export type StorageFileItem = {
 };
 
 export type ImageLibraryModalProps = {
+  initialSelectedUrl?: string | null;
   onSelect: (url: string) => void;
   onRecrop: (url: string) => void;
   onCancel: () => void;

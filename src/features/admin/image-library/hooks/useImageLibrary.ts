@@ -2,9 +2,16 @@ import { useState, useEffect } from 'react';
 import { fetchStorageImagesAction } from '../api/fetchStorageImages';
 import type { StorageImage } from "@/shared/lib/types";
 
-// Module-level cache: Browser tab açık kaldığı sürece veriyi hafızada tutar.
 let globalImageCache: StorageImage[] | null = null;
 let fetchPromise: Promise<StorageImage[]> | null = null;
+
+export function addImageToCache(image: StorageImage) {
+  if (globalImageCache) {
+    globalImageCache = [image, ...globalImageCache];
+  } else {
+    globalImageCache = [image];
+  }
+}
 
 export function useImageLibrary() {
   const [images, setImages] = useState<StorageImage[]>(globalImageCache || []);

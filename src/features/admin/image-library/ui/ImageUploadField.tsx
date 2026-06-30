@@ -6,6 +6,7 @@ import Image from "next/image";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Locale, ImageUploadFieldProps } from "@/shared/lib/types";
 import { uploadMenuImageAction } from "@/features/admin/actions";
+import { addImageToCache } from "../hooks/useImageLibrary";
 import { ImageCropperModal } from "./ImageCropperModal";
 import { ImageLibraryModal } from "./ImageLibraryModal";
 
@@ -44,9 +45,17 @@ export function ImageUploadField({ locale, value, onChange, slugName }: ImageUpl
       const formData = new FormData();
       formData.append("file", fileToUpload);
       if (slugName) formData.append("slug", slugName);
+      if (value) formData.append("oldFileUrl", value);
       
       const result = await uploadMenuImageAction(formData);
       if (!result) throw new Error("upload_failed");
+      
+      addImageToCache({
+        name: result.filename,
+        url: result.url,
+        created_at: new Date().toISOString()
+      });
+      
       onChange(result.url);
     } catch {
       setError(t.imageUploadFailed);
@@ -95,7 +104,7 @@ export function ImageUploadField({ locale, value, onChange, slugName }: ImageUpl
               onClick={() => setLibraryOpen(true)}
             >
               <Library size={16} />
-              Kütüphaneden Seç
+              {value ? "Görseli Düzenle / Seç" : "Kütüphaneden Seç"}
             </button>
           </div>
           
@@ -119,6 +128,7 @@ export function ImageUploadField({ locale, value, onChange, slugName }: ImageUpl
 
       {libraryOpen && (
         <ImageLibraryModal
+          initialSelectedUrl={value}
           onSelect={(url) => {
             onChange(url);
             setLibraryOpen(false);

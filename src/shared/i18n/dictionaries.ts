@@ -198,7 +198,42 @@ export const dictionaries = {
     submitting: "Gönderiliyor...",
     submitReview: "Yorumu Gönder",
     dreamOrder: "Hayalimdeki Sipariş",
-    totalSpent: "TOPLAM HARCAMA"
+    totalSpent: "TOPLAM HARCAMA",
+    privacyPolicy: "Gizlilik Politikası",
+    faq: "Sıkça Sorulan Sorular",
+    privacyPolicyTitle: "Gizlilik Politikası",
+    privacyPolicyContent: [
+      "DoppApp, kullanıcı gizliliğine ve güvenliğine büyük önem verir. Uygulamamızı kullanırken toplanan veya işlenen verilerin nasıl ele alındığı aşağıda açıklanmıştır:",
+      "1. Konum Bilgisi: Uygulamamız, size en yakın sanal restoran veya mağazaları listelemek ve harita üzerinde adres seçiminizi kolaylaştırmak için anlık konum bilgisi isteyebilir. Bu konum bilgisi yalnızca o anki işlemi gerçekleştirmek için kullanılır, sunucularımızda kesinlikle kaydedilmez veya üçüncü şahıslarla paylaşılmaz.",
+      "2. Bildirim İzinleri: Kurgusal siparişlerinizin durumunu (örn. 'Siparişiniz hazırlanıyor', 'Kurye yola çıktı') veya yeni ürün eklendi gibi genel bilgilendirmeleri size iletebilmek için cihazınızdan anlık bildirim (push notification) izni istenir. Bildirim servisleri yalnızca uygulama içindeki simüle edilmiş süreçleri ve yenilikleri iletmek amacıyla kullanılır.",
+      "3. Kişisel Veriler: Uygulamayı kullanmak veya sipariş simülasyonu oluşturmak için isim ve soyisim gibi bilgiler girmeniz istenebilir. Bu bilgiler tamamen opsiyoneldir (isteğe bağlıdır). Geri bildirim formunda ise size dönüş yapabilmemiz adına e-posta adresi zorunludur. Girdiğiniz hiçbir kişisel veri kalıcı olarak profilinizde saklanmaz veya herhangi bir ticari amaçla kullanılmaz.",
+      "4. Sipariş ve Ödeme Verileri: DoppApp bir e-ticaret simülasyonudur. Uygulama içinde gördüğünüz hiçbir ürün gerçek değildir. Dolayısıyla hiçbir aşamada kredi kartı bilginiz istenmez, ödeme alınmaz ve gerçek bir kurye adresinize gönderilmez.",
+      "İletişim: Gizlilik politikamızla ilgili her türlü sorunuz için ayhanbulut91@gmail.com adresinden bizimle iletişime geçebilirsiniz.",
+      "Uygulamamızı kullanarak bu gizlilik politikasını kabul etmiş sayılırsınız."
+    ],
+    faqTitle: "Sıkça Sorulan Sorular",
+    faqList: [
+      {
+        q: "DoppApp gerçek bir yemek/market sipariş uygulaması mı?",
+        a: "DoppApp, kullanıcılara sipariş verme deneyimini simüle ederek, sipariş hazırlık sürecini ve kurye takibini izleme heyecanını yaşatan bir e-ticaret simülasyonudur. Gerçek para harcamadan ve ürün satın almadan alışveriş deneyiminin keyfini çıkarmanızı amaçlar."
+      },
+      {
+        q: "Sipariş verdiğimde kapıma gerçekten bir kurye gelecek mi?",
+        a: "Kesinlikle hayır. Harita üzerinde gördüğünüz kurye animasyonları ve teslimat süreçleri sadece eğlence amaçlı bir simülasyondur."
+      },
+      {
+        q: "Kredi kartı veya ödeme bilgisi girmem gerekiyor mu?",
+        a: "Hayır. DoppApp hiçbir zaman sizden ödeme bilgisi talep etmez."
+      },
+      {
+        q: "Kurtarılan Kalori ne demek?",
+        a: "Sipariş simülasyonu oluşturduğunuzda, bu ürünleri gerçekten yemiş olsaydınız alacağınız kalori miktarını hesaplarız. Siparişi tamamladığınızda bu kaloriyi almadığınız için bunu 'Kurtarılan Kalori' olarak hanenize yazarız."
+      },
+      {
+        q: "Sipariş fişlerini (Receipt) arkadaşlarımla paylaşabilir miyim?",
+        a: "Evet! Hayalinizdeki sepeti oluşturduktan sonra 'Siparişi Paylaş' butonuna basarak sepetinizin şık bir görsel fişini indirebilir ve sosyal medyada arkadaşlarınızla paylaşabilirsiniz."
+      }
+    ]
   },
   en: {
     appName: "DoppApp",
@@ -397,7 +432,42 @@ export const dictionaries = {
     submitting: "Submitting...",
     submitReview: "Submit Review",
     dreamOrder: "My Dream Order",
-    totalSpent: "TOTAL SPENT"
+    totalSpent: "TOTAL SPENT",
+    privacyPolicy: "Privacy Policy",
+    faq: "FAQ",
+    privacyPolicyTitle: "Privacy Policy",
+    privacyPolicyContent: [
+      "DoppApp places great importance on user privacy and security. Below is an explanation of how data collected or processed while using our application is handled:",
+      "1. Location Information: Our application may request your real-time location to list the closest virtual restaurants or stores and to facilitate address selection on the map. This location data is used solely to perform the immediate task, is never saved on our servers, and is not shared with third parties.",
+      "2. Push Notifications: We may request permission to send push notifications to inform you about the status of your fictional orders (e.g., 'Your order is preparing', 'Courier is on the way') or to send general promotional updates like new products. Notification services are used strictly to communicate simulated processes and updates within the app.",
+      "3. Personal Data: You may be asked to enter information such as your name and surname to use the application or create an order simulation. Providing this information is completely optional. For the feedback form, an email address is required so we can respond to you. Any personal data you enter is not permanently stored in a profile and is never used for any commercial purpose.",
+      "4. Order and Payment Data: DoppApp is an e-commerce simulation. None of the products you see in the app are real. Therefore, your credit card information is never requested, no payments are taken, and a real courier is never dispatched to your address.",
+      "Contact: If you have any questions about our privacy policy, you can contact us at ayhanbulut91@gmail.com.",
+      "By using our application, you agree to this privacy policy."
+    ],
+    faqTitle: "Frequently Asked Questions",
+    faqList: [
+      {
+        q: "Is DoppApp a real food/grocery delivery app?",
+        a: "DoppApp is an e-commerce simulation that gives users the excitement of placing an order, watching the preparation process, and tracking the courier. It aims to let you enjoy the shopping experience without spending real money or buying actual products."
+      },
+      {
+        q: "Will a real courier arrive at my door if I place an order?",
+        a: "Absolutely not. The courier animations and delivery processes you see on the map are strictly simulated for entertainment purposes."
+      },
+      {
+        q: "Do I need to enter credit card or payment information?",
+        a: "No. DoppApp will never ask you for payment information."
+      },
+      {
+        q: "What does 'Calories Saved' mean?",
+        a: "When you create an order simulation, we calculate the calories you would have consumed if you had actually eaten those items. Because you didn't consume them, we count them as 'Calories Saved'."
+      },
+      {
+        q: "Can I share order receipts with my friends?",
+        a: "Yes! After building your dream cart, you can hit 'Share Order' to download a stylish visual receipt of your cart and share it with friends on social media."
+      }
+    ]
   }
 };
 

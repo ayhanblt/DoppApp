@@ -2,8 +2,8 @@ import React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView, DrawerItemList, DrawerItem } from 'expo-router/drawer';
 import { dictionaries } from '@/shared/i18n/dictionaries';
-import { View, Text, Image } from 'react-native';
-import { Globe, Info, MessageSquare } from 'lucide-react-native';
+import { View, Text, Image, Linking } from 'react-native';
+import { Globe, Info, MessageSquare, Shield, HelpCircle } from 'lucide-react-native';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 
 function CustomDrawerContent(props: any) {
@@ -45,6 +45,16 @@ function CustomDrawerContent(props: any) {
           }}
           labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
         />
+
+        <DrawerItem
+          label={t.privacyPolicy}
+          icon={({ color, size }) => <Shield color={color} size={size} />}
+          onPress={() => {
+            Linking.openURL(`https://doppapp.com/${locale}/privacy-policy`);
+            props.navigation.closeDrawer();
+          }}
+          labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
+        />
       </View>
     </DrawerContentScrollView>
   );
@@ -81,6 +91,13 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: t.about,
           drawerIcon: ({ color, size }) => <Info color={color} size={size} />
+        }}
+      />
+      <Drawer.Screen
+        name="faq"
+        options={{
+          drawerLabel: t.faq,
+          drawerIcon: ({ color, size }) => <HelpCircle color={color} size={size} />
         }}
       />
     </Drawer>

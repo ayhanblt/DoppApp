@@ -9,17 +9,14 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const t = dictionaries[locale];
 
   return (
-    <div className="min-h-screen bg-[#fbf5f1]">
-      <header className="sticky top-0 z-50 bg-white border-b border-black/5 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 h-16 flex items-center gap-4">
-          <Link href={`/${locale}`} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors text-zinc-900">
-            <ArrowLeft size={20} />
+    <div className="min-h-screen bg-[#fbf5f1] pt-24 pb-12 relative">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto mb-6">
+          <Link href={`/${locale}`} className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-zinc-200 text-zinc-700 font-medium hover:bg-white hover:scale-105 transition-all">
+            <ArrowLeft size={18} />
+            <span>{t.backToApp}</span>
           </Link>
-          <span className="font-black text-lg text-zinc-900">{t.aboutTitle}</span>
         </div>
-      </header>
-
-      <div className="p-6 lg:p-12">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden">
           <div className="bg-[#fb4824] p-8 text-white flex flex-col items-center justify-center text-center">
             <Image src="/images/doppapp-logo-tek.svg" alt="DoppApp Logo" width={64} height={64} className="mb-4 brightness-0 invert" />

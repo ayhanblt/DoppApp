@@ -5,15 +5,15 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { X, Loader2, Check, Search, RefreshCw, Trash2, List } from 'lucide-react';
 import { useImageLibrary } from '../hooks/useImageLibrary';
-import type { StorageImage, ImageLibraryModalProps } from "@/shared/lib/types";
+import type { ImageLibraryModalProps } from "@/shared/lib/types";
 import { useScrollLock } from "@/shared/hooks/useScrollLock";
 
-export function ImageLibraryModal({ onSelect, onRecrop, onCancel }: ImageLibraryModalProps) {
+export function ImageLibraryModal({ initialSelectedUrl, onSelect, onRecrop, onCancel }: ImageLibraryModalProps) {
   const { images, loading, error, reload, deleteImage } = useImageLibrary();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [visibleCount, setVisibleCount] = useState(24);
-  const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
+  const [selectedUrls, setSelectedUrls] = useState<string[]>(initialSelectedUrl ? [initialSelectedUrl] : []);
   const [mounted, setMounted] = useState(false);
 
   useScrollLock();
@@ -25,10 +25,20 @@ export function ImageLibraryModal({ onSelect, onRecrop, onCancel }: ImageLibrary
     };
   }, []);
 
-  const filteredImages = images.filter(img =>
-    img.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    img.url.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredImages = React.useMemo(() => {
+    const result = images.filter(img =>
+      img.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      img.url.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (initialSelectedUrl) {
+      const targetIdx = result.findIndex(img => img.url === initialSelectedUrl);
+      if (targetIdx > 0) {
+        const target = result.splice(targetIdx, 1)[0];
+        result.unshift(target);
+      }
+    }
+    return result;
+  }, [images, searchQuery, initialSelectedUrl]);
 
   const visibleImages = filteredImages.slice(0, visibleCount);
   const hasMore = visibleCount < filteredImages.length;

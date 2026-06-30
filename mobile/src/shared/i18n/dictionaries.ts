@@ -209,7 +209,32 @@ export const dictionaries = {
     submitting: "Gönderiliyor...",
     submitReview: "Yorumu Gönder",
     dreamOrder: "Hayalimdeki Sipariş",
-    totalSpent: "TOPLAM HARCAMA"
+    totalSpent: "TOPLAM HARCAMA",
+    privacyPolicy: "Gizlilik Politikası",
+    faq: "Sıkça Sorulan Sorular",
+    faqTitle: "Sıkça Sorulan Sorular",
+    faqList: [
+      {
+        q: "DoppApp gerçek bir yemek/market sipariş uygulaması mı?",
+        a: "DoppApp, kullanıcılara sipariş verme deneyimini simüle ederek, sipariş hazırlık sürecini ve kurye takibini izleme heyecanını yaşatan bir e-ticaret simülasyonudur. Gerçek para harcamadan ve ürün satın almadan alışveriş deneyiminin keyfini çıkarmanızı amaçlar."
+      },
+      {
+        q: "Sipariş verdiğimde kapıma gerçekten bir kurye gelecek mi?",
+        a: "Kesinlikle hayır. Harita üzerinde gördüğünüz kurye animasyonları ve teslimat süreçleri sadece eğlence amaçlı bir simülasyondur."
+      },
+      {
+        q: "Kredi kartı veya ödeme bilgisi girmem gerekiyor mu?",
+        a: "Hayır. DoppApp hiçbir zaman sizden ödeme bilgisi talep etmez."
+      },
+      {
+        q: "Kurtarılan Kalori ne demek?",
+        a: "Sipariş simülasyonu oluşturduğunuzda, bu ürünleri gerçekten yemiş olsaydınız alacağınız kalori miktarını hesaplarız. Siparişi tamamladığınızda bu kaloriyi almadığınız için bunu 'Kurtarılan Kalori' olarak hanenize yazarız."
+      },
+      {
+        q: "Sipariş fişlerini (Receipt) arkadaşlarımla paylaşabilir miyim?",
+        a: "Evet! Hayalinizdeki sepeti oluşturduktan sonra 'Siparişi Paylaş' butonuna basarak sepetinizin şık bir görsel fişini indirebilir ve sosyal medyada arkadaşlarınızla paylaşabilirsiniz."
+      }
+    ]
   },
   en: {
     appName: "DoppApp",
@@ -419,7 +444,32 @@ export const dictionaries = {
     submitting: "Submitting...",
     submitReview: "Submit Review",
     dreamOrder: "My Dream Order",
-    totalSpent: "TOTAL SPENT"
+    totalSpent: "TOTAL SPENT",
+    privacyPolicy: "Privacy Policy",
+    faq: "FAQ",
+    faqTitle: "Frequently Asked Questions",
+    faqList: [
+      {
+        q: "Is DoppApp a real food/grocery delivery app?",
+        a: "DoppApp is an e-commerce simulation that gives users the excitement of placing an order, watching the preparation process, and tracking the courier. It aims to let you enjoy the shopping experience without spending real money or buying actual products."
+      },
+      {
+        q: "Will a real courier arrive at my door if I place an order?",
+        a: "Absolutely not. The courier animations and delivery processes you see on the map are strictly simulated for entertainment purposes."
+      },
+      {
+        q: "Do I need to enter credit card or payment information?",
+        a: "No. DoppApp will never ask you for payment information."
+      },
+      {
+        q: "What does 'Calories Saved' mean?",
+        a: "When you create an order simulation, we calculate the calories you would have consumed if you had actually eaten those items. Because you didn't consume them, we count them as 'Calories Saved'."
+      },
+      {
+        q: "Can I share order receipts with my friends?",
+        a: "Yes! After building your dream cart, you can hit 'Share Order' to download a stylish visual receipt of your cart and share it with friends on social media."
+      }
+    ]
   }
 };
 
