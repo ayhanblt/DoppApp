@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, HelpCircle, MapPin, Search, ShoppingCart, SlidersHorizontal, Trash2, Crosshair, Rabbit, Turtle, Save, FolderDown } from "lucide-react";
+import { Check, MapPin, Search, ShoppingCart, History, Trash2, Crosshair, Rabbit, Turtle, Save, FolderDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { Address, Locale, Order, Store, ThemeName, CartItem } from "@/shared/lib/types";
@@ -12,6 +12,8 @@ import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { getCartTotals, findProduct, getItemUnitPrice, getCartDeliveryTimeMinutes } from "@/features/order/cart";
 import { buildOrderTimeline, themeIcons, themes, DEFAULT_DELIVERY_SPEEDS } from "@/features/catalog/appConfig";
 import { useCatalog } from "./CatalogContext";
+import { OrderHistoryModal } from "./OrderHistoryModal";
+import ReceiptShareModal from "@/features/tracking/ReceiptShareModal";
 import { geocodeAddress, reverseGeocode, coordinateDistanceKm, offsetCoordinate, getOptimizedTrip } from "@/features/tracking/geo";
 import { useState, useEffect } from "react";
 import { supabase } from "@/shared/api/supabase";
@@ -71,8 +73,17 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [savedCarts, setSavedCarts] = useState<{ name: string, items: CartItem[] }[]>([]);
-  const [selectedCartIndex, setSelectedCartIndex] = useState(0);
+  const [savedCarts, setSavedCarts] = useState<Array<{ name: string; items: typeof cart }>>([]);
+  const [selectedCartIndex, setSelectedCartIndex] = useState<number | null>(null);
+
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState("");
+
+  const handleViewReceipt = (orderId: string) => {
+    setReceiptUrl(`/api/receipt?order_id=${orderId}&locale=${locale}`);
+    setShowReceipt(true);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,10 +104,10 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       saveDeliveryAddress({
         id: uid("address"),
         title: "Ev",
-        address: "Beşiktaş / İstanbul",
-        shortAddress: "Beşiktaş",
-        latitude: 41.037,
-        longitude: 28.985
+        address: "Şişli / İstanbul",
+        shortAddress: "Şişli",
+        latitude: 41.0603,
+        longitude: 28.9877
       });
     } else if (!defaultLocation && !deliveryAddress) {
       setAddressModalOpen(true);
@@ -117,10 +128,10 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
     const targetTimeSeconds = getCartDeliveryTimeMinutes(stores, cart, config?.delivery_times);
     const targetTimeMs = targetTimeSeconds * 1000;
     const speeds = config?.delivery_speeds || DEFAULT_DELIVERY_SPEEDS;
-    
+
     const uniqueStoreIds = Array.from(new Set(cart.map(item => item.storeId)));
     const uniqueStores = uniqueStoreIds.map(id => stores.find(s => s.id === id)).filter((s): s is Store => !!s);
-    
+
     let actualDistanceKm = 0;
     const waypoints: [number, number][] = [];
     let courierStartCoordinate = addressCoordinate;
@@ -169,7 +180,9 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
       handoffAt,
       deliveringAt,
       deliveredAt,
-      items: cart
+      items: cart,
+      created_at: new Date().toISOString(),
+      total: totals.total
     };
 
     setOrder(newOrder);
@@ -194,7 +207,18 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
         route_waypoints: waypoints, // Yeni kolon
         platform: "web" // Yeni kolon
       });
-      if (error) console.error("Order insert error:", error);
+      if (error) {
+        console.error("Order insert error:", error);
+      } else {
+        try {
+          const stored = localStorage.getItem("doppapp_orders");
+          const ordersArr = stored ? JSON.parse(stored) : [];
+          ordersArr.push(orderId);
+          localStorage.setItem("doppapp_orders", JSON.stringify(ordersArr));
+        } catch (e) {
+          console.error("localStorage error:", e);
+        }
+      }
     };
     saveOrder();
   }
@@ -220,6 +244,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
   }
 
   function handleRestoreCart() {
+    if (selectedCartIndex === null) return;
     const cartToRestore = savedCarts[selectedCartIndex];
     if (cartToRestore && cartToRestore.items) {
       setCart(cartToRestore.items);
@@ -359,7 +384,13 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
           <form onSubmit={createOrder} className="w-full max-h-[92vh] max-w-lg overflow-auto rounded-lg bg-white p-5 shadow-2xl relative">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-black">{t.checkout}</h3>
-              <button type="button" onClick={() => setCheckoutOpen(false)} className="h-9 w-9 rounded-full bg-zinc-100">×</button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setShowOrderHistory(true)} className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors text-sm font-bold text-zinc-800">
+                  <History size={16} />
+                  {t.orderHistory}
+                </button>
+                <button type="button" onClick={() => setCheckoutOpen(false)} className="flex items-center justify-center h-9 w-9 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors">×</button>
+              </div>
             </div>
             <div className="mt-4 space-y-3">
               {cart.length === 0 && <p className="rounded-lg bg-zinc-50 p-4 text-zinc-500">{t.emptyCart}</p>}
@@ -458,7 +489,7 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                     {t.selectCartToRestore}
                   </p>
                   <select
-                    value={selectedCartIndex}
+                    value={selectedCartIndex ?? ""}
                     onChange={(e) => setSelectedCartIndex(Number(e.target.value))}
                     className="w-full rounded-lg border border-black/10 p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-white"
                   >
@@ -476,6 +507,20 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
                   </div>
                 </div>
               </div>
+            )}
+
+            <OrderHistoryModal
+              locale={locale}
+              isOpen={showOrderHistory}
+              onClose={() => setShowOrderHistory(false)}
+              onViewReceipt={handleViewReceipt}
+            />
+
+            {showReceipt && (
+              <ReceiptShareModal
+                imageUrl={receiptUrl}
+                onClose={() => setShowReceipt(false)}
+              />
             )}
           </form>
         </div>

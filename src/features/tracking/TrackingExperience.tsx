@@ -272,7 +272,7 @@ export default function TrackingExperience({
       )}
 
       {shareModalOpen && (
-        <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShareModalOpen(false)} />
+        <ReceiptShareModal imageUrl={receiptUrl} onClose={() => setShareModalOpen(false)} />
       )}
 
       {status === "delivered" && celebrationShown && !celebrationOpen && (

@@ -134,11 +134,11 @@ export const dictionaries = {
       mainTitle: "Hayalindeki ürünleri sepete ekle, siparişini ver, fişini paylaş!",
       mainDesc: (type: 'shop' | 'food' | 'market') => `Sınırsız bütçe, sıfır harcama. Favori ${type === 'food' ? 'yemeklerini' : 'ürünlerini'} ekle ve bu eğlenceli simülasyonun tadını çıkar.`,
       feature1Title: "İstediğin Kadar Ürün Ekle!",
-      feature1Desc: "Sepet sınırın yok, canın ne isterse ekle.",
+      feature1Desc: "Sepet sınırın yok, canın ne isterse ekle!",
       feature2Title: "Tamamen Ücretsiz!",
-      feature2Desc: "Kesinlikle ödeme bilgisi istemiyoruz.",
+      feature2Desc: "Kesinlikle ödeme bilgisi istemiyoruz!",
       feature3Title: "Arkadaşlarınla Paylaş!",
-      feature3Desc: "Sipariş listeni arkadaşlarınla veya sosyal medyada paylaş."
+      feature3Desc: "Sipariş listeni arkadaşlarınla veya sosyal medyada paylaş!"
     },
 
     // Header & Categories
@@ -226,6 +226,10 @@ export const dictionaries = {
     totalSpent: "TOPLAM HARCAMA",
     privacyPolicy: "Gizlilik Politikası",
     faq: "Sıkça Sorulan Sorular",
+    orderHistory: "Sipariş Geçmişi",
+    viewOrder: "Siparişi Gör",
+    noPastOrders: "Geçmiş siparişiniz bulunmamaktadır.",
+    orderDate: "Sipariş Tarihi",
     faqTitle: "Sıkça Sorulan Sorular",
     faqList: [
       {
@@ -383,11 +387,11 @@ export const dictionaries = {
       mainTitle: "Add your dream items to your cart, place an order, share your receipt!",
       mainDesc: (type: 'shop' | 'food' | 'market') => `Unlimited budget, zero spending. Add your favorite ${type === 'food' ? 'meals' : 'items'} and enjoy this fun simulation.`,
       feature1Title: "Add As Many Items As You Want!",
-      feature1Desc: "No cart limits, add whatever you desire.",
+      feature1Desc: "No cart limits, add whatever you desire!",
       feature2Title: "Completely Free!",
-      feature2Desc: "We absolutely do not ask for payment info.",
+      feature2Desc: "We absolutely do not ask for payment info!",
       feature3Title: "Share With Friends!",
-      feature3Desc: "Share your order list with friends or on social media."
+      feature3Desc: "Share your order list with friends or on social media!"
     },
 
     // Header & Categories
@@ -474,7 +478,11 @@ export const dictionaries = {
     dreamOrder: "My Dream Order",
     totalSpent: "TOTAL SPENT",
     privacyPolicy: "Privacy Policy",
-    faq: "FAQ",
+    faq: "Frequently Asked Questions",
+    orderHistory: "Order History",
+    viewOrder: "View Order",
+    noPastOrders: "You have no past orders.",
+    orderDate: "Order Date",
     faqTitle: "Frequently Asked Questions",
     faqList: [
       {

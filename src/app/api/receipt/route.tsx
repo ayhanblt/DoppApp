@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { dictionaries } from '@/shared/i18n/dictionaries';
-import type { Locale } from '@/shared/lib/types';
+import type { Locale, CartItem, Product } from '@/shared/lib/types';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,24 +14,45 @@ export const runtime = 'edge';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const orderIdParam = searchParams.get('order_id');
     const dataParam = searchParams.get('data');
-    const idParam = searchParams.get('id');
+    const localeParam = searchParams.get('locale') || 'tr';
 
     const protocol = req.headers.get('x-forwarded-proto') || 'http';
     const host = req.headers.get('host') || 'localhost:3000';
     const baseUrl = `${protocol}://${host}`;
 
     let data;
-    if (idParam) {
-      const { data: row } = await supabase.from('shared_receipts').select('data').eq('id', idParam).single();
-      if (!row) {
-        return new Response("Receipt not found", { status: 404 });
+    if (orderIdParam) {
+      const { data: order } = await supabase.from('orders').select('*').eq('id', orderIdParam).single();
+      if (!order) {
+        return new Response("Order not found", { status: 404 });
       }
-      data = row.data;
+      const t = dictionaries[localeParam as Locale] || dictionaries.en;
+      const formatter = new Intl.NumberFormat(localeParam === "tr" ? "tr-TR" : "en-US", {
+        style: "currency",
+        currency: "TRY",
+        minimumFractionDigits: 0,
+      });
+      const totalStr = formatter.format(order.total);
+      
+      const itemIds = order.cart.map((item: CartItem) => item.itemId);
+      const { data: products } = await supabase.from('products').select('*').in('id', itemIds);
+
+      const items = order.cart.map((item: CartItem) => {
+        const product = products?.find((p: Product) => p.id === item.itemId);
+        return {
+          name: product ? (localeParam === 'tr' ? product.name_tr : product.name_en) : "Item",
+          qty: item.quantity,
+          image: product?.image
+        };
+      });
+      
+      data = { locale: localeParam, total: totalStr, items };
     } else if (dataParam) {
       data = JSON.parse(decodeURIComponent(dataParam));
     } else {
-      return new Response("Missing data or id parameter", { status: 400 });
+      return new Response("Missing data or order_id parameter", { status: 400 });
     }
 
     const totalStr = data.total || '';

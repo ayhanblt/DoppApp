@@ -11,6 +11,7 @@ import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus, ShoppingCart } from
 import { supabase } from '@/shared/api/supabase';
 import { ProductModal } from '@/features/catalog/ProductModal';
 import { MarkdownText } from '@/shared/ui/MarkdownText';
+import { getCartTotals } from '@/features/order/cart';
 
 export default function StoreDetailScreen() {
   const { id, productId } = useLocalSearchParams<{ id: string; productId?: string }>();
@@ -384,15 +385,12 @@ export default function StoreDetailScreen() {
                 <ShoppingCart size={20} color="#ffffff" />
               </View>
               <View>
-                <Text className="text-white font-bold text-sm">Sepetim</Text>
-                <Text className="text-white/80 text-xs">{cart.length} Ürün</Text>
+                <Text className="text-white font-bold text-sm">{t.cart || "Sepetim"}</Text>
+                <Text className="text-white/80 text-xs">{cart.length} {t.items || "Ürün"}</Text>
               </View>
             </View>
             <Text className="text-white font-black text-lg">
-              {formatMoney(
-                cart.reduce((sum, ci) => sum + (store.menu.find(m => m.id === ci.itemId)?.price || 0) * ci.quantity, 0),
-                locale
-              )}
+              {formatMoney(getCartTotals(stores, cart).total, locale)}
             </Text>
           </Pressable>
         </View>

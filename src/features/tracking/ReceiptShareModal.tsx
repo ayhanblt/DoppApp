@@ -4,18 +4,17 @@
 
 import { useState, useEffect } from "react";
 import { Locale } from "@/shared/lib/types";
-import { dictionaries } from "@/shared/i18n/dictionaries";
 import { X, Share2, Copy, Check, Link2 } from "lucide-react";
 
 type ReceiptShareModalProps = {
-  locale: Locale;
   imageUrl: string;
   onClose: () => void;
 };
 
-export default function ReceiptShareModal({ locale, imageUrl, onClose }: ReceiptShareModalProps) {
+export default function ReceiptShareModal({ imageUrl, onClose }: ReceiptShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -25,31 +24,17 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const [shortId, setShortId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saveReceipt = async () => {
-      const dataString = imageUrl.split('data=')[1] || "";
-      if (!dataString) return;
-      
-      try {
-        const dataObj = JSON.parse(decodeURIComponent(dataString));
-        const { supabase } = await import("@/shared/api/supabase");
-        const { data, error } = await supabase.from('shared_receipts').insert({ data: dataObj }).select('id').single();
-        if (data?.id) {
-          setShortId(data.id);
-        }
-      } catch (err) {
-        console.error("Failed to generate short ID:", err);
-      }
-    };
-    saveReceipt();
-  }, [imageUrl]);
 
-  const dataString = imageUrl.split('data=')[1] || "";
-  const shareUrl = typeof window !== "undefined" 
-    ? (shortId ? `${window.location.origin}/share?id=${shortId}` : `${window.location.origin}/share?data=${dataString}`)
-    : "https://doppapp.com";
+  let shareUrl = typeof window !== "undefined" ? window.location.origin : "https://doppapp.com";
+  
+  if (imageUrl.includes('order_id=')) {
+    const orderId = imageUrl.split('order_id=')[1].split('&')[0];
+    shareUrl = `${shareUrl}/share?order_id=${orderId}`;
+  } else if (imageUrl.includes('data=')) {
+    const dataString = imageUrl.split('data=')[1];
+    shareUrl = `${shareUrl}/share?data=${dataString}`;
+  }
   const shareText = "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp";
 
   const handleNativeShare = async () => {
@@ -115,7 +100,15 @@ export default function ReceiptShareModal({ locale, imageUrl, onClose }: Receipt
         </div>
 
         <div className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 shadow-sm bg-zinc-50 flex items-center justify-center min-h-[300px]">
-          <img src={imageUrl} alt="Receipt" className="w-full h-auto object-contain" />
+          {imageLoading && (
+            <div className="absolute inset-0 z-10 bg-zinc-200 animate-pulse" />
+          )}
+          <img 
+            src={imageUrl} 
+            alt="Receipt" 
+            className={`w-full h-auto object-contain transition-opacity duration-300 relative z-20 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+            onLoad={() => setImageLoading(false)}
+          />
         </div>
 
         <div className="grid grid-cols-4 gap-2 mb-4">

@@ -19,13 +19,21 @@ import { CatalogBanner } from "./CatalogBanner";
 export function CatalogList({ locale, storeType }: { locale: Locale; storeType: StoreType }) {
   const t = dictionaries[locale];
   const router = useRouter();
-  const { stores, setStores, query, setQuery, setCart, cart, setOrder } = useCatalog();
+  const { stores, setStores, query, setQuery, setCart, cart, setOrder, isLoading } = useCatalog();
 
   const [activeItem, setActiveItem] = useState<ActiveItem | null>(null);
   const [selections, setSelections] = useState<CartSelection>({});
   const [quantity, setQuantity] = useState(1);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
+  const [selectedLabels, setSelectedLabels] = useState<Record<string, string | null>>({});
+  const selectedFeaturedLabel = selectedLabels[storeType] || null;
+  const setSelectedFeaturedLabel = (labelOrUpdater: string | null | ((prev: string | null) => string | null)) => {
+    setSelectedLabels((prev) => {
+      const current = prev[storeType] || null;
+      const nextLabel = typeof labelOrUpdater === 'function' ? labelOrUpdater(current) : labelOrUpdater;
+      return { ...prev, [storeType]: nextLabel };
+    });
+  };
   const [sortBy, setSortBy] = useState<"recommended" | "rating_desc" | "rating_asc" | "deliveryFee_asc" | "deliveryFee_desc" | "eta_asc">("recommended");
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [selectedStoreForDetail, setSelectedStoreForDetail] = useState<Store | null>(null);
@@ -234,7 +242,37 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
       </div>
 
       <div className="mt-4 grid gap-4 pb-28 md:grid-cols-2 2xl:grid-cols-3">
-        {filtered.map((store) => (
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <article key={`skeleton-${i}`} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm h-[400px] animate-pulse">
+              <div className="flex flex-col border-b border-zinc-200 bg-zinc-50 p-5 h-[120px]">
+                <div className="flex items-start">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-zinc-200 mr-3 shrink-0" />
+                  <div className="flex-1">
+                    <div className="h-5 w-3/4 bg-zinc-200 rounded mb-2" />
+                    <div className="h-4 w-1/2 bg-zinc-200 rounded" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 p-5 space-y-4">
+                 <div className="flex items-center gap-3">
+                   <div className="h-20 w-20 rounded-xl bg-zinc-200 shrink-0" />
+                   <div className="flex-1 space-y-2">
+                     <div className="h-4 w-full bg-zinc-200 rounded" />
+                     <div className="h-4 w-2/3 bg-zinc-200 rounded" />
+                   </div>
+                 </div>
+                 <div className="flex items-center gap-3">
+                   <div className="h-20 w-20 rounded-xl bg-zinc-200 shrink-0" />
+                   <div className="flex-1 space-y-2">
+                     <div className="h-4 w-full bg-zinc-200 rounded" />
+                     <div className="h-4 w-2/3 bg-zinc-200 rounded" />
+                   </div>
+                 </div>
+              </div>
+            </article>
+          ))
+        ) : filtered.map((store) => (
           <article key={store.id} className="flex flex-col overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm transition-shadow hover:shadow-md">
             <div className="flex flex-col border-b border-[var(--accent)]/10 bg-[var(--accent)]/5 p-5">
               <div className="flex items-start">

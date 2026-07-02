@@ -20,6 +20,9 @@
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.ayhanbulut.doppapp",
       "googleServicesFile": "./google-services.json",
+      "navigationBar": {
+        "visible": "sticky-immersive"
+      },
       "versionCode": 1
     },
     "web": {

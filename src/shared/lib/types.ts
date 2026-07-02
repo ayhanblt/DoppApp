@@ -145,6 +145,8 @@ export type Order = {
   deliveringAt: number;
   deliveredAt: number;
   items: CartItem[];
+  created_at: string;
+  total: number;
 };
 
 export type PushLog = {

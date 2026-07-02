@@ -1,53 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable } from 'react-native';
+import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable, ScrollView } from 'react-native';
 import { X, Share2, Check, Link2 } from 'lucide-react-native';
 import { Locale } from '@/shared/lib/types';
-import { supabase } from '@/shared/api/supabase';
 import { cacheDirectory, downloadAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 
 interface ReceiptShareModalProps {
-  locale: Locale;
   imageUrl: string;
   visible: boolean;
   onClose: () => void;
 }
 
-export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: ReceiptShareModalProps) {
-  const [shortId, setShortId] = useState<string | null>(null);
+export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareModalProps) {
   const [loading, setLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [imageRatio, setImageRatio] = useState<number>(900 / 1200);
 
   useEffect(() => {
-    if (!visible) return;
-    
-    const saveReceipt = async () => {
-      const dataString = imageUrl.split('data=')[1] || "";
-      if (!dataString) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        const dataObj = JSON.parse(decodeURIComponent(dataString));
-        const { data, error } = await supabase.from('shared_receipts').insert({ data: dataObj }).select('id').single();
-        if (data?.id) {
-          setShortId(data.id);
-        }
-      } catch (err) {
-        console.error("Failed to generate short ID:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    saveReceipt();
-  }, [imageUrl, visible]);
+    if (visible) {
+      setLoading(false);
+    }
+  }, [visible]);
 
-  const dataString = imageUrl.split('data=')[1] || "";
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
-  const shareUrl = shortId ? `${webUrl}/share?id=${shortId}` : `${webUrl}/share?data=${dataString}`;
+  let shareUrl = webUrl;
+  
+  if (imageUrl.includes('order_id=')) {
+    const orderId = imageUrl.split('order_id=')[1].split('&')[0];
+    shareUrl = `${webUrl}/share?order_id=${orderId}`;
+  } else if (imageUrl.includes('data=')) {
+    const dataString = imageUrl.split('data=')[1];
+    shareUrl = `${webUrl}/share?data=${dataString}`;
+  }
+  
   const shareText = "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp";
 
   const handleNativeShare = async () => {
@@ -91,18 +77,23 @@ export function ReceiptShareModal({ locale, imageUrl, visible, onClose }: Receip
             </Pressable>
           </View>
 
-          <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 flex items-center justify-center">
-            {loading && (
-              <View className="absolute z-10">
-                <ActivityIndicator size="large" color="#fb4824" />
-              </View>
-            )}
-            <Image 
-              source={{ uri: imageUrl }} 
-              style={{ width: '100%', aspectRatio: 1200 / 900 }} 
-              resizeMode="contain"
-              onLoad={() => setLoading(false)}
-            />
+          <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 w-full" style={{ maxHeight: 500 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              {loading && (
+                <View className="absolute z-10 w-full h-[500px] bg-zinc-200 animate-pulse" />
+              )}
+              <Image 
+                source={{ uri: imageUrl }} 
+                style={{ width: '100%', aspectRatio: imageRatio }} 
+                resizeMode="contain"
+                onLoad={(e) => {
+                  setLoading(false);
+                  if (e.nativeEvent.source.width && e.nativeEvent.source.height) {
+                    setImageRatio(e.nativeEvent.source.width / e.nativeEvent.source.height);
+                  }
+                }}
+              />
+            </ScrollView>
           </View>
 
           <View className="flex-row gap-2 mb-3">

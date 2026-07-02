@@ -547,7 +547,6 @@ function TrackingScreenInner({ order }: { order: Order }) {
       />
 
       <ReceiptShareModal
-        locale={locale}
         imageUrl={receiptUrl}
         visible={receiptModalOpen}
         onClose={() => setReceiptModalOpen(false)}

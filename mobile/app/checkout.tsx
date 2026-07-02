@@ -1,26 +1,30 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, Alert, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
 import { Locale, Store, Order } from '@/shared/lib/types';
 import { ArrowLeft, MapPin, Rabbit, Turtle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { dictionaries } from '@/shared/i18n/dictionaries';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCartTotals, getCartDeliveryTimeMinutes } from '@/features/order/cart';
 import { uid } from '@/shared/lib/format';
 import { buildOrderTimeline, DEFAULT_DELIVERY_SPEEDS } from '@/features/catalog/appConfig';
 import { coordinateDistanceKm, getOptimizedTrip, offsetCoordinate } from '@/features/tracking/geo';
 import { supabase } from '@/shared/api/supabase';
+import { AddressModal } from '@/features/catalog/AddressModal';
 
 export default function CheckoutScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { cart, setCart, stores, deliveryAddress, config, setOrder, locale } = useCatalog();
   const t = dictionaries[locale];
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [speed, setSpeed] = useState<'rabbit' | 'turtle'>('rabbit');
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
 
   const totals = getCartTotals(stores, cart);
 
@@ -94,7 +98,9 @@ export default function CheckoutScreen() {
       handoffAt,
       deliveringAt,
       deliveredAt,
-      items: cart
+      items: cart,
+      created_at: new Date().toISOString(),
+      total: totals.total
     };
 
     setOrder(newOrder);
@@ -118,7 +124,18 @@ export default function CheckoutScreen() {
         route_waypoints: waypoints,
         platform: "mobile"
       });
-      if (error) console.error("Order insert error:", error);
+      if (error) {
+        console.error("Order insert error:", error);
+      } else {
+        try {
+          const stored = await AsyncStorage.getItem("doppapp_orders");
+          const ordersArr = stored ? JSON.parse(stored) : [];
+          ordersArr.push(orderId);
+          await AsyncStorage.setItem("doppapp_orders", JSON.stringify(ordersArr));
+        } catch (e) {
+          console.error("AsyncStorage error:", e);
+        }
+      }
     };
     saveOrder();
     
@@ -128,7 +145,7 @@ export default function CheckoutScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
       <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
         <Pressable onPress={() => router.back()} className="mr-3">
           <ArrowLeft size={24} color="#09090b" />
@@ -173,9 +190,14 @@ export default function CheckoutScreen() {
           />
 
           <View className="rounded-lg border border-black/10 p-3 mb-4">
-            <View className="flex-row items-center mb-1">
-              <MapPin size={16} color="#09090b" />
-              <Text className="font-black ml-2">{t.deliveryAddress}</Text>
+            <View className="flex-row items-center justify-between mb-1">
+              <View className="flex-row items-center">
+                <MapPin size={16} color="#09090b" />
+                <Text className="font-black ml-2">{t.deliveryAddress}</Text>
+              </View>
+              <Pressable onPress={() => setAddressModalOpen(true)}>
+                <Text className="text-accent font-bold text-xs">{t.changeAddress}</Text>
+              </Pressable>
             </View>
             <Text className="mt-1 text-zinc-600 font-bold">
               {deliveryAddress ? `${deliveryAddress.title} · ${deliveryAddress.shortAddress}` : t.addressRequired}
@@ -211,14 +233,23 @@ export default function CheckoutScreen() {
         </View>
       </ScrollView>
 
-      <View className="p-4 bg-white border-t border-black/5">
+      <View 
+        className="px-4 pt-4 bg-white border-t border-black/5"
+        style={{ paddingBottom: Math.max(insets.bottom + 16, 24) }}
+      >
         <Pressable
           onPress={handleCheckout}
-          className="w-full bg-accent py-4 rounded-xl items-center"
+          className="w-full bg-accent py-4 px-2 rounded-xl items-center"
         >
-          <Text className="text-white font-black text-lg">{t.demoOrder}</Text>
+          <Text adjustsFontSizeToFit numberOfLines={1} className="text-white font-black text-lg">{t.demoOrder}</Text>
         </Pressable>
       </View>
+      
+      <AddressModal
+        visible={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        locale={locale}
+      />
     </SafeAreaView>
   );
 }

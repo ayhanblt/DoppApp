@@ -96,7 +96,7 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         <div className="w-[45%] md:w-[40%] flex-shrink-0 flex items-center justify-center p-2 min-h-[140px] md:min-h-[220px]">
           <div className="relative w-[130px] h-[130px] md:w-[240px] md:h-[240px] mt-2 md:mt-0">
             {/* Single Badge outside the animation loop */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/90 backdrop-blur-md text-white text-[9px] md:text-xs font-black uppercase px-4 py-1.5 rounded-full whitespace-nowrap shadow-md border border-white/20 pointer-events-none">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 bg-zinc-900/40 backdrop-blur-md text-white text-[9px] md:text-xs font-bold uppercase px-4 py-1.5 rounded-full whitespace-nowrap shadow-md border border-white/20 pointer-events-none">
               {badgeText}
             </div>
 

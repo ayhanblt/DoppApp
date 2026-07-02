@@ -53,11 +53,11 @@ export default function CatalogScreen() {
           if (defaultLocation) {
             setDeliveryAddress({
               id: "default",
-              title: "Beşiktaş",
-              shortAddress: "Beşiktaş, İstanbul",
-              address: "Beşiktaş, İstanbul, Türkiye",
-              latitude: 41.0422,
-              longitude: 29.0060,
+              title: "Ev",
+              shortAddress: "Şişli",
+              address: "Şişli, İstanbul, Türkiye",
+              latitude: 41.0603,
+              longitude: 28.9877,
             });
           } else {
             setAddressModalOpen(true);

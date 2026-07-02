@@ -24,6 +24,7 @@ type CatalogContextType = {
   stores: Store[];
   setStores: React.Dispatch<React.SetStateAction<Store[]>>;
   config: GlobalConfig | null;
+  isLoading: boolean;
 };
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
@@ -40,11 +41,15 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const [dbStores, setDbStores] = useState<Store[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [config, setConfig] = useState<GlobalConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     fetchStoresFromSupabase().then((res) => {
-      if (mounted) setDbStores(res);
+      if (mounted) {
+        setDbStores(res);
+        if (res.length === 0) setIsLoading(false);
+      }
     });
     fetchConfigFromSupabase().then((res) => {
       if (mounted) setConfig(res);
@@ -59,7 +64,10 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     async function initStores() {
       const rawAddress = window.localStorage.getItem("deliveryAddress");
       if (!rawAddress) {
-        if (mounted) setStores(dbStores);
+        if (mounted) {
+          setStores(dbStores);
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -68,7 +76,10 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
         storedAddress = JSON.parse(rawAddress) as Address;
       } catch {
         window.localStorage.removeItem("deliveryAddress");
-        if (mounted) setStores(dbStores);
+        if (mounted) {
+          setStores(dbStores);
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -82,6 +93,8 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
         if (mounted) setStores(roadStores);
       } catch (err) {
         console.error("OSRM API Hatası:", err);
+      } finally {
+        if (mounted) setIsLoading(false);
       }
     }
 
@@ -109,7 +122,8 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     setOrder,
     stores,
     setStores,
-    config
+    config,
+    isLoading
   };
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;

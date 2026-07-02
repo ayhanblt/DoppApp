@@ -166,8 +166,8 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         <View className="w-[140px] items-center justify-center p-2 min-h-[140px] mr-1">
           <View className="relative w-[120px] h-[120px] mt-2">
             {/* Badge */}
-            <View className="absolute -top-4 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/90 rounded-full px-3 py-1 shadow-sm border border-white/20">
-              <Text className="text-white text-[9px] font-black uppercase tracking-wider">{badgeText}</Text>
+            <View className="absolute -top-3 left-1/2 -translate-x-1/2 z-50 bg-slate-700/90 rounded-full px-3 py-1 shadow-sm border border-white/20">
+              <Text className="text-white text-[7px] font-bold uppercase tracking-wider">{badgeText}</Text>
             </View>
 
             {dailyProducts.map((p, i) => (
@@ -191,7 +191,7 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
           <View className="flex-col items-center justify-center mb-1">
             <ShoppingBag size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[10px] text-orange-50 text-center leading-tight shadow-sm">
+            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
               {t.feature1Title}
             </Text>
           </View>
@@ -204,7 +204,7 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
           <View className="flex-col items-center justify-center mb-1">
             <CreditCard size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[10px] text-orange-50 text-center leading-tight shadow-sm">
+            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
               {t.feature2Title}
             </Text>
           </View>
@@ -217,7 +217,7 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
           <View className="flex-col items-center justify-center mb-1">
             <Share2 size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[10px] text-orange-50 text-center leading-tight shadow-sm">
+            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
               {t.feature3Title}
             </Text>
           </View>

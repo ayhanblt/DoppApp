@@ -60,7 +60,7 @@ export type Product = {
   name: Record<Locale, string>;
   description: Record<Locale, string>;
   price: number;
-  calories?: number; 
+  calories?: number;
   image: string;
   optionGroups?: MenuOptionGroup[];
   product_category_id: string;
@@ -145,4 +145,6 @@ export type Order = {
   deliveringAt: number;
   deliveredAt: number;
   items: CartItem[];
+  created_at: string;
+  total: number;
 };

@@ -16,7 +16,7 @@ interface AddressModalProps {
   locale?: Locale;
 }
 
-const DEFAULT_COORD = { lat: 41.0422, lng: 29.0060 }; // Beşiktaş, İstanbul, default map center
+const DEFAULT_COORD = { lat: 41.0603, lng: 28.9877 }; // Şişli, İstanbul, default map center
 
 export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, locale = "tr" }) => {
   const t = dictionaries[locale];

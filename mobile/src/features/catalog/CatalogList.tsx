@@ -12,10 +12,18 @@ import { uid } from "@/shared/lib/format";
 
 export function CatalogList({ locale, storeType }: { locale: Locale; storeType: StoreType }) {
   const t = dictionaries[locale];
-  const { stores, query, setCart } = useCatalog();
+  const { stores, query, isLoading, setCart } = useCatalog();
   const router = useRouter();
 
-  const [selectedFeaturedLabel, setSelectedFeaturedLabel] = useState<string | null>(null);
+  const [selectedLabels, setSelectedLabels] = useState<Record<string, string | null>>({});
+  const selectedFeaturedLabel = selectedLabels[storeType] || null;
+  const setSelectedFeaturedLabel = (labelOrUpdater: string | null | ((prev: string | null) => string | null)) => {
+    setSelectedLabels((prev) => {
+      const current = prev[storeType] || null;
+      const nextLabel = typeof labelOrUpdater === 'function' ? labelOrUpdater(current) : labelOrUpdater;
+      return { ...prev, [storeType]: nextLabel };
+    });
+  };
   const [activeItem, setActiveItem] = useState<{ store: Store; item: Product } | null>(null);
   const [sortBy, setSortBy] = useState<"recommended" | "rating_desc" | "rating_asc" | "deliveryFee_asc" | "deliveryFee_desc" | "eta_asc">("recommended");
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
@@ -163,9 +171,35 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
   return (
     <View className="flex-1 bg-background px-4 pt-4">
       <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderStore}
+        data={isLoading ? [1, 2, 3] as any : filtered}
+        keyExtractor={(item, index) => isLoading ? `skeleton-${index}` : item.id}
+        renderItem={isLoading ? () => (
+          <View className="bg-white rounded-xl mb-4 overflow-hidden border border-black/10">
+             <View className="flex-row items-center p-4 border-b border-black/5 bg-zinc-50 h-24">
+                <View className="w-12 h-12 rounded-full bg-zinc-200 animate-pulse mr-3" />
+                <View className="flex-1">
+                  <View className="h-5 bg-zinc-200 rounded w-3/4 mb-2 animate-pulse" />
+                  <View className="h-4 bg-zinc-200 rounded w-1/2 animate-pulse" />
+                </View>
+             </View>
+             <View className="p-4 flex-col gap-4">
+                <View className="flex-row items-center">
+                  <View className="flex-1 mr-4">
+                    <View className="h-4 bg-zinc-200 rounded w-full mb-2 animate-pulse" />
+                    <View className="h-4 bg-zinc-200 rounded w-2/3 animate-pulse" />
+                  </View>
+                  <View className="w-20 h-20 bg-zinc-200 rounded-lg animate-pulse" />
+                </View>
+                <View className="flex-row items-center">
+                  <View className="flex-1 mr-4">
+                    <View className="h-4 bg-zinc-200 rounded w-full mb-2 animate-pulse" />
+                    <View className="h-4 bg-zinc-200 rounded w-2/3 animate-pulse" />
+                  </View>
+                  <View className="w-20 h-20 bg-zinc-200 rounded-lg animate-pulse" />
+                </View>
+             </View>
+          </View>
+        ) : renderStore}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={

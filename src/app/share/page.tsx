@@ -1,10 +1,11 @@
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import ReceiptImageClient from './ReceiptImageClient';
 
-export async function generateMetadata({ searchParams }: { searchParams: Promise<{ data?: string, id?: string }> }): Promise<Metadata> {
-  const { data, id } = await searchParams;
-  if (!data && !id) return {};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ data?: string, order_id?: string }> }): Promise<Metadata> {
+  const { data, order_id } = await searchParams;
+  if (!data && !order_id) return {};
 
   const headersList = await headers();
   const host = headersList.get('host') || 'doppapp.com';
@@ -12,8 +13,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const baseUrl = `${protocol}://${host}`;
   let imageUrl = '';
 
-  if (id) {
-    imageUrl = `${baseUrl}/api/receipt?id=${id}`;
+  if (order_id) {
+    imageUrl = `${baseUrl}/api/receipt?order_id=${order_id}`;
   } else if (data) {
     imageUrl = `${baseUrl}/api/receipt?data=${data}`;
   }
@@ -33,12 +34,12 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   };
 }
 
-export default async function SharePage({ searchParams }: { searchParams: Promise<{ data?: string, id?: string }> }) {
-  const { data, id } = await searchParams;
+export default async function SharePage({ searchParams }: { searchParams: Promise<{ data?: string, order_id?: string }> }) {
+  const { data, order_id } = await searchParams;
   let imageUrl = '';
   
-  if (id) {
-    imageUrl = `/api/receipt?id=${id}`;
+  if (order_id) {
+    imageUrl = `/api/receipt?order_id=${order_id}`;
   } else if (data) {
     imageUrl = `/api/receipt?data=${data}`;
   }
@@ -47,10 +48,7 @@ export default async function SharePage({ searchParams }: { searchParams: Promis
     <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 p-6">
       <h1 className="text-2xl font-black mb-6 text-zinc-800">İşte Benim Siparişim!</h1>
       {imageUrl && (
-        <div className="rounded-3xl overflow-hidden shadow-2xl mb-8 max-w-md w-full border border-black/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt="DoppApp Sepetim" className="w-full h-auto object-contain" />
-        </div>
+        <ReceiptImageClient imageUrl={imageUrl} />
       )}
       <Link 
         href="/"

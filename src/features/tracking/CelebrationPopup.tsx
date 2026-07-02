@@ -138,7 +138,7 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
         </div>
       </div>
       {showShareModal && (
-        <ReceiptShareModal locale={locale} imageUrl={receiptUrl} onClose={() => setShowShareModal(false)} />
+        <ReceiptShareModal imageUrl={receiptUrl} onClose={() => setShowShareModal(false)} />
       )}
     </>
   );

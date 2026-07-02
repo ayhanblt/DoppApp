@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
 import { Locale } from '@/shared/lib/types';
-import { ArrowLeft, Trash2, MapPin, Save, FolderDown } from 'lucide-react-native';
+import { ArrowLeft, Trash2, MapPin, Save, FolderDown, History } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { OrderHistoryModal } from '@/features/catalog/OrderHistoryModal';
+import { ReceiptShareModal } from '@/features/tracking/ReceiptShareModal';
 
 export default function CartScreen() {
   const router = useRouter();
@@ -19,6 +21,18 @@ export default function CartScreen() {
   const [saveCartName, setSaveCartName] = useState("");
   const [savedCarts, setSavedCarts] = useState<Array<{ name: string; items: typeof cart }>>([]);
   const [selectedCartIndex, setSelectedCartIndex] = useState<number | null>(null);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState("");
+
+  const handleViewReceipt = (orderId: string) => {
+    setShowOrderHistory(false);
+    setTimeout(() => {
+      const apiBase = process.env.EXPO_PUBLIC_API_URL;
+      setReceiptUrl(`${apiBase}/receipt?order_id=${orderId}&locale=${locale}`);
+      setShowReceipt(true);
+    }, 500);
+  };
 
   const openRestorePrompt = async () => {
     const saved = await AsyncStorage.getItem("doppapp_saved_carts");
@@ -159,6 +173,19 @@ export default function CartScreen() {
           </View>
         </View>
       </Modal>
+
+      <OrderHistoryModal 
+        locale={locale} 
+        isOpen={showOrderHistory} 
+        onClose={() => setShowOrderHistory(false)} 
+        onViewReceipt={handleViewReceipt}
+      />
+
+      <ReceiptShareModal
+        imageUrl={receiptUrl}
+        visible={showReceipt}
+        onClose={() => setShowReceipt(false)}
+      />
     </>
   );
 
@@ -172,18 +199,25 @@ export default function CartScreen() {
             </Pressable>
             <Text className="text-xl font-black">{t.cart}</Text>
           </View>
-          <Pressable onPress={openRestorePrompt} className="p-2 flex-row items-center gap-1">
-            <FolderDown size={18} color="#09090b" />
-            <Text className="text-sm font-bold text-zinc-800">{t.restore}</Text>
-          </Pressable>
+          <View className="flex-row items-center gap-2">
+            <Pressable onPress={() => setShowOrderHistory(true)} className="px-3 py-2 flex-row items-center gap-1 bg-white rounded-full shadow-sm border border-zinc-100">
+              <History size={16} color="#09090b" />
+              <Text className="text-sm font-bold text-zinc-800">{t.orderHistory}</Text>
+            </Pressable>
+          </View>
         </View>
         <View className="flex-1 items-center justify-center p-8">
           <Text className="text-zinc-500 font-medium text-center">{t.emptyCart}</Text>
           <Pressable
             onPress={() => router.back()}
-            className="mt-6 px-6 py-3 rounded-full bg-accent/10"
+            className="mt-6 px-6 py-3 rounded-full bg-accent/10 w-full items-center"
           >
             <Text className="text-accent font-bold">Geri Dön</Text>
+          </Pressable>
+          
+          <Pressable onPress={openRestorePrompt} className="mt-4 px-6 py-3 flex-row items-center justify-center gap-2 bg-zinc-100 rounded-full w-full">
+            <FolderDown size={18} color="#09090b" />
+            <Text className="text-sm font-bold text-zinc-800">{t.restore}</Text>
           </Pressable>
         </View>
         {renderModals()}
@@ -193,11 +227,19 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-        <Pressable onPress={() => router.back()} className="mr-3">
-          <ArrowLeft size={24} color="#09090b" />
-        </Pressable>
-        <Text className="text-xl font-black">{t.cart}</Text>
+      <View className="flex-row items-center justify-between p-4 border-b border-black/5 bg-white">
+        <View className="flex-row items-center">
+          <Pressable onPress={() => router.back()} className="mr-3">
+            <ArrowLeft size={24} color="#09090b" />
+          </Pressable>
+          <Text className="text-xl font-black">{t.cart}</Text>
+        </View>
+        <View className="flex-row items-center gap-2">
+          <Pressable onPress={() => setShowOrderHistory(true)} className="px-3 py-2 flex-row items-center gap-1 bg-white rounded-full shadow-sm border border-zinc-100">
+            <History size={16} color="#09090b" />
+            <Text className="text-sm font-bold text-zinc-800">{t.orderHistory}</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView className="flex-1 p-4">
