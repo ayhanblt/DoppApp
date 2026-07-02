@@ -7,6 +7,7 @@ import { useCatalog } from "./CatalogContext";
 import { useRouter } from "expo-router";
 import { Filter, Star, Clock } from "lucide-react-native";
 import { ProductModal } from "./ProductModal";
+import { CatalogBanner } from "./CatalogBanner";
 import { uid } from "@/shared/lib/format";
 
 export function CatalogList({ locale, storeType }: { locale: Locale; storeType: StoreType }) {
@@ -161,42 +162,46 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   return (
     <View className="flex-1 bg-background px-4 pt-4">
-      <View className="flex-row items-center mb-4 gap-2">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1 mr-1">
-          {featuredLabels.map((label) => (
-            <Pressable
-              key={label}
-              onPress={() => setSelectedFeaturedLabel((curr) => (curr === label ? null : label))}
-              className={`px-4 py-2 rounded-full mr-2 border ${
-                selectedFeaturedLabel === label
-                  ? "bg-zinc-800 border-zinc-800"
-                  : "bg-white border-black/10"
-              }`}
-            >
-              <Text
-                className={`text-xs font-bold ${
-                  selectedFeaturedLabel === label ? "text-white" : "text-zinc-600"
-                }`}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-        <Pressable 
-          onPress={() => setIsSortModalOpen(true)}
-          className="w-10 h-10 shrink-0 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm"
-        >
-          <Filter size={18} color="#52525b" />
-        </Pressable>
-      </View>
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={renderStore}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        ListHeaderComponent={
+          <>
+            <CatalogBanner storeType={storeType} locale={locale} />
+            <View className="flex-row items-center mb-4 gap-2">
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1 mr-1">
+                {featuredLabels.map((label) => (
+                  <Pressable
+                    key={label}
+                    onPress={() => setSelectedFeaturedLabel((curr) => (curr === label ? null : label))}
+                    className={`px-4 py-2 rounded-full mr-2 border ${
+                      selectedFeaturedLabel === label
+                        ? "bg-zinc-800 border-zinc-800"
+                        : "bg-white border-black/10"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold ${
+                        selectedFeaturedLabel === label ? "text-white" : "text-zinc-600"
+                      }`}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              <Pressable 
+                onPress={() => setIsSortModalOpen(true)}
+                className="w-10 h-10 shrink-0 rounded-full bg-white items-center justify-center border border-black/10 shadow-sm"
+              >
+                <Filter size={18} color="#52525b" />
+              </Pressable>
+            </View>
+          </>
+        }
       />
 
       {activeItem && (

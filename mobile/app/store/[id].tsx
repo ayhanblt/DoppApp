@@ -13,7 +13,7 @@ import { ProductModal } from '@/features/catalog/ProductModal';
 import { MarkdownText } from '@/shared/ui/MarkdownText';
 
 export default function StoreDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, productId } = useLocalSearchParams<{ id: string; productId?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { stores, setStores, locale, setCart, cart } = useCatalog();
@@ -24,6 +24,15 @@ export default function StoreDetailScreen() {
   const [activeItem, setActiveItem] = useState<{ store: Store; item: Product } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSectionLabel, setSelectedSectionLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (productId && store) {
+      const item = store.menu.find((m) => m.id === productId);
+      if (item) {
+        setActiveItem({ store, item });
+      }
+    }
+  }, [productId, store]);
 
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);

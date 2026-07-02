@@ -101,3 +101,21 @@ export function buildOrderTimeline(
 
   return { handoffAt, deliveringAt, deliveredAt };
 }
+
+export const bannerThemeConfig: Record<import("@/shared/lib/types").StoreType, { colors: readonly [string, string, ...string[]]; text: string; featureBg: string }> = {
+  shop: {
+    colors: ['#8b5cf6', '#6d28d9'], // violet-500 to violet-700
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+  food: {
+    colors: ['#f97316', '#ef4444'], // orange-500 to red-500
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+  market: {
+    colors: ['#10b981', '#14b8a6'], // emerald-500 to teal-500
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+};

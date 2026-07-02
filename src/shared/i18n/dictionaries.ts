@@ -90,9 +90,9 @@ export const dictionaries = {
     calories: "Kalori",
     awesome: "Harika!",
     orderDelivered: "Siparişiniz başarıyla teslim edildi!",
-    savingsSummary: (priceStr: string, caloriesStr: string) => 
+    savingsSummary: (priceStr: string, caloriesStr: string) =>
       `Bu siparişinizden toplamda ${priceStr} tutarında${caloriesStr ? ` ve ${caloriesStr} kcal kalori` : ""} tasarruf yaptınız.`,
-    
+
     // Admin & General Refactor
     savedToDb: "Veritabanına kaydedildi.",
     addedToDb: "Veritabanına eklendi.",
@@ -122,24 +122,37 @@ export const dictionaries = {
     langEn: "EN",
     langTr: "TR",
     reviews: "Yorum",
-    
+
     // Header & Categories
+    catalogBanner: {
+      shopBadge: "Öne Çıkan Ürün",
+      foodBadge: "Öne Çıkan Yemek",
+      marketBadge: "Öne Çıkan Ürün",
+      mainTitle: "Hayalindeki ürünleri sepete ekle, siparişini ver, fişini paylaş!",
+      mainDesc: (type: 'shop' | 'food' | 'market') => `Sınırsız bütçe, sıfır harcama. Favori ${type === 'food' ? 'yemeklerini' : 'ürünlerini'} ekle ve bu eğlenceli simülasyonun tadını çıkar.`,
+      feature1Title: "İstediğin Kadar Ürün Ekle!",
+      feature1Desc: "Sepet sınırın yok, canın ne isterse ekle.",
+      feature2Title: "Tamamen Ücretsiz!",
+      feature2Desc: "Kesinlikle ödeme bilgisi istemiyoruz.",
+      feature3Title: "Arkadaşlarınla Paylaş!",
+      feature3Desc: "Sipariş listeni arkadaşlarınla veya sosyal medyada paylaş."
+    },
     shop: "Alışveriş",
     food: "Yemek",
     market: "Market",
     about: "Hakkında",
     sendFeedback: "Geri Bildirim Gönder",
-    
+
     // CatalogList
     seeAll: "Tümünü Gör >",
     seeAllItems: (count: number) => `Tümünü Gör (${count} Ürün)`,
-    
+
     // Landing Modal
     welcomeTitle: "DoppApp'e Hoş Geldin!",
     welcomeDesc: "DoppApp, hayalindeki ürünlerle sepetler oluşturabileceğin, alışveriş ve sipariş süreçlerini simüle ederek kurye takibini deneyimleyebileceğin ve sipariş fişlerini arkadaşlarınla paylaşabileceğin eğlenceli bir e-ticaret simülasyonudur.",
     pickLocation: "Konumunu Seç",
     startNow: "Hemen Başla",
-    
+
     // Feedback Modal
     nameSurnameOptional: "Ad Soyad (Opsiyonel)",
     emailLabel: "E-posta *",
@@ -166,7 +179,7 @@ export const dictionaries = {
     aboutBullet4: "Son olarak, hayalinizdeki siparişin havalı bir sipariş fişini (receipt) oluşturup bunu arkadaşlarınızla paylaşabilirsiniz!",
     aboutP3: "Bu uygulama, bir sipariş sürecinin baştan sona (ürün seçiminden kurye takibine kadar) nasıl tasarlandığını ve kusursuz bir kullanıcı deneyimini (UX) sergilemek amacıyla geliştirilmiştir.",
     aboutHaveFun: "İyi eğlenceler dileriz!",
-    
+
     // New translations for inline text
     shareOrder: "Siparişi Paylaş",
     deliverNow: "Hemen Teslim Et",
@@ -203,13 +216,19 @@ export const dictionaries = {
     faq: "Sıkça Sorulan Sorular",
     privacyPolicyTitle: "Gizlilik Politikası",
     privacyPolicyContent: [
-      "DoppApp, kullanıcı gizliliğine ve güvenliğine büyük önem verir. Uygulamamızı kullanırken toplanan veya işlenen verilerin nasıl ele alındığı aşağıda açıklanmıştır:",
-      "1. Konum Bilgisi: Uygulamamız, size en yakın sanal restoran veya mağazaları listelemek ve harita üzerinde adres seçiminizi kolaylaştırmak için anlık konum bilgisi isteyebilir. Bu konum bilgisi yalnızca o anki işlemi gerçekleştirmek için kullanılır, sunucularımızda kesinlikle kaydedilmez veya üçüncü şahıslarla paylaşılmaz.",
-      "2. Bildirim İzinleri: Kurgusal siparişlerinizin durumunu (örn. 'Siparişiniz hazırlanıyor', 'Kurye yola çıktı') veya yeni ürün eklendi gibi genel bilgilendirmeleri size iletebilmek için cihazınızdan anlık bildirim (push notification) izni istenir. Bildirim servisleri yalnızca uygulama içindeki simüle edilmiş süreçleri ve yenilikleri iletmek amacıyla kullanılır.",
-      "3. Kişisel Veriler: Uygulamayı kullanmak veya sipariş simülasyonu oluşturmak için isim ve soyisim gibi bilgiler girmeniz istenebilir. Bu bilgiler tamamen opsiyoneldir (isteğe bağlıdır). Geri bildirim formunda ise size dönüş yapabilmemiz adına e-posta adresi zorunludur. Girdiğiniz hiçbir kişisel veri kalıcı olarak profilinizde saklanmaz veya herhangi bir ticari amaçla kullanılmaz.",
-      "4. Sipariş ve Ödeme Verileri: DoppApp bir e-ticaret simülasyonudur. Uygulama içinde gördüğünüz hiçbir ürün gerçek değildir. Dolayısıyla hiçbir aşamada kredi kartı bilginiz istenmez, ödeme alınmaz ve gerçek bir kurye adresinize gönderilmez.",
-      "İletişim: Gizlilik politikamızla ilgili her türlü sorunuz için ayhanbulut91@gmail.com adresinden bizimle iletişime geçebilirsiniz.",
-      "Uygulamamızı kullanarak bu gizlilik politikasını kabul etmiş sayılırsınız."
+      "Son Güncelleme: 30 Haziran 2026",
+      "DoppApp, kullanıcı gizliliğine ve kişisel verilerin korunmasına önem verir. Bu Gizlilik Politikası, DoppApp uygulamasını kullanırken hangi bilgilerin işlendiğini, bu bilgilerin hangi amaçlarla kullanıldığını ve nasıl korunduğunu açıklamaktadır.",
+      "DoppApp tamamen kurgusal bir e-ticaret simülasyonudur. Uygulama gerçek ürün satışı yapmaz, gerçek sipariş oluşturmaz ve hiçbir aşamada kredi kartı, banka kartı veya ödeme bilgilerinizi talep etmez.",
+      "1. Konum Bilgisi: DoppApp, size en yakın sanal mağaza ve restoranları gösterebilmek, harita üzerinde adres seçimini kolaylaştırabilmek ve sipariş simülasyonlarını oluşturabilmek amacıyla cihazınızın konumuna erişim izni isteyebilir. Konum kullanımı tamamen kullanıcı tercihine bağlıdır. Kullanıcılar cihazlarının mevcut konumunu kullanabileceği gibi, harita üzerinden farklı bir konumu manuel olarak da seçebilir. Kullanıcı konum paylaşımı yapmak istemezse uygulamayı kullanmaya devam edebilir. Seçilen teslimat konumu veya koordinat bilgileri, sipariş simülasyonunun doğru şekilde çalışabilmesi amacıyla sistemimizde saklanabilir.",
+      "2. Bildirimler: DoppApp, sipariş simülasyonlarıyla ilgili durum güncellemelerini ve uygulama içi yenilikleri size iletebilmek için bildirim izni isteyebilir. Bildirimler aşağıdaki amaçlarla kullanılabilir: Sipariş simülasyonu durum değişiklikleri, Kurye hareketleri, Yeni ürün veya özellik duyuruları, Uygulama ile ilgili bilgilendirmeler. Bildirim hizmetleri Expo Push Notifications ve Firebase Cloud Messaging (FCM) altyapıları kullanılarak sağlanmaktadır.",
+      "3. Kişisel Bilgiler: DoppApp'ı kullanmak için kullanıcı hesabı oluşturmanız veya kişisel bilgilerinizi paylaşmanız zorunlu değildir. Sipariş simülasyonu oluştururken Ad ve soyad, Telefon numarası, Teslimat konumu bilgileri isteğe bağlı olarak kullanılabilir. Teslimat konumu, cihazınızın mevcut konumu kullanılarak seçilebileceği gibi, harita üzerinden istediğiniz farklı bir konum manuel olarak da seçilebilir. Konum paylaşımı tamamen kullanıcı tercihine bağlıdır. Uygulama içerisindeki geri bildirim formunda, size geri dönüş sağlayabilmemiz amacıyla e-posta adresi istenmektedir. E-posta adresi geri bildirim formu için zorunlu olup, ad ve soyad bilgileri isteğe bağlıdır. Paylaştığınız bilgiler yalnızca sipariş simülasyonunun çalıştırılması, geri bildirimlerinize yanıt verilmesi ve uygulama deneyiminin geliştirilmesi amacıyla kullanılmaktadır. Kişisel bilgileriniz reklam, pazarlama veya ticari amaçlarla kullanılmaz.",
+      "4. Sipariş Simülasyonu Verileri: DoppApp bir e-ticaret simülasyonudur. Uygulama içerisinde oluşturduğunuz siparişler gerçek bir satın alma işlemi değildir. Sipariş simülasyonlarının çalışabilmesi için Sepete eklenen ürünler, Sipariş içeriği, Sipariş zamanı, Seçilen teslimat konumu, Konum koordinatları, Kurye simülasyon bilgileri, Sipariş durumu, Simülasyon sürecine ait teknik bilgiler sistemimizde saklanabilir. Bu veriler yalnızca uygulamanın çalışmasını sağlamak, sipariş simülasyonlarını gerçekleştirmek, hata tespiti yapmak ve kullanıcı deneyimini geliştirmek amacıyla kullanılmaktadır.",
+      "5. Kullanılan Üçüncü Taraf Hizmetler: DoppApp, uygulama hizmetlerini sağlayabilmek için aşağıdaki üçüncü taraf altyapılarından yararlanmaktadır: Supabase (Uygulama verilerinin güvenli şekilde saklanması ve yönetilmesi), Resend (Geri bildirim ve iletişim e-postalarının gönderilmesi), Expo Push Notifications (Anlık bildirimlerin gönderilmesi), Firebase Cloud Messaging (FCM) (Bildirim altyapısının sağlanması). Bu hizmet sağlayıcıları yalnızca kendi hizmetlerini sunabilmek için gerekli verileri işleyebilir.",
+      "6. Veri Güvenliği: DoppApp, kullanıcı verilerinin yetkisiz erişim, kayıp veya kötüye kullanıma karşı korunması için uygun teknik ve idari güvenlik önlemleri uygulamaktadır.",
+      "7. Verilerin Paylaşılması: DoppApp kullanıcı verilerini satmaz, kiralamaz veya ticari amaçlarla üçüncü kişilerle paylaşmaz. Veriler yalnızca uygulamanın çalışmasını sağlayan hizmet sağlayıcıları tarafından, sundukları hizmet kapsamında işlenebilir.",
+      "8. Veri Saklama ve Silme Talepleri: Kullanıcılar, kendileriyle ilişkili kişisel verilerin silinmesini talep edebilir. Verilerinizin silinmesini istemeniz durumunda aşağıdaki e-posta adresi üzerinden bizimle iletişime geçebilirsiniz: ayhanbulut91@gmail.com. Talebiniz, ilgili verilerin incelenmesi ve uygun şekilde silinmesi için değerlendirilecektir.",
+      "9. Gizlilik Politikasındaki Değişiklikler: Bu Gizlilik Politikası gerektiğinde güncellenebilir. Güncel sürüm her zaman uygulama içerisinde veya ilgili sayfada yayımlanacaktır.",
+      "10. İletişim: Gizlilik Politikası veya kişisel verilerinizle ilgili sorularınız için bizimle ayhanbulut91@gmail.com adresinden iletişime geçebilirsiniz. DoppApp uygulamasını kullanarak bu Gizlilik Politikası'nda belirtilen veri işleme uygulamalarını kabul etmiş olursunuz."
     ],
     faqTitle: "Sıkça Sorulan Sorular",
     faqList: [
@@ -324,7 +343,7 @@ export const dictionaries = {
     calories: "Calories",
     awesome: "Awesome!",
     orderDelivered: "Your order has been delivered!",
-    savingsSummary: (priceStr: string, caloriesStr: string) => 
+    savingsSummary: (priceStr: string, caloriesStr: string) =>
       `From this order, you saved a total of ${priceStr}${caloriesStr ? ` and ${caloriesStr} kcal` : ""}.`,
 
     // Admin & General Refactor
@@ -358,12 +377,25 @@ export const dictionaries = {
     reviews: "Reviews",
 
     // Header & Categories
+    catalogBanner: {
+      shopBadge: "Featured Product",
+      foodBadge: "Featured Meal",
+      marketBadge: "Featured Product",
+      mainTitle: "Add your dream items to your cart, place an order, share your receipt!",
+      mainDesc: (type: 'shop' | 'food' | 'market') => `Unlimited budget, zero spending. Add your favorite ${type === 'food' ? 'meals' : 'items'} and enjoy this fun simulation.`,
+      feature1Title: "Add As Many Items As You Want!",
+      feature1Desc: "No cart limits, add whatever you desire.",
+      feature2Title: "Completely Free!",
+      feature2Desc: "We absolutely do not ask for payment info.",
+      feature3Title: "Share With Friends!",
+      feature3Desc: "Share your order list with friends or on social media."
+    },
     shop: "Shop",
     food: "Food",
     market: "Market",
     about: "About",
     sendFeedback: "Send Feedback",
-    
+
     // CatalogList
     seeAll: "See All >",
     seeAllItems: (count: number) => `See All (${count} Items)`,
@@ -373,7 +405,7 @@ export const dictionaries = {
     welcomeDesc: "DoppApp is a fun e-commerce simulation where you can build dream carts, simulate shopping and delivery flows, track your courier, and share receipts with friends.",
     pickLocation: "Choose Location",
     startNow: "Start Now",
-    
+
     // Feedback Modal
     nameSurnameOptional: "Name Surname (Optional)",
     emailLabel: "Email *",
@@ -437,13 +469,19 @@ export const dictionaries = {
     faq: "FAQ",
     privacyPolicyTitle: "Privacy Policy",
     privacyPolicyContent: [
-      "DoppApp places great importance on user privacy and security. Below is an explanation of how data collected or processed while using our application is handled:",
-      "1. Location Information: Our application may request your real-time location to list the closest virtual restaurants or stores and to facilitate address selection on the map. This location data is used solely to perform the immediate task, is never saved on our servers, and is not shared with third parties.",
-      "2. Push Notifications: We may request permission to send push notifications to inform you about the status of your fictional orders (e.g., 'Your order is preparing', 'Courier is on the way') or to send general promotional updates like new products. Notification services are used strictly to communicate simulated processes and updates within the app.",
-      "3. Personal Data: You may be asked to enter information such as your name and surname to use the application or create an order simulation. Providing this information is completely optional. For the feedback form, an email address is required so we can respond to you. Any personal data you enter is not permanently stored in a profile and is never used for any commercial purpose.",
-      "4. Order and Payment Data: DoppApp is an e-commerce simulation. None of the products you see in the app are real. Therefore, your credit card information is never requested, no payments are taken, and a real courier is never dispatched to your address.",
-      "Contact: If you have any questions about our privacy policy, you can contact us at ayhanbulut91@gmail.com.",
-      "By using our application, you agree to this privacy policy."
+      "Last Updated: June 30, 2026",
+      "DoppApp attaches great importance to user privacy and the protection of personal data. This Privacy Policy explains what information is processed, for what purposes it is used, and how it is protected when you use the DoppApp application.",
+      "DoppApp is entirely a fictional e-commerce simulation. The application does not sell real products, does not create real orders, and never requests your credit card, debit card, or payment information at any stage.",
+      "1. Location Information: DoppApp may request access to your device's location to show you the nearest virtual stores and restaurants, to make address selection easier on the map, and to create order simulations. The use of location is entirely up to the user's preference. Users can use their device's current location or manually select a different location on the map. If the user does not want to share their location, they can continue to use the application. The selected delivery location or coordinate information may be stored in our system to ensure the order simulation runs correctly.",
+      "2. Notifications: DoppApp may request notification permissions to send you status updates regarding order simulations and in-app announcements. Notifications may be used for the following purposes: Order simulation status changes, Courier movements, New product or feature announcements, Application-related notifications. Notification services are provided using Expo Push Notifications and Firebase Cloud Messaging (FCM) infrastructures.",
+      "3. Personal Information: You are not required to create a user account or share your personal information to use DoppApp. When creating an order simulation, the following information can be used optionally: Name and surname, Phone number, Delivery location. The delivery location can be selected using your device's current location, or you can manually select a different location on the map. Location sharing is entirely up to the user's preference. In the feedback form within the application, your email address is requested so that we can respond to you. The email address is mandatory for the feedback form, while name and surname information is optional. The information you share is used solely for running the order simulation, responding to your feedback, and improving the application experience. Your personal information is not used for advertising, marketing, or commercial purposes.",
+      "4. Order Simulation Data: DoppApp is an e-commerce simulation. The orders you create within the application are not real purchase transactions. To run order simulations, the following data may be stored in our system: Items added to the cart, Order contents, Order time, Selected delivery location, Location coordinates, Courier simulation information, Order status, Technical information regarding the simulation process. This data is used solely to ensure the application works, to perform order simulations, to detect errors, and to improve the user experience.",
+      "5. Third-Party Services Used: DoppApp uses the following third-party infrastructures to provide application services: Supabase (Secure storage and management of application data), Resend (Sending feedback and communication emails), Expo Push Notifications (Sending push notifications), Firebase Cloud Messaging (FCM) (Providing the notification infrastructure). These service providers may only process the necessary data to provide their respective services.",
+      "6. Data Security: DoppApp implements appropriate technical and administrative security measures to protect user data against unauthorized access, loss, or misuse.",
+      "7. Data Sharing: DoppApp does not sell, rent, or share user data with third parties for commercial purposes. Data may only be processed by service providers that enable the application to function, within the scope of the services they provide.",
+      "8. Data Retention and Deletion Requests: Users may request the deletion of personal data associated with them. If you wish for your data to be deleted, you can contact us via the following email address: ayhanbulut91@gmail.com. Your request will be evaluated to review and appropriately delete the relevant data.",
+      "9. Changes to the Privacy Policy: This Privacy Policy may be updated as necessary. The current version will always be published within the application or on the relevant page.",
+      "10. Contact: For questions regarding the Privacy Policy or your personal data, you can contact us at the following email address: ayhanbulut91@gmail.com. By using the DoppApp application, you agree to the data processing practices outlined in this Privacy Policy."
     ],
     faqTitle: "Frequently Asked Questions",
     faqList: [

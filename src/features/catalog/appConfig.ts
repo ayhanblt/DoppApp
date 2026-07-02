@@ -95,9 +95,27 @@ export function buildOrderTimeline(
   const { confirmedDuration, preparingDuration, deliveringLeadMs } = DELIVERY_STEPS;
   const movementMs = totalTimeMs ? Math.max(0, totalTimeMs - confirmedDuration - preparingDuration) : getCourierMovementDuration(speed, distanceKm, speedsConfig);
 
-  const handoffAt    = placedAt + confirmedDuration + preparingDuration;
-  const deliveredAt  = handoffAt + movementMs;
+  const handoffAt = placedAt + confirmedDuration + preparingDuration;
+  const deliveredAt = handoffAt + movementMs;
   const deliveringAt = deliveredAt - deliveringLeadMs;
 
   return { handoffAt, deliveringAt, deliveredAt };
 }
+
+export const bannerThemeConfig: Record<import("@/shared/lib/types").StoreType, { bg: string; text: string; featureBg: string }> = {
+  shop: {
+    bg: "bg-linear-to-r from-violet-500 to-violet-700",
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+  food: {
+    bg: "bg-linear-to-r from-orange-500 to-red-500",
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+  market: {
+    bg: "bg-linear-to-r from-emerald-500 to-teal-500",
+    text: "text-orange-50",
+    featureBg: "bg-white/15",
+  },
+};

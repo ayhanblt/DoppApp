@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 
 type ActiveItem = { store: Store; item: Product };
 
+import { CatalogBanner } from "./CatalogBanner";
+
 export function CatalogList({ locale, storeType }: { locale: Locale; storeType: StoreType }) {
   const t = dictionaries[locale];
   const router = useRouter();
@@ -204,6 +206,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-4 pt-1 sm:pt-4">
+      <CatalogBanner storeType={storeType} locale={locale} />
       <div id="stores" className="mt-1 sm:mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="hidden sm:block shrink-0">
           <h2 className="text-xl font-black">{filtered.length} {storeType === "food" ? t.restaurants : "Mağaza"}</h2>

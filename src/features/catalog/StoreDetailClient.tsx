@@ -43,6 +43,28 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && store) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get("productId");
+      if (productId) {
+        const item = store.menu.find(m => m.id === productId);
+        if (item) {
+          setTimeout(() => {
+            const el = document.getElementById(`product-${item.id}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Gecikmeli aç ki scroll animasyonu izlenebilsin
+              setTimeout(() => {
+                openItem(store, item);
+              }, 500);
+            }
+          }, 300);
+        }
+      }
+    }
+  }, [store]);
+
   if (!store) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -314,6 +336,7 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
                 return (
                   <div
                     key={item.id}
+                    id={`product-${item.id}`}
                     className="relative flex flex-col bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden transition-all hover:shadow-md cursor-pointer group"
                     onClick={() => openItem(store, item)}
                   >
