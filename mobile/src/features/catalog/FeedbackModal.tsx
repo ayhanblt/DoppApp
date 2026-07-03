@@ -5,6 +5,7 @@ import { X, Send, CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';
 import { useCatalog } from '@/features/catalog/CatalogContext';
+import { useModalSwipeGesture } from '@/shared/hooks/useModalSwipeGesture';
 
 interface FeedbackModalProps {
   locale?: Locale;
@@ -13,6 +14,13 @@ interface FeedbackModalProps {
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) => {
   const { feedbackOpen, setFeedbackOpen } = useCatalog();
   const t = dictionaries[locale];
+  
+  const handleClose = () => {
+    setFeedbackOpen(false);
+    setTimeout(resetForm, 300); // Reset after modal hide animation
+  };
+
+  const panResponder = useModalSwipeGesture(feedbackOpen, handleClose);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,11 +39,6 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
     setTitle("");
     setMessageType("");
     setMessage("");
-  };
-
-  const handleClose = () => {
-    setFeedbackOpen(false);
-    setTimeout(resetForm, 300); // Reset after modal hide animation
   };
 
   const handleSubmit = async () => {
@@ -82,8 +85,8 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ locale = "tr" }) =
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <View className="flex-1 bg-black/50 justify-end">
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        <View {...panResponder.panHandlers} className="flex-1 bg-black/50 justify-end">
           <Pressable style={{ flex: 1 }} onPress={handleClose}  />
 
           <View className="bg-white rounded-t-3xl max-h-[90%] shadow-2xl">

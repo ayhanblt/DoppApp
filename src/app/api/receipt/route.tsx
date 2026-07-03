@@ -4,14 +4,20 @@ import { createClient } from '@supabase/supabase-js';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import type { Locale, CartItem, Product } from '@/shared/lib/types';
 
+
+
+const totalStart = performance.now();
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
+
   try {
     const { searchParams } = new URL(req.url);
     const orderIdParam = searchParams.get('order_id');
@@ -20,11 +26,13 @@ export async function GET(req: NextRequest) {
 
     const protocol = req.headers.get('x-forwarded-proto') || 'http';
     const host = req.headers.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
 
     let data;
     if (orderIdParam) {
       const { data: order } = await supabase.from('orders').select('*').eq('id', orderIdParam).single();
+
+
+
       if (!order) {
         return new Response("Order not found", { status: 404 });
       }
@@ -35,19 +43,23 @@ export async function GET(req: NextRequest) {
         minimumFractionDigits: 0,
       });
       const totalStr = formatter.format(order.total);
-      
+
       const itemIds = order.cart.map((item: CartItem) => item.itemId);
-      const { data: products } = await supabase.from('products').select('*').in('id', itemIds);
+      const { data: products } = await supabase.from('products').select('id, name_tr, name_en, image').in('id', itemIds);
+
+
 
       const items = order.cart.map((item: CartItem) => {
-        const product = products?.find((p: Product) => p.id === item.itemId);
+        const product = products?.find((p: { id: string; name_tr?: string; name_en?: string; image?: string }) => p.id === item.itemId);
         return {
           name: product ? (localeParam === 'tr' ? product.name_tr : product.name_en) : "Item",
           qty: item.quantity,
           image: product?.image
         };
       });
-      
+
+
+
       data = { locale: localeParam, total: totalStr, items };
     } else if (dataParam) {
       data = JSON.parse(decodeURIComponent(dataParam));
@@ -61,7 +73,7 @@ export async function GET(req: NextRequest) {
 
     const totalItems = data.items.length;
     let canvasHeight = 900;
-    
+
     if (totalItems === 1) {
       canvasHeight = 950;
     } else if (totalItems <= 5) {
@@ -76,7 +88,8 @@ export async function GET(req: NextRequest) {
 
     const t = dictionaries[data.locale as Locale] || dictionaries.en;
 
-    return new ImageResponse(
+
+    const response = new ImageResponse(
       (
         <div
           style={{
@@ -140,7 +153,7 @@ export async function GET(req: NextRequest) {
                     <path d="M2.31,14.27,0,15.87V13.45l2.31-1.6V9.58L0,11.17V8.75L2.31,7.16V0H5.49V5.11L9.73,2.16V4.58l-4.24,3V9.81l4.24-3V9.27l-4.24,3v7.23A5.09,5.09,0,0,0,10,14.18a7.08,7.08,0,0,0-.1-1.29l2.63-.84a10.51,10.51,0,0,1,.2,1.95c0,6.32-4.11,9.54-10.41,9.34Z" />
                   </svg>
                 )}
-                <b style={{ display: 'flex', alignItems: 'flex-start', textShadow: '1px 1px 0 #fb4824, -1px -1px 0 #fb4824, 1px -1px 0 #fb4824, -1px 1px 0 #fb4824, 0 2px 0 #fb4824, 2px 0 0 #fb4824, -2px 0 0 #fb4824, 0 -2px 0 #fb4824' }}>
+                <b style={{ display: 'flex', alignItems: 'flex-start', color: '#fb4824' }}>
                   {totalWithoutLira}
                   <span style={{ fontSize: '50px', marginLeft: '4px', marginTop: '12px' }}>{data.locale === 'tr' ? ',00' : '.00'}</span>
                 </b>
@@ -151,8 +164,8 @@ export async function GET(req: NextRequest) {
             {totalItems === 1 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '40px' }}>
                 {data.items[0].image && (
-                  <div style={{ display: 'flex', width: '360px', height: '360px', borderRadius: '48px', overflow: 'hidden', border: '12px solid #ffffff', marginBottom: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-                    <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[0].image)}&output=jpg&w=720&h=720`} width={360} height={360} style={{ objectFit: 'cover' }} />
+                  <div style={{ display: 'flex', width: '360px', height: '360px', borderRadius: '48px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', marginBottom: '32px' }}>
+                    <img src={data.items[0].image} width={360} height={360} style={{ objectFit: 'cover' }} />
                   </div>
                 )}
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#374151', textAlign: 'center', padding: '0 40px' }}>
@@ -163,28 +176,28 @@ export async function GET(req: NextRequest) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '40px' }}>
                 <div style={{ display: 'flex', width: '480px', height: totalItems <= 3 ? '400px' : '480px', position: 'relative', marginBottom: '60px', alignItems: 'center', justifyContent: 'center' }}>
                   {data.items[0].image && (
-                    <div style={{ display: 'flex', width: '280px', height: '280px', borderRadius: '140px', overflow: 'hidden', border: '8px solid #ffffff', zIndex: '10', position: 'absolute', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[0].image)}&output=jpg&w=560&h=560`} width={280} height={280} style={{ objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', width: '280px', height: '280px', borderRadius: '140px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', zIndex: 10, position: 'absolute' }}>
+                      <img src={data.items[0].image} width={280} height={280} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[1]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '5', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 2 ? { bottom: 0, right: 20 } : totalItems === 3 ? { bottom: 0, left: 20 } : totalItems === 4 ? { bottom: 0, left: 0 } : { top: 0, left: 0 }) }}>
-                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[1].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', zIndex: 5, position: 'absolute', ...(totalItems === 2 ? { bottom: 0, right: 20 } : totalItems === 3 ? { bottom: 0, left: 20 } : totalItems === 4 ? { bottom: 0, left: 0 } : { top: 0, left: 0 }) }}>
+                      <img src={data.items[1].image} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[2]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '5', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 3 ? { top: 0, right: 20 } : totalItems === 4 ? { top: 0, left: 160 } : { bottom: 0, right: 0 }) }}>
-                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[2].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', zIndex: 5, position: 'absolute', ...(totalItems === 3 ? { top: 0, right: 20 } : totalItems === 4 ? { top: 0, left: 160 } : { bottom: 0, right: 0 }) }}>
+                      <img src={data.items[2].image} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[3]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '4', position: 'absolute', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', ...(totalItems === 4 ? { bottom: 0, right: 0 } : { top: 0, right: 0 }) }}>
-                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[3].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', zIndex: 4, position: 'absolute', ...(totalItems === 4 ? { bottom: 0, right: 0 } : { top: 0, right: 0 }) }}>
+                      <img src={data.items[3].image} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                   {data.items[4]?.image && (
-                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '6px solid #ffffff', zIndex: '4', position: 'absolute', bottom: 0, left: 0, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
-                      <img src={`https://wsrv.nl/?url=${encodeURIComponent(data.items[4].image)}&output=jpg&w=320&h=320`} width={160} height={160} style={{ objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', width: '160px', height: '160px', borderRadius: '80px', overflow: 'hidden', border: '2px solid #a1a1aa', backgroundColor: '#ffffff', zIndex: 4, position: 'absolute', bottom: 0, left: 0 }}>
+                      <img src={data.items[4].image} width={160} height={160} style={{ objectFit: 'cover' }} />
                     </div>
                   )}
                 </div>
@@ -211,8 +224,8 @@ export async function GET(req: NextRequest) {
                         {item.qty}
                       </div>
                       {showImage && (
-                        <div style={{ display: 'flex', width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', marginRight: '24px', backgroundColor: '#f9fafb' }}>
-                          <img src={`https://wsrv.nl/?url=${encodeURIComponent(item.image || '')}&output=jpg&w=96&h=96`} width={48} height={48} style={{ objectFit: 'cover' }} />
+                        <div style={{ display: 'flex', width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', marginRight: '24px', backgroundColor: '#f9fafb', border: '1px solid #a1a1aa' }}>
+                          <img src={item.image} width={48} height={48} style={{ objectFit: 'cover' }} />
                         </div>
                       )}
                       <span style={{ fontSize: '20px', fontWeight: '600', color: '#374151', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -245,9 +258,13 @@ export async function GET(req: NextRequest) {
         height: canvasHeight,
       }
     );
+
+    return response;
+
   } catch (e) {
     return new Response(`Failed to generate the image`, {
       status: 500,
     });
   }
+
 }

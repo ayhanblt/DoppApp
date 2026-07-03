@@ -131,14 +131,14 @@ export const dictionaries = {
       shopBadge: "Öne Çıkan Ürün",
       foodBadge: "Öne Çıkan Yemek",
       marketBadge: "Öne Çıkan Ürün",
-      mainTitle: "Hayalindeki ürünleri sepete ekle, siparişini ver, fişini paylaş!",
+      mainTitle: "Gerçek ödeme yok. Sınırsız alışveriş deneyimi!",
       mainDesc: (type: 'shop' | 'food' | 'market') => `Sınırsız bütçe, sıfır harcama. Favori ${type === 'food' ? 'yemeklerini' : 'ürünlerini'} ekle ve bu eğlenceli simülasyonun tadını çıkar.`,
-      feature1Title: "İstediğin Kadar Ürün Ekle!",
-      feature1Desc: "Sepet sınırın yok, canın ne isterse ekle!",
-      feature2Title: "Tamamen Ücretsiz!",
-      feature2Desc: "Kesinlikle ödeme bilgisi istemiyoruz!",
-      feature3Title: "Arkadaşlarınla Paylaş!",
-      feature3Desc: "Sipariş listeni arkadaşlarınla veya sosyal medyada paylaş!"
+      feature1Title: "Kart Bilgisine İhtiyaç Yok",
+      feature1Desc: "Sepet sınırın yok, canın ne isterse ekle.",
+      feature2Title: "Sınırsız Sipariş Ver",
+      feature2Desc: "Kesinlikle ödeme bilgisi istemiyoruz.",
+      feature3Title: "Arkadaşlarınla Paylaş",
+      feature3Desc: "Sipariş listeni arkadaşlarınla veya sosyal medyada paylaş."
     },
 
     // Header & Categories
@@ -384,14 +384,14 @@ export const dictionaries = {
       shopBadge: "Featured Product",
       foodBadge: "Featured Meal",
       marketBadge: "Featured Product",
-      mainTitle: "Add your dream items to your cart, place an order, share your receipt!",
+      mainTitle: "No actual payment required. An unlimited shopping experience!",
       mainDesc: (type: 'shop' | 'food' | 'market') => `Unlimited budget, zero spending. Add your favorite ${type === 'food' ? 'meals' : 'items'} and enjoy this fun simulation.`,
-      feature1Title: "Add As Many Items As You Want!",
-      feature1Desc: "No cart limits, add whatever you desire!",
-      feature2Title: "Completely Free!",
-      feature2Desc: "We absolutely do not ask for payment info!",
+      feature1Title: "No Credit Card!",
+      feature1Desc: "No cart limits, add whatever you desire.",
+      feature2Title: "Unlimited Orders!",
+      feature2Desc: "We absolutely do not ask for payment info.",
       feature3Title: "Share With Friends!",
-      feature3Desc: "Share your order list with friends or on social media!"
+      feature3Desc: "Share your order list with friends or on social media."
     },
 
     // Header & Categories

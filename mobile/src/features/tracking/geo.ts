@@ -6,7 +6,7 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
   });
 
   const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
-    headers: { 
+    headers: {
       Accept: "application/json",
       "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
     }
@@ -32,7 +32,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<GeocodeR
   });
 
   const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
-    headers: { 
+    headers: {
       Accept: "application/json",
       "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
     }
@@ -45,11 +45,11 @@ export async function reverseGeocode(lat: number, lon: number): Promise<GeocodeR
   const addr = result.address;
   const district = addr.city_district || addr.town || addr.county || addr.suburb || "";
   const city = addr.city || addr.province || addr.state || "";
-  
+
   const shortArr = [];
   if (district) shortArr.push(district);
   if (city && city !== district) shortArr.push(city);
-  
+
   return {
     full: result.display_name || "",
     short: shortArr.join(", ") || result.display_name || ""
@@ -78,23 +78,28 @@ export async function getRoute(
     coordsStr +
     `?overview=full&geometries=geojson&annotations=true`;
 
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) return null;
+  try {
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
 
-  const data = (await response.json()) as {
-    routes?: Array<{
-      geometry: { coordinates: Array<[number, number]> };
-    }>;
-  };
+    const data = (await response.json()) as {
+      routes?: Array<{
+        geometry: { coordinates: Array<[number, number]> };
+      }>;
+    };
 
-  const coords = data.routes?.[0]?.geometry?.coordinates;
-  if (!coords || coords.length === 0) return null;
+    const coords = data.routes?.[0]?.geometry?.coordinates;
+    if (!coords || coords.length === 0) return null;
 
-  // OSRM [lng, lat] döner → biz [lat, lng] kullanıyoruz
-  return coords.map(([lng, lat]) => [
-    Number(lat.toFixed(6)),
-    Number(lng.toFixed(6)),
-  ]);
+    // OSRM [lng, lat] döner → biz [lat, lng] kullanıyoruz
+    return coords.map(([lng, lat]) => [
+      Number(lat.toFixed(6)),
+      Number(lng.toFixed(6)),
+    ]);
+  } catch (error) {
+    console.error("OSRM Route Network Error:", error);
+    return null;
+  }
 }
 
 /**
@@ -109,35 +114,37 @@ export async function getOptimizedTrip(
   distanceKm: number;
 } | null> {
   if (waypoints.length < 2) return null;
-  
+
   // Koordinatları lng,lat formatına çevir
   const coordsStr = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(';');
-  
+
   // source=any: Nereden başladığı önemli değil, en uygun yerden başlasın.
   // destination=last: Rota KESİNLİKLE son verdiğimiz koordinatta (Ev) bitmeli.
   const url = `https://router.project-osrm.org/trip/v1/driving/${coordsStr}?source=any&destination=last&roundtrip=false`;
 
-  const response = await fetch(url, { 
-    headers: { 
-      Accept: "application/json",
-      "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
-    } 
-  });
-  if (!response.ok) return null;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "DoppApp/1.0 (contact@doppapp.com)"
+      }
+    });
+    if (!response.ok) return null;
 
-  const data = await response.json();
-  if (data.code !== "Ok" || !data.waypoints || !data.trips || data.trips.length === 0) return null;
+    const data = await response.json();
+    if (data.code !== "Ok" || !data.waypoints || !data.trips || data.trips.length === 0) return null;
 
-  const trip = data.trips[0];
-  
-  // waypoints dizisi, API'nin bize "Hangi sırayla gitmen gerektiğini buldum" dediği yerdir.
-  // trip ucunda, sonuç dizisinin kendi sırası, rotanın mantıklı ziyaret sırasıdır.
-  const optimizedWaypoints: [number, number][] = data.waypoints.map((wp: { waypoint_index: number }) => waypoints[wp.waypoint_index]);
+    const trip = data.trips[0];
+    const optimizedWaypoints: [number, number][] = data.waypoints.map((wp: { waypoint_index: number }) => waypoints[wp.waypoint_index]);
 
-  return {
-    optimizedWaypoints,
-    distanceKm: trip.distance / 1000 // Metre -> Kilometre
-  };
+    return {
+      optimizedWaypoints,
+      distanceKm: trip.distance / 1000 // Metre -> Kilometre
+    };
+  } catch (error) {
+    console.error("OSRM Network Error:", error);
+    return null; // Ağa ulaşılamazsa fallback mantığını tetiklemesi için null dön
+  }
 }
 
 /**

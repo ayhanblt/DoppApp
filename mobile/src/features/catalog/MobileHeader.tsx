@@ -57,7 +57,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onAddressPress, onMe
             <ShoppingCart size={18} color="#fff" />
             {cart.length > 0 && (
               <View className="absolute -top-1 -right-1 bg-accent w-4 h-4 rounded-full items-center justify-center">
-                <Text className="text-[10px] font-bold text-white">{cart.length}</Text>
+                <Text className="text-[10px] font-bold text-white">{cart.reduce((sum, item) => sum + item.quantity, 0)}</Text>
               </View>
             )}
           </Pressable>

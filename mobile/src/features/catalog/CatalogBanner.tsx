@@ -6,7 +6,9 @@ import { StoreType, Locale, Product } from "@/shared/lib/types";
 import { useCatalog } from "./CatalogContext";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { bannerThemeConfig } from "./appConfig";
-import { ShoppingBag, CreditCard, Share2 } from "lucide-react-native";
+import { NoCreditCardIcon } from "@/shared/ui/icons/NoCreditCardIcon";
+import { InfinityIcon } from "@/shared/ui/icons/InfinityIcon";
+import { ShareReceiptIcon } from "@/shared/ui/icons/ShareReceiptIcon";
 import { useRouter } from "expo-router";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -154,10 +156,10 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
       <View className="flex-row justify-between w-full relative z-10">
         {/* Left Text Column */}
         <View className="flex-1 pr-3 justify-center">
-          <Text className="text-[22px] font-bold text-white leading-tight mb-2 shadow-sm tracking-tight">
+          <Text className="text-[24px] font-bold text-white leading-tight mb-2 shadow-sm tracking-tight">
             {t.mainTitle}
           </Text>
-          <Text className="text-[10px] text-white/90 font-medium leading-tight">
+          <Text className="text-[10px] text-white/85 font-medium leading-tight">
             {t.mainDesc(storeType)}
           </Text>
         </View>
@@ -188,42 +190,33 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
       {/* Bottom Section: Feature Cards */}
       <View className="flex-row justify-between mt-5 z-10 w-full gap-2">
         {/* Feature 1 */}
-        <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
+        <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <ShoppingBag size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
+            <NoCreditCardIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
               {t.feature1Title}
             </Text>
           </View>
-          <Text className="text-[9px] text-orange-50/90 text-center leading-tight">
-            {t.feature1Desc}
-          </Text>
         </View>
 
         {/* Feature 2 */}
-        <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
+        <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <CreditCard size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
+            <InfinityIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
               {t.feature2Title}
             </Text>
           </View>
-          <Text className="text-[9px] text-orange-50/90 text-center leading-tight">
-            {t.feature2Desc}
-          </Text>
         </View>
 
         {/* Feature 3 */}
-        <View className="flex-1 items-center bg-white/15 rounded-xl p-2 border border-white/10">
+        <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <Share2 size={18} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-sm text-orange-50 text-center leading-tight shadow-sm">
+            <ShareReceiptIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
               {t.feature3Title}
             </Text>
           </View>
-          <Text className="text-[9px] text-orange-50/90 text-center leading-tight">
-            {t.feature3Desc}
-          </Text>
         </View>
       </View>
     </View>

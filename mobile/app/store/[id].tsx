@@ -8,6 +8,7 @@ import { dictionaries } from '@/shared/i18n/dictionaries';
 import { formatMoney, formatNumber, uid } from '@/shared/lib/format';
 import { Locale, Product, Store, CartSelection } from '@/shared/lib/types';
 import { Star, Clock, ArrowLeft, MessageSquare, Plus, Minus, ShoppingCart } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
 import { supabase } from '@/shared/api/supabase';
 import { ProductModal } from '@/features/catalog/ProductModal';
 import { MarkdownText } from '@/shared/ui/MarkdownText';
@@ -126,14 +127,14 @@ export default function StoreDetailScreen() {
       };
 
       setStores(prev => prev.map(s => s.id === updatedStore.id ? updatedStore : s));
-      Alert.alert(t.success, t.reviewSubmitted);
+      Toast.show({ type: 'success', text1: t.success, text2: t.reviewSubmitted, position: 'bottom' });
 
       setReviewName("");
       setReviewRating(5);
       setReviewText("");
     } catch (err) {
       console.error("Error submitting review:", err);
-      Alert.alert(t.error, t.reviewError);
+      Toast.show({ type: 'error', text1: t.error, text2: t.reviewError, position: 'bottom' });
     } finally {
       setIsSubmittingReview(false);
     }
@@ -386,7 +387,7 @@ export default function StoreDetailScreen() {
               </View>
               <View>
                 <Text className="text-white font-bold text-sm">{t.cart || "Sepetim"}</Text>
-                <Text className="text-white/80 text-xs">{cart.length} {t.items || "Ürün"}</Text>
+                <Text className="text-white/80 text-xs">{cart.reduce((sum, item) => sum + item.quantity, 0)} {locale === 'tr' ? 'Ürün' : 'Items'}</Text>
               </View>
             </View>
             <Text className="text-white font-black text-lg">

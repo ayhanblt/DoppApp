@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, Modal, TextInput, Alert, Pressable } from 'react-native';
+import { View, Text, ScrollView, Image, Modal, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
 import { Locale } from '@/shared/lib/types';
@@ -28,7 +29,8 @@ export default function CartScreen() {
   const handleViewReceipt = (orderId: string) => {
     setShowOrderHistory(false);
     setTimeout(() => {
-      const apiBase = process.env.EXPO_PUBLIC_API_URL;
+      let apiBase = process.env.EXPO_PUBLIC_API_URL || "https://doppapp.com/api";
+      apiBase = apiBase.startsWith("http") ? apiBase : `https://${apiBase}`;
       setReceiptUrl(`${apiBase}/receipt?order_id=${orderId}&locale=${locale}`);
       setShowReceipt(true);
     }, 500);
@@ -44,13 +46,13 @@ export default function CartScreen() {
           setSelectedCartIndex(0);
           setShowRestorePrompt(true);
         } else {
-          Alert.alert(t.infoAlert, t.noSavedCart);
+          Toast.show({ type: 'info', text1: t.infoAlert, text2: t.noSavedCart, position: 'bottom' });
         }
       } catch (e) {
-        Alert.alert(t.error, t.errorReadingCarts);
+        Toast.show({ type: 'error', text1: t.error, text2: t.errorReadingCarts, position: 'bottom' });
       }
     } else {
-      Alert.alert(t.infoAlert, t.noSavedCart);
+      Toast.show({ type: 'info', text1: t.infoAlert, text2: t.noSavedCart, position: 'bottom' });
     }
   };
 
@@ -60,7 +62,7 @@ export default function CartScreen() {
     if (cartToRestore && cartToRestore.items) {
       setCart(cartToRestore.items);
       setShowRestorePrompt(false);
-      Alert.alert(t.success, t.cartRestored(cartToRestore.name));
+      Toast.show({ type: 'success', text1: t.success, text2: t.cartRestored(cartToRestore.name), position: 'bottom' });
     }
   };
 
@@ -87,7 +89,7 @@ export default function CartScreen() {
 
     setShowSavePrompt(false);
     setSaveCartName("");
-    Alert.alert(t.success, t.cartSaved(saveCartName));
+    Toast.show({ type: 'success', text1: t.success, text2: t.cartSaved(saveCartName), position: 'bottom' });
   };
 
   const getCartTotal = () => {

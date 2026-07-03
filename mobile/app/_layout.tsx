@@ -12,6 +12,37 @@ import * as SplashScreen from 'expo-splash-screen';
 import { NavigationBar } from 'expo-navigation-bar';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { usePushNotifications } from '@/features/notifications/usePushNotifications';
+import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
+
+const toastConfig = {
+  success: (props: any) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: '#22c55e', backgroundColor: '#ffffff', borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 5, borderLeftWidth: 6 }}
+      contentContainerStyle={{ paddingHorizontal: 16 }}
+      text1Style={{ fontSize: 16, fontWeight: '700', color: '#18181b' }}
+      text2Style={{ fontSize: 14, color: '#52525b' }}
+    />
+  ),
+  error: (props: any) => (
+    <ErrorToast
+      {...props}
+      style={{ borderLeftColor: '#ef4444', backgroundColor: '#ffffff', borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 5, borderLeftWidth: 6 }}
+      contentContainerStyle={{ paddingHorizontal: 16 }}
+      text1Style={{ fontSize: 16, fontWeight: '700', color: '#18181b' }}
+      text2Style={{ fontSize: 14, color: '#52525b' }}
+    />
+  ),
+  info: (props: any) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: '#fb4824', backgroundColor: '#ffffff', borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 5, borderLeftWidth: 6 }}
+      contentContainerStyle={{ paddingHorizontal: 16 }}
+      text1Style={{ fontSize: 16, fontWeight: '700', color: '#18181b' }}
+      text2Style={{ fontSize: 14, color: '#52525b' }}
+    />
+  )
+};
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -137,6 +168,7 @@ export default function RootLayout() {
             <PushNotificationInitializer />
             {splashVisible && <CustomSplashScreen onFinish={() => setSplashVisible(false)} />}
           </View>
+          <Toast config={toastConfig} bottomOffset={Platform.OS === 'ios' ? 80 : 70} />
         </CatalogProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

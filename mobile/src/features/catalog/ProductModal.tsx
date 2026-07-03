@@ -7,6 +7,7 @@ import { formatMoney, formatNumber, uid } from "@/shared/lib/format";
 import { Plus, Minus, X } from "lucide-react-native";
 import { MarkdownText } from "@/shared/ui/MarkdownText";
 import { LinearGradient } from "expo-linear-gradient";
+import { useModalSwipeGesture } from "@/shared/hooks/useModalSwipeGesture";
 
 type ProductModalProps = {
   locale: Locale;
@@ -20,6 +21,7 @@ type ProductModalProps = {
 export function ProductModal({ locale, store, item, visible, onClose, onAdd }: ProductModalProps) {
   const t = dictionaries[locale];
   const insets = useSafeAreaInsets();
+  const panResponder = useModalSwipeGesture(visible, onClose);
 
   const [selections, setSelections] = useState<CartSelection>(() => {
     const initial: CartSelection = {};
@@ -37,6 +39,19 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
 
   const [errorGroupId, setErrorGroupId] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState<string>(t.add);
+
+  // Görsel (header) üzerinde aşağı doğru çekilirse Modal'ı kapat (pull-to-dismiss)
+  React.useEffect(() => {
+    const listener = scrollY.addListener(({ value }) => {
+      // Eğer kullanıcı ScrollView'ı yukarı doğru (bounce effect) 80px'den fazla çekerse kapat
+      if (value < -80) {
+        onClose();
+      }
+    });
+    return () => {
+      scrollY.removeListener(listener);
+    };
+  }, [scrollY, onClose]);
 
   // As the user scrolls (up to 150px), the black overlay goes from 0 to 0.8 opacity
   const overlayOpacity = scrollY.interpolate({
@@ -105,9 +120,9 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <View className="flex-1 justify-end bg-black/60">
-        <View className="bg-black rounded-t-[32px] h-[90%] overflow-hidden">
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View {...panResponder.panHandlers} className="flex-1 justify-end bg-black/60">
+        <View className="bg-white rounded-t-[32px] h-[90%] overflow-hidden">
           {/* Absolute Fixed Hero Image */}
           <View className="absolute top-0 w-full aspect-square bg-zinc-100 z-0">
             <Image
@@ -139,7 +154,6 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
             ref={scrollViewRef as any}
             className="flex-1 z-10"
             showsVerticalScrollIndicator={false}
-            bounces={false}
             scrollEventThrottle={16}
             contentContainerStyle={{ flexGrow: 1 }}
             onScroll={Animated.event(
@@ -151,7 +165,9 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
             <View className="w-full aspect-square" style={{ marginBottom: -32 }} />
 
             {/* White Content Card (Fills remaining space without forcing scroll) */}
-            <View className="bg-white rounded-t-[32px] px-6 pt-8 pb-8 shadow-sm flex-1">
+            <View className="bg-white rounded-t-[32px] px-6 pt-8 pb-8 shadow-sm flex-1 relative">
+              {/* Overscroll (Aşağı doğru çok çekilirse siyah arka plan çıkmaması için) */}
+              <View className="absolute top-full left-0 right-0 h-[1000px] bg-white" />
               <Text className="text-2xl font-black text-zinc-900">{item.name[locale]}</Text>
               <MarkdownText content={item.description[locale]} style={{ marginTop: 8 }} />
 
@@ -214,9 +230,9 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
           {/* Bottom Add to Cart Bar */}
           <View
             className="bg-white border-t border-zinc-100 shadow-2xl z-20"
-            style={{ paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 16 }}
+            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
           >
-            <View className="p-4" style={{ paddingBottom: Platform.OS === 'ios' ? 8 : 0 }}>
+            <View className="p-4">
               <View className="flex-row items-center justify-between mb-3 bg-zinc-50 p-3 rounded-2xl">
                 <Text className="text-2xl font-black text-zinc-900">
                   {formatMoney(getActiveItemTotalPrice(), locale)}

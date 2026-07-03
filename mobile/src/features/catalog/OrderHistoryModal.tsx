@@ -6,6 +6,7 @@ import { supabase } from '@/shared/api/supabase';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale, Order } from '@/shared/lib/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useModalSwipeGesture } from '@/shared/hooks/useModalSwipeGesture';
 
 type OrderHistoryModalProps = {
   locale: Locale;
@@ -16,6 +17,7 @@ type OrderHistoryModalProps = {
 
 export function OrderHistoryModal({ locale, isOpen, onClose, onViewReceipt }: OrderHistoryModalProps) {
   const t = dictionaries[locale];
+  const panResponder = useModalSwipeGesture(isOpen, onClose);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +68,7 @@ export function OrderHistoryModal({ locale, isOpen, onClose, onViewReceipt }: Or
       transparent={true}
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/50 justify-end">
+      <View {...panResponder.panHandlers} className="flex-1 bg-black/50 justify-end">
         <Pressable className="flex-1" onPress={onClose} />
         
         <View className="bg-white rounded-t-3xl h-[80%] overflow-hidden">

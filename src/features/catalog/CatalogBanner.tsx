@@ -9,6 +9,9 @@ import { ShoppingBag, Share2, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { bannerThemeConfig } from "./appConfig";
 import { dictionaries } from "@/shared/i18n/dictionaries";
+import { InfinityIcon } from "@/shared/lib/ui/icons/InfinityIcon";
+import { NoCreditCardIcon } from "@/shared/lib/ui/icons/NoCreditCardIcon";
+import { ShareReceiptIcon } from "@/shared/lib/ui/icons/ShareReceiptIcon";
 
 // Pseudo random generator for daily consistency
 const mulberry32 = (a: number) => {
@@ -84,10 +87,10 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
 
         {/* Left Column (Content) */}
         <div className="flex-1 pr-4 z-10 flex flex-col justify-center">
-          <h2 className="text-[1.35rem] leading-tight md:text-[3rem] font-bold md:leading-tight tracking-tight mb-2 md:mb-4 drop-shadow-sm">
+          <h2 className="text-[1.5rem] leading-tight md:text-[3rem] font-bold md:leading-tight tracking-tight mb-2 md:mb-4 drop-shadow-sm">
             {t.mainTitle}
           </h2>
-          <p className="text-[10px] md:text-base font-medium opacity-90 drop-shadow-sm max-w-xl">
+          <p className="text-[10px] text-white/85 md:text-base font-medium opacity-90 drop-shadow-sm max-w-xl">
             {t.mainDesc(storeType)}
           </p>
         </div>
@@ -111,12 +114,12 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
                   key={p.id}
                   initial={false}
                   animate={{
-                    scale: 1 - offset * 0.1,
+                    scale: 1 - offset * 0.05,
                     x: isLeaving ? 80 : offset * 15,
-                    y: offset * -15,
-                    opacity: isLeaving ? 0 : 1 - offset * 0.25,
+                    y: offset * 1,
+                    opacity: isLeaving ? 0 : 1 - offset * 0.4,
                     zIndex: dailyProducts.length - offset,
-                    rotate: offset % 2 === 0 ? offset * 2 : offset * -2
+                    rotate: offset % 7 === 0 ? offset * 1 : offset * -7
                   }}
                   transition={{
                     type: "tween",
@@ -150,28 +153,19 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
 
       {/* Bottom Section: Feature Cards */}
       <div className="grid grid-cols-3 gap-2 md:gap-4 w-full mt-4 md:mt-8 z-10 relative">
-        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center md:items-start  md:text-left p-2 md:p-4 rounded-xl ${themeConfig.featureBg} backdrop-blur-md border border-white/10 shadow-lg text-orange-50`}>
-          <div className="flex md:items-center flex-col md:flex-row">
-            <ShoppingBag size={18} className="mb-1.5 md:mb-2 drop-shadow-sm" />
-            <h4 className="font-bold text-xs md:text-xl leading-tight mb-1  drop-shadow-md md:pl-2">{t.feature1Title}</h4>
-          </div>
-          <span className="text-[8px] sm:text-[9px] md:text-xs opacity-90 leading-snug">{t.feature1Desc}</span>
+        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center justify-start text-center p-2 md:p-4 text-orange-50`}>
+          <NoCreditCardIcon className="w-16 h-16 md:w-[86px] md:h-[86px] mx-auto mb-1.5 md:mb-2 drop-shadow-sm" />
+          <h4 className="font-bold text-xs md:text-xl leading-tight drop-shadow-md">{t.feature1Title}</h4>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center md:items-start  md:text-left p-2 md:p-4 rounded-xl ${themeConfig.featureBg} backdrop-blur-md border border-white/10 shadow-lg text-orange-50`}>
-          <div className="flex md:items-center flex-col md:flex-row">
-            <CreditCard size={18} className="mb-1.5 md:mb-2 drop-shadow-sm" />
-            <h4 className="font-bold text-xs md:text-xl leading-tight mb-1 drop-shadow-md md:pl-2">{t.feature2Title}</h4>
-          </div>
-          <span className="text-[8px] sm:text-[9px] md:text-xs opacity-90 leading-snug">{t.feature2Desc}</span>
+        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center justify-start text-center p-2 md:p-4 text-orange-50`}>
+          <InfinityIcon className="w-16 h-16 md:w-[86px] md:h-[86px] mx-auto mb-1.5 md:mb-2 drop-shadow-sm" />
+          <h4 className="font-bold text-xs md:text-xl leading-tight drop-shadow-md">{t.feature2Title}</h4>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center md:items-start  md:text-left p-2 md:p-4 rounded-xl ${themeConfig.featureBg} backdrop-blur-md border border-white/10 shadow-lg text-orange-50`}>
-          <div className="flex md:items-center flex-col md:flex-row">
-            <Share2 size={18} className="mb-1.5 md:mb-2 drop-shadow-sm" />
-            <h4 className="font-bold text-xs md:text-xl leading-tight mb-1 drop-shadow-md md:pl-2">{t.feature3Title}</h4>
-          </div>
-          <span className="text-[8px] sm:text-[9px] md:text-xs opacity-90 leading-snug">{t.feature3Desc}</span>
+        <motion.div whileHover={{ scale: 1.02, y: -2 }} className={`flex flex-col items-center justify-start text-center p-2 md:p-4 text-orange-50`}>
+          <ShareReceiptIcon className="w-16 h-16 md:w-[86px] md:h-[86px] mx-auto mb-1.5 md:mb-2 drop-shadow-sm" />
+          <h4 className="font-bold text-xs md:text-xl leading-tight drop-shadow-md">{t.feature3Title}</h4>
         </motion.div>
       </div>
 

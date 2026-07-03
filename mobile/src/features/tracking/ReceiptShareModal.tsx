@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable, ScrollView } from 'react-native';
 import { X, Share2, Check, Link2 } from 'lucide-react-native';
-import { Locale } from '@/shared/lib/types';
 import { cacheDirectory, downloadAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
+import Toast from 'react-native-toast-message';
 
 interface ReceiptShareModalProps {
   imageUrl: string;
@@ -13,19 +13,37 @@ interface ReceiptShareModalProps {
 }
 
 export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareModalProps) {
-  const [loading, setLoading] = useState(true);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [imageRatio, setImageRatio] = useState<number>(900 / 1200);
 
   useEffect(() => {
     if (visible) {
-      setLoading(false);
+      setIsImageLoading(true);
+      setIsSharing(false);
+      setCopiedLink(false);
     }
-  }, [visible]);
+  }, [visible, imageUrl]);
 
-  const webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
-  let shareUrl = webUrl;
-  
+  const webUrl = (process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com").trim();
+  let shareUrl = webUrl.startsWith("http") ? webUrl : `https://${webUrl}`;
+
+  // Ensure the image URL has a protocol, otherwise Image component fails silently
+  let validImageUrl = imageUrl.trim();
+  if (validImageUrl && !validImageUrl.startsWith('http')) {
+    validImageUrl = `${webUrl}${validImageUrl.startsWith('/') ? '' : '/'}${validImageUrl}`;
+  }
+
+  // Cache buster: React Native Image componenti URL bazlı agresif cache yapar.
+  // Performans testi için her açılışta taze istek atmasını sağlamak adına useMemo ile timestamp ekliyoruz.
+  // Sadece imageUrl veya görünürlük değiştiğinde yeni timestamp üretiriz, böylece state güncellemeleri (ör. loading bitişi) ikinci kez istek attırmaz.
+  const cacheBuster = useMemo(() => Date.now(), [imageUrl, visible]);
+
+  if (validImageUrl) {
+    validImageUrl += (validImageUrl.includes('?') ? '&' : '?') + `_t=${cacheBuster}`;
+  }
+
   if (imageUrl.includes('order_id=')) {
     const orderId = imageUrl.split('order_id=')[1].split('&')[0];
     shareUrl = `${webUrl}/share?order_id=${orderId}`;
@@ -33,39 +51,41 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
     const dataString = imageUrl.split('data=')[1];
     shareUrl = `${webUrl}/share?data=${dataString}`;
   }
-  
-  const shareText = "İşte benim DoppApp sepetim! Gerçek olsaydı ilk hangi ürünü alırdım dersin? #DoppApp";
+
 
   const handleNativeShare = async () => {
     try {
-      setLoading(true);
+      setIsSharing(true);
       const fileUri = cacheDirectory + 'doppapp-sepetim.png';
-      await downloadAsync(imageUrl, fileUri);
-      
+      await downloadAsync(validImageUrl, fileUri);
+
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'image/png',
-          dialogTitle: 'DoppApp Sepetim',
+          dialogTitle: 'Siparişini Paylaş',
+          UTI: 'public.png'
         });
       } else {
-        await Share.share({
-          message: `${shareText}\n${shareUrl}`,
-          title: "DoppApp Sepetim",
+        Toast.show({
+          type: 'error',
+          text1: 'Hata',
+          text2: 'Bu cihazda resim paylaşım özelliği desteklenmiyor.',
+          position: 'bottom',
         });
       }
     } catch (err) {
       console.error("Error sharing:", err);
     } finally {
-      setLoading(false);
+      setIsSharing(false);
     }
   };
 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/70 items-center justify-center p-4">
-        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose}  />
-        
+        <Pressable style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} onPress={onClose} />
+
         <View className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl flex-col z-10">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
@@ -79,18 +99,22 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
 
           <View className="relative mb-6 rounded-2xl overflow-hidden border border-black/10 bg-zinc-50 w-full" style={{ maxHeight: 500 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              {loading && (
+              {isImageLoading && (
                 <View className="absolute z-10 w-full h-[500px] bg-zinc-200 animate-pulse" />
               )}
-              <Image 
-                source={{ uri: imageUrl }} 
-                style={{ width: '100%', aspectRatio: imageRatio }} 
+              <Image
+                source={{ uri: validImageUrl }}
+                style={{ width: '100%', aspectRatio: imageRatio }}
                 resizeMode="contain"
                 onLoad={(e) => {
-                  setLoading(false);
+                  setIsImageLoading(false);
                   if (e.nativeEvent.source.width && e.nativeEvent.source.height) {
                     setImageRatio(e.nativeEvent.source.width / e.nativeEvent.source.height);
                   }
+                }}
+                onError={(e) => {
+                  console.error("Receipt Image Load Error:", e.nativeEvent.error || e.nativeEvent);
+                  setIsImageLoading(false);
                 }}
               />
             </ScrollView>
@@ -99,16 +123,28 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
           <View className="flex-row gap-2 mb-3">
             <Pressable
               onPress={handleNativeShare}
-              className="flex-1 flex-row items-center justify-center bg-accent py-4 rounded-xl"
-              disabled={loading}
+              disabled={isSharing || isImageLoading}
+              className="flex-1 bg-accent py-4 rounded-xl flex-row items-center justify-center disabled:opacity-50"
             >
-              <Share2 size={18} color="white" className="mr-2" />
-              <Text className="text-white font-bold">Paylaş</Text>
+              {isSharing ? (
+                <Text className="text-white font-bold text-lg">Paylaşılıyor...</Text>
+              ) : (
+                <>
+                  <Share2 size={20} color="#ffffff" className="mr-2" />
+                  <Text className="text-white font-bold text-lg">Siparişi Paylaş</Text>
+                </>
+              )}
             </Pressable>
             <Pressable
               onPress={async () => {
                 await Clipboard.setStringAsync(shareUrl);
                 setCopiedLink(true);
+                Toast.show({
+                  type: 'success',
+                  text1: 'Kopyalandı',
+                  text2: 'Sipariş linki panoya kopyalandı!',
+                  position: 'bottom',
+                });
                 setTimeout(() => setCopiedLink(false), 2000);
               }}
               className="h-[54px] w-[54px] items-center justify-center bg-zinc-100 rounded-xl border border-zinc-200"

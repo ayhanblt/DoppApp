@@ -198,7 +198,7 @@ export default function CatalogScreen() {
               </View>
               <View>
                 <Text className="text-white font-bold text-sm">Sepetim</Text>
-                <Text className="text-white/80 text-xs">{cart.length} Ürün</Text>
+                <Text className="text-white/80 text-xs">{cart.reduce((sum, item) => sum + item.quantity, 0)} Ürün</Text>
               </View>
             </View>
             <Text className="text-white font-black text-lg">

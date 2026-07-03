@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, Alert, Pressable } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney } from '@/shared/lib/format';
 import { Locale, Store, Order } from '@/shared/lib/types';
 import { ArrowLeft, MapPin, Rabbit, Turtle } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCartTotals, getCartDeliveryTimeMinutes } from '@/features/order/cart';
@@ -25,16 +26,21 @@ export default function CheckoutScreen() {
   const [phone, setPhone] = useState('');
   const [speed, setSpeed] = useState<'rabbit' | 'turtle'>('rabbit');
   const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totals = getCartTotals(stores, cart);
 
   const handleCheckout = async () => {
+    if (isSubmitting) return;
+
     if (!deliveryAddress) {
-      Alert.alert(t.error, t.addressRequired);
+      Toast.show({ type: 'error', text1: t.error, text2: t.addressRequired, position: 'bottom' });
       return;
     }
     
     if (cart.length === 0) return;
+
+    setIsSubmitting(true);
 
     const now = Date.now();
     const addressCoordinate: [number, number] = [deliveryAddress.latitude, deliveryAddress.longitude];
@@ -137,23 +143,27 @@ export default function CheckoutScreen() {
         }
       }
     };
-    saveOrder();
+    await saveOrder(); // wait for the save order explicitly before navigating
     
     // Empty cart and navigate to tracking
     setCart([]);
+    setIsSubmitting(false);
     router.replace('/tracking');
   };
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
       <View className="flex-row items-center p-4 border-b border-black/5 bg-white">
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => router.back()} className="mr-3 active:opacity-70">
           <ArrowLeft size={24} color="#09090b" />
         </Pressable>
         <Text className="text-xl font-black">{t.checkout}</Text>
       </View>
 
-      <ScrollView className="flex-1 p-4">
+      <ScrollView 
+        className="flex-1 p-4"
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="bg-white p-4 rounded-xl shadow-sm border border-black/5 mb-4">
           <Text className="font-bold mb-4">{t.orderSummary}</Text>
           <View className="flex-row items-center justify-between mb-2">
@@ -208,7 +218,7 @@ export default function CheckoutScreen() {
           <View className="flex-row gap-2">
             <Pressable
               onPress={() => setSpeed("rabbit")}
-              className={`flex-1 items-center justify-center p-3 rounded-xl border-2 ${
+              className={`flex-1 items-center justify-center p-3 rounded-xl border-2 active:opacity-70 ${
                 speed === "rabbit" ? "border-orange-500 bg-orange-50" : "border-black/10 bg-white"
               }`}
             >
@@ -220,7 +230,7 @@ export default function CheckoutScreen() {
 
             <Pressable
               onPress={() => setSpeed("turtle")}
-              className={`flex-1 items-center justify-center p-3 rounded-xl border-2 ${
+              className={`flex-1 items-center justify-center p-3 rounded-xl border-2 active:opacity-70 ${
                 speed === "turtle" ? "border-emerald-500 bg-emerald-50" : "border-black/10 bg-white"
               }`}
             >
@@ -235,13 +245,17 @@ export default function CheckoutScreen() {
 
       <View 
         className="px-4 pt-4 bg-white border-t border-black/5"
-        style={{ paddingBottom: Math.max(insets.bottom + 16, 24) }}
+        style={{ paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom + 16, 24) : 24 }}
       >
         <Pressable
           onPress={handleCheckout}
-          className="w-full bg-accent py-4 px-2 rounded-xl items-center"
+          disabled={isSubmitting}
+          className={`w-full py-4 px-2 rounded-xl items-center flex-row justify-center active:opacity-80 ${isSubmitting ? "bg-zinc-400" : "bg-accent"}`}
         >
-          <Text adjustsFontSizeToFit numberOfLines={1} className="text-white font-black text-lg">{t.demoOrder}</Text>
+          {isSubmitting && <ActivityIndicator color="#ffffff" className="mr-2" />}
+          <Text adjustsFontSizeToFit numberOfLines={1} className="text-white font-black text-lg">
+            {isSubmitting ? "Lütfen bekleyin..." : t.demoOrder}
+          </Text>
         </Pressable>
       </View>
       

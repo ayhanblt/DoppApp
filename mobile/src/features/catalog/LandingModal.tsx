@@ -5,6 +5,7 @@ import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import { MapPin, Rocket } from "lucide-react-native";
 import { DoppAppLogoTek } from "@/shared/ui/DoppAppLogoTek";
+import { useModalSwipeGesture } from "@/shared/hooks/useModalSwipeGesture";
 
 type LandingModalProps = {
   locale: Locale;
@@ -30,9 +31,11 @@ export function LandingModal({ locale, onClose }: LandingModalProps) {
     onClose(defaultLocation);
   };
 
+  const panResponder = useModalSwipeGesture(isVisible, () => handleClose(false));
+
   return (
-    <Modal visible={isVisible} animationType="fade" transparent>
-      <View className="flex-1 bg-black/60 items-center justify-center p-4">
+    <Modal visible={isVisible} animationType="fade" transparent onRequestClose={() => handleClose(false)}>
+      <View {...panResponder.panHandlers} className="flex-1 bg-black/60 items-center justify-center p-4">
         <View className="w-full max-w-sm rounded-3xl bg-white p-8 items-center shadow-lg">
           <View className="mb-6 h-28 w-28 rounded-3xl bg-zinc-100 items-center justify-center border border-black/5">
             <DoppAppLogoTek width={64} height={64} />

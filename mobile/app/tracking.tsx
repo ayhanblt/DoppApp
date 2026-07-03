@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CelebrationModal } from '@/features/tracking/CelebrationModal';
 import { ReceiptShareModal } from '@/features/tracking/ReceiptShareModal';
 import { supabase } from '@/shared/api/supabase';
+import Toast from 'react-native-toast-message';
 
 export default function TrackingScreen() {
   const router = useRouter();
@@ -60,7 +61,7 @@ function TrackingScreenInner({ order }: { order: Order }) {
     let cancelled = false;
     const waypoints = order.routeWaypoints || [order.storeCoordinate, order.addressCoordinate];
     getRoute(waypoints).then((route) => {
-      if (!cancelled) setDisplayRoute(route);
+      if (!cancelled) setDisplayRoute(route || waypoints);
     });
     return () => { cancelled = true; };
   }, [order.routeWaypoints, order.storeCoordinate, order.addressCoordinate]);
@@ -98,24 +99,9 @@ function TrackingScreenInner({ order }: { order: Order }) {
   }, [status, celebrationShown]);
 
   const handleShareClick = async () => {
-    const items = order.items.map(item => {
-      const store = stores.find(s => s.id === item.storeId);
-      const product = store?.menu.find(p => p.id === item.itemId);
-      return {
-        name: product ? product.name[locale] : t.itemFallback,
-        qty: item.quantity,
-        image: product?.image
-      };
-    });
-
-    const data = JSON.stringify({
-      locale,
-      total: formatMoney(totals.total, locale),
-      items
-    });
-
-    const webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
-    setReceiptUrl(`${webUrl}/api/receipt?data=${encodeURIComponent(data)}`);
+    let webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
+    webUrl = webUrl.startsWith("http") ? webUrl : `https://${webUrl}`;
+    setReceiptUrl(`${webUrl}/api/receipt?order_id=${order.id}&locale=${locale}`);
     setReceiptModalOpen(true);
   };
 
@@ -152,29 +138,18 @@ function TrackingScreenInner({ order }: { order: Order }) {
   }, [status, order, stores, locale, totals, shortId]);
 
   const handleCopyDirectLink = async () => {
-    const webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
+    let webUrl = process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com";
+    webUrl = webUrl.startsWith("http") ? webUrl : `https://${webUrl}`;
 
-    if (shortId) {
-      await Clipboard.setStringAsync(`${webUrl}/share?id=${shortId}`);
-    } else {
-      const items = order.items.map(item => {
-        const store = stores.find(s => s.id === item.storeId);
-        const product = store?.menu.find(p => p.id === item.itemId);
-        return {
-          name: product ? product.name[locale] : t.itemFallback,
-          qty: item.quantity,
-          image: product?.image
-        };
-      });
-      const dataString = encodeURIComponent(JSON.stringify({
-        locale,
-        total: formatMoney(totals.total, locale),
-        items
-      }));
-      await Clipboard.setStringAsync(`${webUrl}/share?data=${dataString}`);
-    }
+    await Clipboard.setStringAsync(`${webUrl}/share?order_id=${order.id}`);
 
     setCopiedLink(true);
+    Toast.show({
+      type: 'success',
+      text1: 'Kopyalandı',
+      text2: 'Sipariş linki panoya kopyalandı!',
+      position: 'bottom',
+    });
     setTimeout(() => setCopiedLink(false), 2000);
   };
 

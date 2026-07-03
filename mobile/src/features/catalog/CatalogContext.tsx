@@ -49,6 +49,24 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const [stores, setStores] = useState<Store[]>([]);
   const [config, setConfig] = useState<GlobalConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartLoaded, setCartLoaded] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem("cart").then((savedCart) => {
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart));
+        } catch (err) {}
+      }
+      setCartLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (cartLoaded) {
+      AsyncStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart, cartLoaded]);
 
   useEffect(() => {
     let mounted = true;
