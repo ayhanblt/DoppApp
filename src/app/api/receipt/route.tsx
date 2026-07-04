@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
                     <path d="M2.31,14.27,0,15.87V13.45l2.31-1.6V9.58L0,11.17V8.75L2.31,7.16V0H5.49V5.11L9.73,2.16V4.58l-4.24,3V9.81l4.24-3V9.27l-4.24,3v7.23A5.09,5.09,0,0,0,10,14.18a7.08,7.08,0,0,0-.1-1.29l2.63-.84a10.51,10.51,0,0,1,.2,1.95c0,6.32-4.11,9.54-10.41,9.34Z" />
                   </svg>
                 )}
-                <b style={{ display: 'flex', alignItems: 'flex-start', color: '#fb4824' }}>
+                <b style={{ display: 'flex', alignItems: 'flex-start', color: '#fb4824', textShadow: '2px 0 0 #fb4824, -2px 0 0 #fb4824, 0 2px 0 #fb4824, 0 -2px 0 #fb4824' }}>
                   {totalWithoutLira}
                   <span style={{ fontSize: '50px', marginLeft: '4px', marginTop: '12px' }}>{data.locale === 'tr' ? ',00' : '.00'}</span>
                 </b>

@@ -14,10 +14,11 @@ type CelebrationPopupProps = {
   calories: number;
   totalPrice: number;
   cart: CartItem[];
+  orderId?: string;
   onClose: () => void;
 };
 
-export default function CelebrationPopup({ locale, calories, totalPrice, cart, onClose }: CelebrationPopupProps) {
+export default function CelebrationPopup({ locale, calories, totalPrice, cart, orderId, onClose }: CelebrationPopupProps) {
   const t = dictionaries[locale];
   const { stores } = useCatalog();
   const [showShareModal, setShowShareModal] = useState(false);
@@ -73,13 +74,16 @@ export default function CelebrationPopup({ locale, calories, totalPrice, cart, o
       };
     });
 
-    const data = JSON.stringify({
-      locale,
-      total: formatMoney(totalPrice, locale),
-      items
-    });
-
-    setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
+    if (orderId) {
+      setReceiptUrl(`/api/receipt?order_id=${orderId}&locale=${locale}`);
+    } else {
+      const data = JSON.stringify({
+        locale,
+        total: formatMoney(totalPrice, locale),
+        items
+      });
+      setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
+    }
     setShowShareModal(true);
   };
 

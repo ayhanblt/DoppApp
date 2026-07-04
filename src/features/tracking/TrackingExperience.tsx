@@ -41,23 +41,7 @@ export default function TrackingExperience({
 
 
   const handleShareClick = () => {
-    const items = order.items.map(item => {
-      const store = stores.find(s => s.id === item.storeId);
-      const product = store?.menu.find(p => p.id === item.itemId);
-      return {
-        name: product ? product.name[locale] : "Ürün",
-        qty: item.quantity,
-        image: product?.image
-      };
-    });
-
-    const data = JSON.stringify({
-      locale,
-      total: formatMoney(totals.total, locale),
-      items
-    });
-
-    setReceiptUrl(`/api/receipt?data=${encodeURIComponent(data)}`);
+    setReceiptUrl(`/api/receipt?order_id=${order.id}&locale=${locale}`);
     setShareModalOpen(true);
   };
 
@@ -267,6 +251,7 @@ export default function TrackingExperience({
           calories={totals.calories}
           totalPrice={totals.total}
           cart={order?.items || []}
+          orderId={order.id}
           onClose={() => setCelebrationOpen(false)}
         />
       )}

@@ -40,7 +40,9 @@ export function ReceiptShareModal({ imageUrl, visible, onClose, locale }: Receip
   if (validImageUrl && !validImageUrl.startsWith('http')) {
     validImageUrl = `${webUrl}${validImageUrl.startsWith('/') ? '' : '/'}${validImageUrl}`;
   }
-
+  console.log('imageUrl', imageUrl)
+  console.log('webUrl', webUrl)
+  console.log('shareUrl', shareUrl)
   // Cache buster: React Native Image componenti URL bazlı agresif cache yapar.
   // Performans testi için her açılışta taze istek atmasını sağlamak adına useMemo ile timestamp ekliyoruz.
   // Sadece imageUrl veya görünürlük değiştiğinde yeni timestamp üretiriz, böylece state güncellemeleri (ör. loading bitişi) ikinci kez istek attırmaz.
