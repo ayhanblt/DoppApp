@@ -6,10 +6,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useEffect, useState } from 'react';
-import { View, Text, Image, Platform } from 'react-native';
+import { View, Image, Platform } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationBar } from 'expo-navigation-bar';
+import { useFonts } from 'expo-font';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { usePushNotifications } from '@/features/notifications/usePushNotifications';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
@@ -146,12 +148,24 @@ function PushNotificationInitializer() {
 export default function RootLayout() {
   const [splashVisible, setSplashVisible] = useState(true);
 
+  const [fontsLoaded] = useFonts({
+    'Geist-Regular': require('../assets/fonts/Geist/ttf/Geist-Regular.ttf'),
+    'Geist-Medium': require('../assets/fonts/Geist/ttf/Geist-Medium.ttf'),
+    'Geist-SemiBold': require('../assets/fonts/Geist/ttf/Geist-SemiBold.ttf'),
+    'Geist-Bold': require('../assets/fonts/Geist/ttf/Geist-Bold.ttf'),
+    'Geist-Black': require('../assets/fonts/Geist/ttf/Geist-Black.ttf'),
+  });
+
   // Splash bittiğinde uygulamanın geri kalanında navigasyon çubuğunu tekrar göster
   useEffect(() => {
     if (!splashVisible && Platform.OS === 'android') {
       NavigationBar.setHidden(false);
     }
   }, [splashVisible]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
