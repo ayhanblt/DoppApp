@@ -252,7 +252,13 @@ export const dictionaries = {
         q: "Sipariş fişlerini (Receipt) arkadaşlarımla paylaşabilir miyim?",
         a: "Evet! Hayalinizdeki sepeti oluşturduktan sonra 'Siparişi Paylaş' butonuna basarak sepetinizin şık bir görsel fişini indirebilir ve sosyal medyada arkadaşlarınızla paylaşabilirsiniz."
       }
-    ]
+    ],
+    myCart: "Sepetim",
+    confirmLocation: "Bu Konumu Onayla",
+    copied: "Kopyalandı",
+    linkCopiedDesc: "Sipariş bağlantısı panoya kopyalandı.",
+    shareError: "Hata",
+    shareErrorDesc: "Görsel indirilemedi, lütfen tekrar deneyin."
   },
   en: {
     appName: "DoppApp",
@@ -505,7 +511,13 @@ export const dictionaries = {
         q: "Can I share order receipts with my friends?",
         a: "Yes! After building your dream cart, you can hit 'Share Order' to download a stylish visual receipt of your cart and share it with friends on social media."
       }
-    ]
+    ],
+    myCart: "My Cart",
+    confirmLocation: "Confirm Location",
+    copied: "Copied",
+    linkCopiedDesc: "Order link copied to clipboard.",
+    shareError: "Error",
+    shareErrorDesc: "Failed to download image, please try again."
   }
 };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { View, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Send, CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { dictionaries } from '@/shared/i18n/dictionaries';

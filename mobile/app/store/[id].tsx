@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, TextInput, Image, Alert, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCatalog } from '@/features/catalog/CatalogContext';

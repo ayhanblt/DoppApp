@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Modal, ScrollView, Pressable } from 'react-native';
+import { View, Modal, ScrollView, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { X } from 'lucide-react-native';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';

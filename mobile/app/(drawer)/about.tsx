@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, Pressable } from 'react-native';
+import { View, ScrollView, Image, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { dictionaries } from '@/shared/i18n/dictionaries';
 import { Locale } from '@/shared/lib/types';

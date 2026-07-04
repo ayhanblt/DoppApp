@@ -20,7 +20,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({ content, style }) =>
       if (part.startsWith('**') && part.endsWith('**')) {
         const cleanText = part.slice(2, -2);
         return (
-          <Text key={`${keyPrefix}-${index}`} style={{ fontWeight: 'bold' }}>
+          <Text key={`${keyPrefix}-${index}`} style={{ fontFamily: 'Geist-Bold' }}>
             {cleanText}
           </Text>
         );

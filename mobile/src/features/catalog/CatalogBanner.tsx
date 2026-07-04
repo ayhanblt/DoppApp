@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View, Text, Pressable, Image } from "react-native";
+import { View, Pressable, Image } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 import { StoreType, Locale, Product } from "@/shared/lib/types";
@@ -192,8 +193,8 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         {/* Feature 1 */}
         <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <NoCreditCardIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
+            <NoCreditCardIcon size={48} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-md text-orange-50 text-center leading-tight shadow-sm">
               {t.feature1Title}
             </Text>
           </View>
@@ -202,8 +203,8 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         {/* Feature 2 */}
         <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <InfinityIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
+            <InfinityIcon size={48} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-md text-orange-50 text-center leading-tight shadow-sm">
               {t.feature2Title}
             </Text>
           </View>
@@ -212,8 +213,8 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
         {/* Feature 3 */}
         <View className="flex-1 items-center justify-start text-center p-2">
           <View className="flex-col items-center justify-center mb-1">
-            <ShareReceiptIcon size={64} color="#fff1f2" style={{ marginBottom: 4 }} />
-            <Text className="font-bold text-[11px] text-orange-50 text-center leading-tight shadow-sm">
+            <ShareReceiptIcon size={48} color="#fff1f2" style={{ marginBottom: 4 }} />
+            <Text className="font-bold text-md text-orange-50 text-center leading-tight shadow-sm">
               {t.feature3Title}
             </Text>
           </View>

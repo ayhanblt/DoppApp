@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Modal, Image, Pressable } from "react-native";
+import { View, Modal, Image, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Locale } from "@/shared/lib/types";
 import { dictionaries } from "@/shared/i18n/dictionaries";

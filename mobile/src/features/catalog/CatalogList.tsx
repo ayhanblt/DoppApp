@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Image, FlatList, ScrollView, Pressable, Modal } from 'react-native';
+import { View, Image, FlatList, ScrollView, Pressable, Modal } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store, StoreType } from "@/shared/lib/types";
 import { formatMoney, formatNumber } from "@/shared/lib/format";

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, Image, Pressable } from 'react-native';
+import { View, TextInput, Image, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { MapPin, ShoppingCart, Menu, Search } from 'lucide-react-native';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { dictionaries } from '@/shared/i18n/dictionaries';

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { View, Pressable, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { X, History, FileText } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/shared/api/supabase';
