@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { View, Text, Dimensions, Share, Pressable } from 'react-native';
+import { View, Dimensions, Share, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { formatMoney, formatNumber } from '@/shared/lib/format';
@@ -146,8 +147,8 @@ function TrackingScreenInner({ order }: { order: Order }) {
     setCopiedLink(true);
     Toast.show({
       type: 'success',
-      text1: 'Kopyalandı',
-      text2: 'Sipariş linki panoya kopyalandı!',
+      text1: t.copied,
+      text2: t.linkCopiedDesc,
       position: 'bottom',
     });
     setTimeout(() => setCopiedLink(false), 2000);
@@ -496,7 +497,7 @@ function TrackingScreenInner({ order }: { order: Order }) {
             onPress={handleShareClick}
             className="flex-1 max-w-sm flex-row items-center justify-center bg-accent py-4 rounded-xl shadow-sm"
           >
-            <Text className="text-white font-black mr-2">{t.shareReceipt}</Text>
+            <Text className="text-white font-black mr-2 flex-shrink-1" numberOfLines={1}>{t.shareReceipt}</Text>
             <Share2 size={18} color="white" />
           </Pressable>
           <Pressable
@@ -525,6 +526,7 @@ function TrackingScreenInner({ order }: { order: Order }) {
         imageUrl={receiptUrl}
         visible={receiptModalOpen}
         onClose={() => setReceiptModalOpen(false)}
+        locale={locale}
       />
     </SafeAreaView>
   );

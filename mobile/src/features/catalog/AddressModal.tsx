@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Modal, Pressable, Platform, KeyboardAvoidingView, ScrollView, TextInput, StyleSheet, Keyboard, useWindowDimensions } from 'react-native';
+import { View, Modal, Pressable, Platform, KeyboardAvoidingView, ScrollView, TextInput, StyleSheet, Keyboard, useWindowDimensions } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Home, Navigation } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
@@ -274,7 +275,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, lo
                 className="w-full bg-[#fb4824] py-4 rounded-xl items-center"
                 onPress={handleSave}
               >
-                <Text className="text-white font-black text-lg">Bu Konumu Onayla</Text>
+                <Text className="text-white font-black text-lg flex-shrink-1" numberOfLines={1}>{t.confirmLocation}</Text>
               </Pressable>
             </View>
           </ScrollView>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Modal, Pressable } from 'react-native';
+import { View, Modal, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 import { X, Share2 } from 'lucide-react-native';
@@ -83,7 +84,7 @@ export function CelebrationModal({ locale, calories, totalPrice, cart, visible, 
             onPress={onShareRequest}
             className="w-full flex-row items-center justify-center bg-accent py-4 rounded-xl shadow-sm mb-3"
           >
-            <Text className="text-white font-black mr-2">Siparişini Paylaş</Text>
+            <Text className="text-white font-black mr-2 flex-shrink-1" numberOfLines={1}>{t.shareReceipt}</Text>
             <Share2 size={18} color="white" />
           </Pressable>
 

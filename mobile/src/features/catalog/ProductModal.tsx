@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Image, Modal, Pressable, Animated, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, Image, Modal, Pressable, Animated, StyleSheet, Platform, ScrollView } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { dictionaries } from "@/shared/i18n/dictionaries";
 import type { CartSelection, Locale, Product, Store } from "@/shared/lib/types";
@@ -257,7 +258,7 @@ export function ProductModal({ locale, store, item, visible, onClose, onAdd }: P
                 onPress={handleAddToCart}
                 className={`w-full py-3.5 rounded-xl items-center ${errorGroupId ? "bg-red-500" : "bg-accent"}`}
               >
-                <Text adjustsFontSizeToFit numberOfLines={1} className="text-white font-black text-lg">{buttonText}</Text>
+                <Text numberOfLines={1} className="text-white font-black text-lg flex-shrink-1">{buttonText}</Text>
               </Pressable>
             </View>
           </View>

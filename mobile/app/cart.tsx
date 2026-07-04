@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, Modal, TextInput, Pressable } from 'react-native';
+import { View, ScrollView, Image, Modal, TextInput, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useCatalog } from '@/features/catalog/CatalogContext';
@@ -187,6 +188,7 @@ export default function CartScreen() {
         imageUrl={receiptUrl}
         visible={showReceipt}
         onClose={() => setShowReceipt(false)}
+        locale={locale}
       />
     </>
   );
@@ -327,7 +329,7 @@ export default function CartScreen() {
           onPress={() => router.push('/checkout')}
           className="w-full bg-accent py-4 rounded-xl flex-row items-center justify-center gap-2"
         >
-          <Text className="text-white font-black text-lg">{t.checkout}</Text>
+          <Text className="text-white font-black text-lg flex-shrink-1" numberOfLines={1}>{t.checkout}</Text>
           <ArrowLeft size={20} color="white" style={{ transform: [{ rotate: '180deg' }] }} />
         </Pressable>
       </View>

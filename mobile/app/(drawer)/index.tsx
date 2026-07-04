@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Pressable, Text } from 'react-native';
+import { View, Pressable } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CatalogList } from '@/features/catalog/CatalogList';
 import { LandingModal } from '@/features/catalog/LandingModal';
@@ -197,8 +198,8 @@ export default function CatalogScreen() {
                 <ShoppingCart size={20} color="#ffffff" />
               </View>
               <View>
-                <Text className="text-white font-bold text-sm">Sepetim</Text>
-                <Text className="text-white/80 text-xs">{cart.reduce((sum, item) => sum + item.quantity, 0)} Ürün</Text>
+                <Text className="text-white font-bold text-sm flex-shrink-1" numberOfLines={1}>{t.myCart}</Text>
+                <Text className="text-white/80 text-xs">{cart.reduce((sum, item) => sum + item.quantity, 0)} {t.itemCount}</Text>
               </View>
             </View>
             <Text className="text-white font-black text-lg">

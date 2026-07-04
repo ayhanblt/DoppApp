@@ -2,7 +2,8 @@ import React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView, DrawerItemList, DrawerItem } from 'expo-router/drawer';
 import { dictionaries } from '@/shared/i18n/dictionaries';
-import { View, Text, Image, Linking } from 'react-native';
+import { View, Image, Linking } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { Globe, Info, MessageSquare, Shield, HelpCircle } from 'lucide-react-native';
 import { useCatalog } from '@/features/catalog/CatalogContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,7 +35,7 @@ function CustomDrawerContent(props: any) {
             onPress={() => {
               setLocale(locale === "tr" ? "en" : "tr");
             }}
-            labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
+            labelStyle={{ fontFamily: 'Geist-SemiBold' }}
           />
 
           <DrawerItem
@@ -44,7 +45,7 @@ function CustomDrawerContent(props: any) {
               setFeedbackOpen(true);
               props.navigation.closeDrawer();
             }}
-            labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
+            labelStyle={{ fontFamily: 'Geist-SemiBold' }}
           />
 
           <DrawerItem
@@ -54,7 +55,7 @@ function CustomDrawerContent(props: any) {
               Linking.openURL(`https://doppapp.com/${locale}/privacy-policy`);
               props.navigation.closeDrawer();
             }}
-            labelStyle={{ fontFamily: 'System', fontWeight: '600' }}
+            labelStyle={{ fontFamily: 'Geist-SemiBold' }}
           />
         </View>
       </DrawerContentScrollView>
@@ -84,8 +85,7 @@ export default function DrawerLayout() {
           overflow: 'hidden',
         },
         drawerLabelStyle: {
-          fontFamily: 'System',
-          fontWeight: '600',
+          fontFamily: 'Geist-SemiBold',
         }
       }}
     >

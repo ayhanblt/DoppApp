@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, Modal, Image, ActivityIndicator, Share, Pressable, ScrollView } from 'react-native';
+import { View, Modal, Image, ActivityIndicator, Share, Pressable, ScrollView } from 'react-native';
+import { Text } from '@/shared/ui/Text';
 import { X, Share2, Check, Link2 } from 'lucide-react-native';
 import { cacheDirectory, downloadAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
+import { Locale } from '@/shared/lib/types';
+import { dictionaries } from '@/shared/i18n/dictionaries';
 
 interface ReceiptShareModalProps {
   imageUrl: string;
   visible: boolean;
   onClose: () => void;
+  locale: Locale;
 }
 
-export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareModalProps) {
+export function ReceiptShareModal({ imageUrl, visible, onClose, locale }: ReceiptShareModalProps) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -25,6 +29,8 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
       setCopiedLink(false);
     }
   }, [visible, imageUrl]);
+
+  const t = dictionaries[locale];
 
   const webUrl = (process.env.EXPO_PUBLIC_WEB_URL || "https://doppapp.com").trim();
   let shareUrl = webUrl.startsWith("http") ? webUrl : `https://${webUrl}`;
@@ -69,8 +75,8 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Hata',
-          text2: 'Bu cihazda resim paylaşım özelliği desteklenmiyor.',
+          text1: t.shareError,
+          text2: t.shareErrorDesc,
           position: 'bottom',
         });
       }
@@ -90,7 +96,7 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
               <Share2 size={20} color="#fb4824" />
-              <Text className="text-xl font-black text-zinc-800 ml-2">Siparişi Paylaş</Text>
+              <Text className="text-xl font-black text-zinc-800 ml-2">{t.shareReceipt}</Text>
             </View>
             <Pressable onPress={onClose} className="p-2 bg-zinc-100 rounded-full">
               <X size={18} color="#52525b" />
@@ -127,11 +133,11 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
               className="flex-1 bg-accent py-4 rounded-xl flex-row items-center justify-center disabled:opacity-50"
             >
               {isSharing ? (
-                <Text className="text-white font-bold text-lg">Paylaşılıyor...</Text>
+                <Text className="text-white font-bold text-lg flex-shrink-1" numberOfLines={1}>{t.submitting}</Text>
               ) : (
                 <>
                   <Share2 size={20} color="#ffffff" className="mr-2" />
-                  <Text className="text-white font-bold text-lg">Siparişi Paylaş</Text>
+                  <Text className="text-white font-bold text-lg flex-shrink-1" numberOfLines={1}>{t.shareReceipt}</Text>
                 </>
               )}
             </Pressable>
@@ -141,8 +147,8 @@ export function ReceiptShareModal({ imageUrl, visible, onClose }: ReceiptShareMo
                 setCopiedLink(true);
                 Toast.show({
                   type: 'success',
-                  text1: 'Kopyalandı',
-                  text2: 'Sipariş linki panoya kopyalandı!',
+                  text1: t.copied,
+                  text2: t.linkCopiedDesc,
                   position: 'bottom',
                 });
                 setTimeout(() => setCopiedLink(false), 2000);
