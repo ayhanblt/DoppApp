@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DoppApp",
-  description: "Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
+  description: "Gerçek ödeme yok! Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
   openGraph: {
     title: "DoppApp",
-    description: "Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
+    description: "Gerçek ödeme yok! Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
     url: "https://doppapp.com",
     siteName: "DoppApp",
     images: [
@@ -35,11 +35,12 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DoppApp",
-    description: "Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
+    description: "Gerçek ödeme yok! Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
     images: ["https://doppapp.com/og-image.png"],
   },
   icons: {
     icon: "/images/doppapp-logo-tek.svg",
+    apple: "/images/doppapp-logo-tek.svg",
   },
 };
 

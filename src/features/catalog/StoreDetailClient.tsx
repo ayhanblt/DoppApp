@@ -258,7 +258,7 @@ export function StoreDetailClient({ locale, storeId }: { locale: Locale; storeId
                   )}
                 </div>
                 {store.description && store.description[locale] && store.description[locale] !== "null" && store.description[locale].trim() !== "" && (
-                  <p className="mt-3 text-sm text-zinc-500 leading-relaxed max-w-3xl">
+                  <p className="mt-3 text-sm text-zinc-500 leading-relaxed max-w-3xl" data-nosnippet>
                     {store.description[locale]}
                   </p>
                 )}

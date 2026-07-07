@@ -296,7 +296,7 @@ export function CatalogList({ locale, storeType }: { locale: Locale; storeType: 
 
                   <div className="mt-1 h-[34px]">
                     {store.description && store.description[locale] && store.description[locale] !== "null" && store.description[locale].trim() !== "" && (
-                      <p className="text-xs text-zinc-500 line-clamp-2 leading-snug">
+                      <p className="text-xs text-zinc-500 line-clamp-2 leading-snug" data-nosnippet>
                         {store.description[locale]}
                       </p>
                     )}

@@ -87,9 +87,9 @@ export function CatalogBanner({ storeType, locale }: { storeType: StoreType; loc
 
         {/* Left Column (Content) */}
         <div className="flex-1 pr-4 z-10 flex flex-col justify-center">
-          <h2 className="text-[1.5rem] leading-tight md:text-[3rem] font-bold md:leading-tight tracking-tight mb-2 md:mb-4 drop-shadow-sm">
+          <h1 className="text-[1.5rem] leading-tight md:text-[3rem] font-bold md:leading-tight tracking-tight mb-2 md:mb-4 drop-shadow-sm">
             {t.mainTitle}
-          </h2>
+          </h1>
           <p className="text-[10px] text-white/85 md:text-base font-medium opacity-90 drop-shadow-sm max-w-xl">
             {t.mainDesc(storeType)}
           </p>
