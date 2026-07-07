@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "DoppApp",
     images: [
       {
-        url: "https://doppapp.com/og-image.png",
+        url: "https://doppapp.com/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "DoppApp",
@@ -36,11 +36,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "DoppApp",
     description: "Gerçek ödeme yok! Hayalindeki ürünleri sepete ekle, siparişini oluştur ve paylaş!",
-    images: ["https://doppapp.com/og-image.png"],
+    images: ["https://doppapp.com/images/og-image.png"],
   },
   icons: {
-    icon: "/images/doppapp-logo-tek.svg",
-    apple: "/images/doppapp-logo-tek.svg",
+    icon: "/images/favicon.png",
+    apple: "/images/apple-touch-icon.png",
   },
 };
 
