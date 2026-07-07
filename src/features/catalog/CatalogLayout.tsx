@@ -45,9 +45,9 @@ export function CatalogLayout({ children, locale }: { children: React.ReactNode;
 
   // Determine current theme based on path
   let currentTheme: ThemeName = "sunset";
-  if (pathname.includes("/shop")) currentTheme = "grape";
-  else if (pathname.includes("/market")) currentTheme = "mint";
-  else {
+  if (pathname && pathname.includes("/shop")) currentTheme = "grape";
+  else if (pathname && pathname.includes("/market")) currentTheme = "mint";
+  else if (pathname) {
     const match = pathname.match(/\/store\/([^\/]+)/);
     if (match) {
       const store = stores.find(s => s.id === match[1]);

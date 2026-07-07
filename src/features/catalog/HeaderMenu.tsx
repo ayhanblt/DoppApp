@@ -33,7 +33,7 @@ export function HeaderMenu({ locale, onOpenInfo, onOpenFeedback }: HeaderMenuPro
     };
   }, [isOpen]);
 
-  const toggleLangUrl = pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`);
+  const toggleLangUrl = pathname ? pathname.replace(`/${locale}`, `/${locale === "tr" ? "en" : "tr"}`) : `/${locale === "tr" ? "en" : "tr"}`;
 
   return (
     <div className="relative" ref={menuRef}>
