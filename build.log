@@ -1,0 +1,135 @@
+
+> doppapp@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.19
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1735ms
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/api/feedback/route.ts
+24:19  Warning: 'insertData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/mcp/mcpServer.ts
+92:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+103:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/api/receipt/route.tsx
+5:33  Warning: 'Product' is defined but never used.  @typescript-eslint/no-unused-vars
+9:7  Warning: 'totalStart' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+27:11  Warning: 'protocol' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+28:11  Warning: 'host' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+39:13  Warning: 't' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+168:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+168:21  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+180:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+180:23  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+185:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+185:23  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+190:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+190:23  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+195:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+195:23  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+200:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+200:23  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+228:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+228:27  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+264:12  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/admin/AdminModal.tsx
+3:15  Warning: 'Locale' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/admin/AdminPanel.tsx
+5:18  Warning: 'ArrowLeft' is defined but never used.  @typescript-eslint/no-unused-vars
+14:10  Warning: 'AdminInput' is defined but never used.  @typescript-eslint/no-unused-vars
+19:55  Warning: 'MenuOptionGroup' is defined but never used.  @typescript-eslint/no-unused-vars
+122:9  Warning: 'selectedStoreObj' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/admin/CategoryManager.tsx
+6:24  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+184:30  Warning: 'activeTab' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/admin/EditProductsModal.tsx
+4:32  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/admin/image-library/ui/ImageUploadField.tsx
+7:15  Warning: 'Locale' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/CatalogBanner.tsx
+8:10  Warning: 'ShoppingBag' is defined but never used.  @typescript-eslint/no-unused-vars
+8:23  Warning: 'Share2' is defined but never used.  @typescript-eslint/no-unused-vars
+8:31  Warning: 'CreditCard' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/CatalogContext.tsx
+52:16  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/CatalogLayout.tsx
+10:57  Warning: 'CartItem' is defined but never used.  @typescript-eslint/no-unused-vars
+11:23  Warning: 'formatNumber' is defined but never used.  @typescript-eslint/no-unused-vars
+39:13  Warning: 'setStores' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+44:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+61:9  Warning: 'firstStore' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+71:10  Warning: 'isScrolled' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+129:11  Warning: 'targetTimeMs' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+238:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+269:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+627:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+687:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+717:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/CatalogList.tsx
+4:23  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+4:31  Warning: 'Tag' is defined but never used.  @typescript-eslint/no-unused-vars
+4:57  Warning: 'Bike' is defined but never used.  @typescript-eslint/no-unused-vars
+22:37  Warning: 'setQuery' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+22:56  Warning: 'cart' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+22:62  Warning: 'setOrder' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+368:46  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+369:46  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+370:45  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+420:30  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+421:30  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+422:29  Warning: 'node' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/FeedbackModal.tsx
+58:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/HeaderMenu.tsx
+6:16  Warning: 'Info' is defined but never used.  @typescript-eslint/no-unused-vars
+16:38  Warning: 'onOpenInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/catalog/LandingModal.tsx
+48:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/features/catalog/StoreDetailClient.tsx
+462:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/features/catalog/data.ts
+2:10  Warning: 'coordinateDistanceKm' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/order/services/order.service.ts
+33:9  Warning: 'targetTimeSeconds' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/tracking/AddressPickerMap.tsx
+10:16  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/tracking/ReceiptShareModal.tsx
+6:10  Warning: 'Locale' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/tracking/TrackingExperience.tsx
+11:52  Warning: 'Link2' is defined but never used.  @typescript-eslint/no-unused-vars
+11:59  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+37:10  Warning: 'copiedLink' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+37:22  Warning: 'setCopiedLink' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/tracking/TrackingMap.tsx
+154:28  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/shared/lib/ui/icons/ShareReceiptIcon.tsx
+3:47  Warning: 'color' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
